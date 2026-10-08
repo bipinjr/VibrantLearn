@@ -1,0 +1,38 @@
+# secrets
+.env
+.env.*
+!.env.example
+!.env.demo
+
+# node / next
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+coverage/
+playwright-report/
+test-results/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# supabase
+supabase/.branches/
+supabase/.temp/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.vercel
+
+# test/tool temp
+apps/web/e2e/vl-*/
+.playwright-mcp/

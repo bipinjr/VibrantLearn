@@ -1,0 +1,10 @@
+{
+  "name": "vibrantlearn",
+  "private": true,
+  "description": "VibrantLearn monorepo. Built by Bipin A and Darshan H.S.",
+  "scripts": {
+    "demo": "node scripts/start-demo.mjs",
+    "demo:rebuild": "node scripts/start-demo.mjs --rebuild",
+    "demo:dev": "node scripts/start-demo.mjs --dev"
+  }
+}

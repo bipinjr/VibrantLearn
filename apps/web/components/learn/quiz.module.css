@@ -1,0 +1,78 @@
+.option {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.1rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-input);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-instant) var(--ease-out);
+}
+.option:hover:not(:disabled) {
+  border-color: var(--link);
+}
+.option:active:not(:disabled) {
+  transform: scale(0.99);
+}
+.option:disabled {
+  cursor: default;
+}
+
+/* Correct: Leaf fills outward from where you clicked. */
+.option::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in oklab, var(--color-leaf) 22%, var(--surface));
+  clip-path: circle(0 at var(--ox) var(--oy));
+  transition: clip-path 420ms var(--ease-out);
+}
+.option[data-state="right"] {
+  border-color: var(--color-leaf);
+}
+.option[data-state="right"]::before {
+  clip-path: circle(150% at var(--ox) var(--oy));
+}
+.option[data-state="wrong"] {
+  border-color: var(--color-rose);
+  animation: nudge 280ms var(--ease-in-out) 2;
+  --animation-reduced: none;
+}
+.option[data-state="dim"] {
+  opacity: 0.55;
+}
+
+.key {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+@keyframes nudge {
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}

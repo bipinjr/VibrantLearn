@@ -1,0 +1,173 @@
+.wrap {
+  --node: 14px;
+  --gutter: 2rem;
+  position: relative;
+}
+
+/* Route line: gradient runs from "now" (Ember) to "exam" (Violet). */
+.route {
+  position: absolute;
+  left: calc(var(--node) / 2 - 1.5px);
+  top: 0.55rem;
+  bottom: 0.9rem;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--color-ember) 0%, var(--color-orchid) 50%, var(--color-violet) 100%);
+  transform-origin: top;
+}
+
+.path {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.1rem;
+}
+.wrap[data-compact] .path {
+  gap: 0.7rem;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 1rem;
+  padding-left: var(--gutter);
+}
+
+.node {
+  position: absolute;
+  left: 0;
+  top: 0.3rem;
+  width: var(--node);
+  height: var(--node);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2.5px solid color-mix(in oklab, var(--muted) 55%, var(--line));
+  color: #fff;
+}
+
+.time {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.title {
+  font-weight: 500;
+  line-height: 1.35;
+}
+.minutes {
+  align-self: start;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.now {
+  padding: 0.05rem 0.5rem;
+  border-radius: var(--radius-chip);
+  background: var(--color-ember);
+  color: var(--color-ink);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.step[data-state="now"] .node {
+  border-color: var(--color-ember);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-ember) 25%, transparent);
+}
+.step[data-state="now"] .title {
+  font-weight: 600;
+}
+.step[data-state="done"] .node {
+  background: var(--color-leaf);
+  border-color: var(--color-leaf);
+}
+.step[data-state="done"] .title {
+  color: var(--muted);
+}
+.step[data-kind="checkpoint"] .node {
+  border-radius: 4px;
+  transform: rotate(45deg) scale(0.9);
+  border-color: var(--color-orchid);
+}
+.step[data-kind="checkpoint"][data-state="done"] .node {
+  border-color: var(--color-leaf);
+}
+.step[data-kind="checkpoint"][data-state="done"] .node > * {
+  transform: rotate(-45deg);
+}
+.step[data-kind="checkpoint"] .title {
+  font-style: normal;
+  color: var(--text);
+}
+.step[data-kind="exam"] .node {
+  background: var(--color-violet);
+  border-color: var(--color-violet);
+}
+.step[data-kind="exam"] .title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+}
+
+/* ---- Hero play: line draws top to bottom, each step arrives as the line reaches it. ---- */
+[data-play="true"] .route {
+  animation: draw var(--path-dur, 1600ms) var(--ease-in-out) var(--path-delay, 0ms) both;
+  --animation-reduced: none;
+}
+[data-play="true"] .step {
+  animation: arrive 280ms var(--ease-out) both;
+  animation-delay: calc(var(--path-delay, 0ms) + var(--i) * var(--path-step, 180ms));
+  --animation-reduced: none;
+}
+[data-play="true"] .node {
+  animation: pop 420ms var(--ease-spring) both;
+  animation-delay: calc(var(--path-delay, 0ms) + var(--i) * var(--path-step, 180ms) + 60ms);
+  --animation-reduced: none;
+}
+[data-play="true"] .step[data-kind="checkpoint"] .node {
+  animation-name: pop-diamond;
+}
+
+@keyframes draw {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes pop-diamond {
+  from {
+    transform: rotate(45deg) scale(0);
+  }
+  to {
+    transform: rotate(45deg) scale(0.9);
+  }
+}

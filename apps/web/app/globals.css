@@ -1,0 +1,736 @@
+@import "tailwindcss";
+
+/* ---- Brand tokens (brand/BRAND.md). Components use these, never raw hex. ---- */
+/* Semantic, theme-aware colours. `inline` so utilities read var(--text) where they are used,
+   which lets a data-theme="dark" panel re-theme its children. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-link: var(--link);
+  --color-done: var(--done);
+  --color-danger: var(--danger);
+}
+
+@theme {
+  --color-ember: #ff6a3d;
+  --color-orchid: #c2389b;
+  --color-violet: #6a3be4;
+  --color-ink: #1c1633;
+  --color-mist: #f5f2fb;
+  --color-leaf: #14a37f;
+  --color-amber: #e8a317;
+  --color-rose: #d93d5c;
+  --color-rose-soft: #ffb4a0; /* error text on Ink panels */
+
+
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-sans: var(--font-figtree), system-ui, sans-serif;
+  --font-kn: var(--font-noto-kn), var(--font-figtree), sans-serif;
+  --font-hi: var(--font-noto-hi), var(--font-figtree), sans-serif;
+
+  /* 1.25 scale: 13 16 20 25 31 39 49 61 */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5625rem;
+  --text-2xl: 1.9375rem;
+  --text-3xl: 2.4375rem;
+  --text-4xl: 3.0625rem;
+  --text-5xl: 3.8125rem;
+
+  --radius-chip: 999px;
+  --radius-input: 12px;
+  --radius-card: 16px;
+  --radius-sheet: 24px;
+
+  --shadow-float: 0 12px 32px -12px rgb(28 22 51 / 0.28), 0 2px 6px -2px rgb(28 22 51 / 0.12);
+}
+
+:root {
+  color-scheme: light;
+  --bg: var(--color-mist);
+  --surface: #ffffff;
+  --text: var(--color-ink);
+  --muted: #5e5675;
+  --line: #e4def0;
+  --link: var(--color-violet);
+  --done: #0b7559; /* Leaf darkened for AA text: 5.1:1 on Mist */
+  --danger: #be2f4c; /* Rose darkened for AA error text: 5.1:1 on Mist */
+  --focus: var(--color-violet);
+
+  /* motion (FRONTEND.md §4.2) */
+  --dur-instant: 90ms;
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 320ms;
+  --dur-hero: 1600ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-spring: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017, 1.077 22.4%, 1.121 25.5%, 1.14 28.6%, 1.129 32.6%, 1.04 41.2%, 1.008 46.4%, 0.985 52.8%, 0.996 70.8%, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #120e22;
+    --surface: #1c1633;
+    --text: #f5f2fb;
+    --muted: #b2a9c9;
+    --line: #2e2650;
+    --link: #8b6cf2;
+    --done: #2fc79f;
+    --danger: #f0738b;
+    --focus: #8b6cf2;
+  }
+}
+/* Also usable on any element to scope a dark panel. */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #120e22;
+  --surface: #1c1633;
+  --text: #f5f2fb;
+  --muted: #b2a9c9;
+  --line: #2e2650;
+  --link: #8b6cf2;
+  --done: #2fc79f;
+    --danger: #f0738b;
+  --focus: #8b6cf2;
+}
+
+/* ---- Base ---- */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.55;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  :lang(kn) {
+    font-family: var(--font-kn);
+    line-height: 1.7;
+  }
+  :lang(hi) {
+    font-family: var(--font-hi);
+    line-height: 1.7;
+  }
+  a {
+    color: var(--link);
+    text-underline-offset: 0.2em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-ember) 35%, transparent);
+  }
+}
+
+/* ---- Reduced motion (FRONTEND.md §4.5): each animation declares its reduced version ---- */
+@property --animation-reduced {
+  syntax: "*";
+  inherits: false;
+  initial-value: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: var(--animation-reduced) !important;
+  }
+  .btn:active {
+    transform: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ---- Primitives shared by many screens ---- */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.25rem;
+    border-radius: var(--radius-input);
+    font-weight: 600;
+    font-size: var(--text-base);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-instant) var(--ease-out);
+  }
+  .btn:active {
+    transform: scale(0.98);
+  }
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+  /* Ember fill + Ink text (~6:1). White on Ember fails contrast: never. */
+  .btn-primary {
+    background: var(--color-ember);
+    color: var(--color-ink);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--color-ember) 88%, var(--color-ink));
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--text);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--text) 8%, transparent);
+  }
+
+  .field {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-input);
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+  .field:hover {
+    border-color: color-mix(in oklab, var(--line) 50%, var(--muted));
+  }
+  .field:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+    border-color: transparent;
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--color-rose);
+  }
+
+  /* Choice chips: real radios/checkboxes underneath, styled labels on top */
+  .chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+    padding: 0 1rem;
+    border-radius: var(--radius-chip);
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      border-color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+  .chip input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  .chip:has(input:checked) {
+    border-color: var(--link);
+    background: color-mix(in oklab, var(--link) 12%, var(--surface));
+  }
+  .chip:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* Inline status messages expand instead of popping (grid rows 0fr -> 1fr) */
+  .reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-base) var(--ease-out);
+  }
+  .reveal[data-open="true"] {
+    grid-template-rows: 1fr;
+  }
+  .reveal > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+  /* Padding would leak out of a collapsed 0fr row, so drop it while closed. */
+  .reveal:not([data-open="true"]) > * {
+    padding-block: 0;
+    border-width: 0;
+  }
+
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--line) 70%, transparent);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--surface) 55%, transparent), transparent);
+    animation: shimmer 1.4s linear infinite;
+    --animation-reduced: none;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.only-dark {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .only-light {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .only-dark {
+    display: revert;
+  }
+}
+:root[data-theme="dark"] .only-light {
+  display: none;
+}
+:root[data-theme="dark"] .only-dark {
+  display: revert;
+}
+
+/* Landing product fragments wipe in as they scroll into view (text never animates). */
+@supports (animation-timeline: view()) {
+  .reveal-on-view {
+    animation: wipe linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 30%;
+    --animation-reduced: none;
+  }
+}
+@keyframes wipe {
+  from {
+    clip-path: inset(0 0 35% 0);
+    opacity: 0.35;
+  }
+  to {
+    clip-path: inset(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* =============================================================================================
+   App motion layer. Compositor-only (transform, opacity, clip-path). Every animation declares
+   --animation-reduced so prefers-reduced-motion gets a still version.
+   ============================================================================================= */
+
+/* Staggered entrance: give children style="--i: n" */
+.rise {
+  animation: rise 520ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+  --animation-reduced: none;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pop-in {
+  animation: pop-in 360ms var(--ease-spring) both;
+  --animation-reduced: none;
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+/* Cards that respond to the pointer: lift is a transform, never a shadow change. */
+.lift {
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+@media (hover: hover) {
+  .lift:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--line) 40%, var(--muted));
+  }
+}
+
+/* Primary button sheen on hover (pseudo-element moves; the button itself never animates layout). */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  transition: transform 700ms var(--ease-out);
+}
+@media (hover: hover) {
+  .btn-primary:hover::after {
+    transform: translateX(120%);
+  }
+}
+
+/* Thinking dots while a reply is being prepared */
+.dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: dot 1.1s var(--ease-in-out) infinite;
+  --animation-reduced: none;
+}
+.dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes dot {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* Streaming caret (only while text is arriving) */
+.caret-blink::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.12em;
+  background: var(--color-ember);
+  animation: caret-blink 1s steps(1) infinite;
+  --animation-reduced: none;
+}
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ---- View transitions (React <ViewTransition>) ---- */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-old(.page-exit) {
+  animation: 140ms var(--ease-in) both vt-fade-out;
+}
+::view-transition-new(.page-enter) {
+  animation:
+    260ms var(--ease-out) 90ms both vt-fade-in,
+    380ms var(--ease-out) both vt-rise;
+}
+::view-transition-old(.nav-forward) {
+  animation: 160ms var(--ease-in) both vt-fade-out, 320ms var(--ease-in-out) both vt-left-out;
+}
+::view-transition-new(.nav-forward) {
+  animation: 240ms var(--ease-out) 120ms both vt-fade-in, 320ms var(--ease-in-out) both vt-right-in;
+}
+::view-transition-old(.nav-back) {
+  animation: 160ms var(--ease-in) both vt-fade-out, 320ms var(--ease-in-out) both vt-right-out;
+}
+::view-transition-new(.nav-back) {
+  animation: 240ms var(--ease-out) 120ms both vt-fade-in, 320ms var(--ease-in-out) both vt-left-in;
+}
+::view-transition-group(.morph) {
+  animation-duration: 380ms;
+  animation-timing-function: var(--ease-in-out);
+}
+::view-transition-group(app-sidebar),
+::view-transition-group(app-topbar) {
+  animation: none;
+  z-index: 50;
+}
+::view-transition-old(app-sidebar),
+::view-transition-old(app-topbar) {
+  display: none;
+}
+::view-transition-new(app-sidebar),
+::view-transition-new(app-topbar) {
+  animation: none;
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-rise {
+  from {
+    transform: translateY(12px);
+  }
+}
+@keyframes vt-left-out {
+  to {
+    transform: translateX(-28px);
+  }
+}
+@keyframes vt-right-in {
+  from {
+    transform: translateX(28px);
+  }
+}
+@keyframes vt-right-out {
+  to {
+    transform: translateX(28px);
+  }
+}
+@keyframes vt-left-in {
+  from {
+    transform: translateX(-28px);
+  }
+}
+
+/* Chip tap feedback */
+.chip:active {
+  transform: scale(0.97);
+}
+.chip {
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-instant) var(--ease-out);
+}
+
+/* Celebration burst when a checkpoint is ticked */
+.burst {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  pointer-events: none;
+}
+.burst i {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--c, var(--color-leaf));
+  transform: translate(-50%, -50%);
+  animation: burst 620ms var(--ease-out) forwards;
+  --animation-reduced: none;
+}
+@keyframes burst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--r, 90deg)) scale(0.6);
+  }
+}
+
+/* Mobile menu sheet (native <dialog>: focus trap + Esc for free) */
+dialog.sheet {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  inset: 0 auto 0 0;
+  height: 100dvh;
+  max-height: none;
+  max-width: none;
+  background: transparent;
+}
+dialog.sheet[open] > div {
+  animation: sheet-in var(--dur-slow) var(--ease-out) both;
+  --animation-reduced: none;
+}
+dialog.sheet::backdrop {
+  background: rgb(28 22 51 / 0.45);
+  backdrop-filter: blur(2px);
+}
+@keyframes sheet-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+/* Mini plan path (dashboard / plan cards) */
+.mini-route {
+  background: linear-gradient(90deg, var(--color-ember), var(--color-orchid), var(--color-violet));
+  transform-origin: left;
+  animation: mini-draw 900ms var(--ease-in-out) both;
+  --animation-reduced: none;
+}
+@keyframes mini-draw {
+  from {
+    transform: translateY(-50%) scaleX(0);
+  }
+  to {
+    transform: translateY(-50%) scaleX(1);
+  }
+}
+.mini-node {
+  width: 11px;
+  height: 11px;
+  background: var(--surface);
+  border: 2px solid color-mix(in oklab, var(--muted) 55%, var(--line));
+  animation: pop-in 360ms var(--ease-spring) both;
+  animation-delay: calc(200ms + var(--i, 0) * 55ms);
+  --animation-reduced: none;
+}
+.mini-node[data-state="done"] {
+  background: var(--color-leaf);
+  border-color: var(--color-leaf);
+}
+.mini-node[data-state="now"] {
+  border-color: var(--color-ember);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-ember) 28%, transparent);
+}
+.mini-node[data-state="exam"] {
+  background: var(--color-violet);
+  border-color: var(--color-violet);
+}
+
+/* =============================================================================================
+   Landing page scroll motion (scroll-driven, no JS). Falls back to static where unsupported.
+   ============================================================================================= */
+.hero-word {
+  display: inline-block;
+  animation: rise 760ms var(--ease-out) both;
+  animation-delay: calc(120ms + var(--w, 0) * 70ms);
+  --animation-reduced: none;
+}
+.hero-fade {
+  animation: rise 760ms var(--ease-out) both;
+  animation-delay: var(--d, 600ms);
+  --animation-reduced: none;
+}
+
+.scroll-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  height: 3px;
+  transform-origin: left;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--color-ember), var(--color-orchid), var(--color-violet));
+}
+
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    animation: progress linear both;
+    animation-timeline: scroll(root);
+    --animation-reduced: none;
+  }
+  .site-header {
+    animation: header-solid linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 120px;
+    --animation-reduced: none;
+  }
+  .scroll-in {
+    animation: scroll-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 28%;
+    --animation-reduced: none;
+  }
+  .scroll-recede {
+    animation: recede linear both;
+    animation-timeline: view();
+    animation-range: exit 0% exit 100%;
+    --animation-reduced: none;
+  }
+}
+@keyframes progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes header-solid {
+  from {
+    background-color: transparent;
+    border-color: transparent;
+  }
+  to {
+    background-color: color-mix(in oklab, var(--bg) 82%, transparent);
+    border-color: var(--line);
+  }
+}
+@keyframes scroll-in {
+  from {
+    opacity: 0;
+    transform: translateY(48px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes recede {
+  to {
+    opacity: 0.25;
+    transform: translateY(-30px) scale(0.94);
+  }
+}
+
+/* Composer focus ring wraps the whole box */
+.composer:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}

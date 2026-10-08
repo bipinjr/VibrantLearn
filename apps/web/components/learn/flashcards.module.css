@@ -1,0 +1,100 @@
+.stage {
+  position: relative;
+  height: 15rem;
+  perspective: 1000px;
+}
+.dragger {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  touch-action: pan-y;
+  cursor: grab;
+}
+.dragger:active {
+  cursor: grabbing;
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  transform-style: preserve-3d;
+  transition: transform 380ms var(--ease-in-out);
+  cursor: inherit;
+}
+.card[data-flipped="true"] {
+  transform: rotateY(180deg);
+}
+.under {
+  border-radius: var(--radius-sheet);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  transform: translateY(8px) scale(0.96);
+  opacity: 0.7;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  place-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  border-radius: var(--radius-sheet);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-float);
+  backface-visibility: hidden;
+}
+.back {
+  transform: rotateY(180deg);
+  background: color-mix(in oklab, var(--color-violet) 7%, var(--surface));
+}
+
+.stamp {
+  position: absolute;
+  top: 1rem;
+  z-index: 2;
+  padding: 0.2rem 0.7rem;
+  border-radius: 8px;
+  border: 2px solid;
+  font-weight: 700;
+  pointer-events: none;
+}
+.know {
+  right: 1rem;
+  color: var(--done);
+  rotate: 8deg;
+}
+.again {
+  left: 1rem;
+  color: var(--color-rose);
+  rotate: -8deg;
+}
+
+/* Reduced motion: the flip becomes a cross-fade. */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .card[data-flipped="true"] {
+    transform: none;
+  }
+  .card[data-flipped="true"] .face:not(.back) {
+    opacity: 0;
+  }
+  .back {
+    transform: none;
+    opacity: 0;
+    transition: opacity 150ms linear;
+  }
+  .card[data-flipped="true"] .back {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>VibrantLearn: Features and demo guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  @page { size: A4; margin: 18mm 16mm 20mm; }
+  @page :first { margin: 0; }
+  :root { --ink:#1C1633; --mist:#F5F2FB; --ember:#FF6A3D; --orchid:#C2389B; --violet:#6A3BE4; --leaf:#0B7559; --muted:#5E5675; --line:#E4DEF0; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 10.5pt/1.55 Figtree, "Segoe UI", system-ui, sans-serif; color: var(--ink); }
+  h1, h2, h3 { font-family: "Bricolage Grotesque", "Segoe UI", sans-serif; letter-spacing: -0.015em; line-height: 1.1; margin: 0; }
+  h2 { font-size: 22pt; font-weight: 800; margin-bottom: 4mm; }
+  h3 { font-size: 13.5pt; font-weight: 700; margin: 6mm 0 2mm; }
+  p { margin: 0 0 3mm; }
+  ul { margin: 0 0 3mm; padding-left: 5mm; }
+  li { margin-bottom: 1.2mm; }
+  strong { font-weight: 600; }
+  .muted { color: var(--muted); }
+  code { font-family: Consolas, monospace; font-size: 9.5pt; background: var(--mist); padding: 0.3mm 1.5mm; border-radius: 4px; }
+
+  /* Cover */
+  .cover { height: 297mm; padding: 26mm 22mm; background: var(--ink); color: var(--mist); display: flex; flex-direction: column; page-break-after: always; position: relative; overflow: hidden; }
+  .cover img.logo { width: 92mm; }
+  .cover h1 { font-size: 40pt; font-weight: 800; margin-top: 42mm; max-width: 150mm; }
+  .cover .sub { font-size: 13pt; color: #B2A9C9; margin-top: 6mm; max-width: 140mm; }
+  .cover .route { position: absolute; right: 26mm; top: 118mm; bottom: 70mm; width: 4px; border-radius: 4px; background: linear-gradient(180deg, var(--ember), var(--orchid) 50%, var(--violet)); }
+  .cover .node { position: absolute; right: calc(26mm - 6px); width: 16px; height: 16px; border-radius: 50%; background: var(--ink); border: 3px solid #B2A9C9; }
+  .cover .meta { margin-top: auto; display: grid; gap: 2mm; font-size: 11pt; }
+  .cover .meta strong { color: #fff; }
+
+  section { page-break-before: always; }
+  section.flow { page-break-before: auto; margin-top: 10mm; }
+  .lead { font-size: 12pt; color: var(--muted); margin-bottom: 6mm; max-width: 160mm; }
+  figure { margin: 3mm 0 5mm; page-break-inside: avoid; }
+  figure img { display: block; width: auto; max-width: 100%; max-height: 112mm; margin: 0 auto; border: 1px solid var(--line); border-radius: 10px; }
+  .two figure img, .phones figure img { max-height: 150mm; }
+  h2, h3 { break-after: avoid; }
+  figcaption { text-align: center; }
+  figcaption { font-size: 9pt; color: var(--muted); margin-top: 2mm; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .phones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; }
+  .phones img { border-radius: 14px; }
+  .note { background: var(--mist); border-left: 3px solid var(--violet); padding: 3mm 4mm; border-radius: 6px; margin: 3mm 0 5mm; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 5mm; font-size: 9.8pt; }
+  th, td { text-align: left; padding: 2mm 2.5mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; color: var(--muted); }
+  .toc { columns: 2; column-gap: 10mm; padding-left: 0; list-style: none; }
+  .toc li { break-inside: avoid; padding: 1.5mm 0; border-bottom: 1px solid var(--line); }
+  .toc span { color: var(--ember); font-weight: 700; margin-right: 2mm; }
+  .kn { font-family: "Noto Sans Kannada", sans-serif; }
+  .pill { display: inline-block; padding: 0.5mm 2.5mm; border-radius: 99px; background: var(--mist); font-size: 9pt; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <img class="logo" src="../../brand/logo-wordmark-dark.svg" alt="VibrantLearn" />
+  <h1>Features and demo guide</h1>
+  <p class="sub">Web: AI-Powered Personalized Learning Path Generator (Smart EdTech Learning System). Student-side prototype v0.4.</p>
+  <div class="route"></div>
+  <div class="node" style="top:116mm;border-color:#FF6A3D;background:#FF6A3D"></div>
+  <div class="node" style="top:146mm"></div>
+  <div class="node" style="top:176mm;border-color:#C2389B"></div>
+  <div class="node" style="top:206mm;border-color:#6A3BE4;background:#6A3BE4"></div>
+  <div class="meta">
+    <div>By <strong>Bipin A</strong> and <strong>Darshan H.S.</strong></div>
+    <div>BCA, KLE Society's S. Nijalingappa College, Bengaluru</div>
+    <div>Academic year 2026-27. Document dated 8 October 2026.</div>
+  </div>
+</div>
+
+<section>
+  <h2>What VibrantLearn is</h2>
+  <p class="lead">A student types what they need to study and by when, for example "Java internal tomorrow 10am, BCA SEP", or uploads their own notes. VibrantLearn turns that into a personal study path: a timed plan with checkpoints, short notes in English, Kannada or Hindi, likely exam questions, quizzes and flashcards.</p>
+
+  <h3>Who it is for</h3>
+  <table>
+    <tr><th>Student</th><th>Situation</th><th>What VibrantLearn gives them</th></tr>
+    <tr><td><strong>The crammer</strong></td><td>Internal test in a few hours</td><td>A tight plan of only the highest-mark topics, in focus blocks</td></tr>
+    <tr><td><strong>The planner</strong></td><td>Semester exam in weeks</td><td>Week-by-week path with checkpoints and revision loops</td></tr>
+    <tr><td><strong>The notes-holder</strong></td><td>Has the lecturer's PDF or photos</td><td>Answers from their own notes, with the page shown</td></tr>
+    <tr><td><strong>The regional-language learner</strong></td><td>Understands better in Kannada or Hindi</td><td>Notes in their language, technical terms kept in English</td></tr>
+  </table>
+
+  <h3>Contents</h3>
+  <ul class="toc">
+    <li><span>1</span>Running the demo</li>
+    <li><span>2</span>Landing page</li>
+    <li><span>3</span>Demo sign-in and dashboard</li>
+    <li><span>4</span>Asking in plain language</li>
+    <li><span>5</span>Personal study plans</li>
+    <li><span>6</span>Notes in three languages</li>
+    <li><span>7</span>Important questions</li>
+    <li><span>8</span>Quizzes</li>
+    <li><span>9</span>Flashcards</li>
+    <li><span>10</span>Your files</li>
+    <li><span>11</span>A chat that handles any message</li>
+    <li><span>12</span>Settings and your data</li>
+    <li><span>13</span>Phone, tablet and laptop</li>
+    <li><span>14</span>Security and privacy</li>
+    <li><span>15</span>How it was tested</li>
+    <li><span>16</span>What comes next</li>
+  </ul>
+
+</section>
+
+<section>
+    <h2>1. Running the demo</h2>
+    <p>Everything is in one folder: <code>E:\Startup\VibrantLearn\Code</code>. Open it in any IDE (VS Code, IntelliJ, Cursor) and use either option. Node.js 20 or newer is the only requirement.</p>
+    <table>
+      <tr><th>Option</th><th>How</th></tr>
+      <tr><td>Double-click</td><td><code>START-DEMO.bat</code> in the folder</td></tr>
+      <tr><td>Any terminal</td><td><code>npm run demo</code> from the folder</td></tr>
+    </table>
+    <p>The first run installs packages and builds the app (a few minutes). After that it starts in seconds and opens <code>http://localhost:3000</code>. Press <strong>Try the demo</strong> to enter the app with a sample 3rd-semester BCA student. No account and no internet database are needed; the demo keeps its data in the browser.</p>
+    <div class="note">To rebuild after code changes: <code>npm run demo:rebuild</code>. To run the full automatic check: <code>uv run --no-project --with playwright python apps/web/e2e/smoke.py</code> (17 steps).</div>
+</section>
+
+<section>
+  <h2>2. Landing page</h2>
+  <p class="lead">The public page explains the product by showing it: a request is typed and a real study path draws itself next to the headline.</p>
+  <figure><img src="screenshots/01-landing-hero.jpg" alt="" /><figcaption>The hero: one sentence becomes a timed plan for a Java internal at 10 AM tomorrow.</figcaption></figure>
+  <ul>
+    <li><strong>Live plan demo</strong> in the hero, with a Replay button. People who prefer reduced motion see the finished plan straight away.</li>
+    <li><strong>Scroll motion:</strong> a brand-coloured progress line, sections that ease in, and a header that turns solid as you scroll.</li>
+    <li><strong>One-click demo</strong> from the header or hero. "Create an account" is ready for when the database is connected.</li>
+  </ul>
+  <figure><img src="screenshots/02-landing-how-it-works.jpg" alt="" /><figcaption>How it works: three real steps, each shown with the actual app fragment.</figcaption></figure>
+</section>
+
+<section>
+  <figure><img src="screenshots/03-landing-what-you-get.jpg" alt="" /><figcaption>"Open any block": notes switchable between English, <span class="kn">ಕನ್ನಡ</span> and हिन्दी, 2/5/10-mark questions and a quick quiz.</figcaption></figure>
+  <div class="two">
+    <figure><img src="screenshots/04-landing-your-notes.jpg" alt="" /><figcaption>Ask your own notes, with the source page shown.</figcaption></figure>
+    <figure><img src="screenshots/05-landing-privacy-and-cta.jpg" alt="" /><figcaption>Privacy in plain words, and the teacher waitlist.</figcaption></figure>
+  </div>
+  <ul>
+    <li>No invented numbers or fake testimonials. Every example uses real BCA syllabus content.</li>
+    <li>The footer credits the team: built by Bipin A and Darshan H.S.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>3. Demo sign-in and dashboard</h2>
+  <figure><img src="screenshots/06-sign-in-demo.jpg" alt="" /><figcaption>Sign-in page. In demo mode one button opens the app; email and Google sign-in switch on when the database is connected.</figcaption></figure>
+  <figure><img src="screenshots/07-dashboard.jpg" alt="" /><figcaption>Dashboard: the next study block, a live countdown to the exam, progress and all active plans.</figcaption></figure>
+  <ul>
+    <li><strong>Next up</strong> shows exactly what to study now, with Start block and Mark done.</li>
+    <li><strong>Live countdown</strong> to the exam, ticking every second.</li>
+    <li><strong>Real progress numbers</strong> worked out from the plans: steps done, hours planned this week, and how many answers needed no AI call.</li>
+    <li><strong>Sidebar</strong> lists every study session with time left, coloured by urgency (under a day, under three days, later).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>4. Asking in plain language</h2>
+  <p class="lead">Students write the way they talk, including Kanglish and Hinglish. The app reads the subject, the deadline, the hours available, the language and the weak topics. It asks one short follow-up if something is missing.</p>
+  <div class="two">
+    <figure><img src="screenshots/08-new-session.jpg" alt="" /><figcaption>New session with one-tap ideas.</figcaption></figure>
+    <figure><img src="screenshots/09-follow-up-question.jpg" alt="" /><figcaption>"nale DBMS test ide, normalization weak" is understood as DBMS, tomorrow. It asks for hours.</figcaption></figure>
+  </div>
+  <table>
+    <tr><th>The student writes</th><th>VibrantLearn understands</th></tr>
+    <tr><td>Java internal tomorrow 10am</td><td>Java Programming, tomorrow 10:00 AM, crash plan</td></tr>
+    <tr><td>nale DBMS test ide, normalization weak</td><td>DBMS, tomorrow (Kannada "nale"), normalization first</td></tr>
+    <tr><td>kal OS ka exam hai</td><td>Operating Systems, tomorrow (Hindi "kal")</td></tr>
+    <tr><td>python lab exam on friday</td><td>Python Programming, the coming Friday</td></tr>
+    <tr><td>data structures sem exam in 5 weeks</td><td>Data Structures, five weeks, steady plan</td></tr>
+    <tr><td>explain deadlocks in kannada</td><td>Operating Systems notes, Kannada</td></tr>
+  </table>
+  <p class="muted">This step runs on our side without any AI call, so it is instant and free. The parser is covered by automated tests on 32 phrasings.</p>
+</section>
+
+<section>
+  <h2>5. Personal study plans</h2>
+  <figure><img src="screenshots/10-plan-generated.jpg" alt="" /><figcaption>A plan built in about a second: the weak topic first, real clock times, sleep kept free, checkpoints and the exam at the end.</figcaption></figure>
+  <table>
+    <tr><th>Time left</th><th>Plan type</th><th>How it is built</th></tr>
+    <tr><td>Up to 6 hours</td><td>Sprint</td><td>Top-mark topics only, 25-minute focus blocks, a 15-minute mock quiz at the end</td></tr>
+    <tr><td>Up to 3 days</td><td>Crash</td><td>Evening blocks within your daily hours, a checkpoint every day, revision on the last evening, a short morning slot before the exam</td></tr>
+    <tr><td>Up to 4 weeks</td><td>Steady</td><td>A unit per week, weekend checkpoints, the last week for revision</td></tr>
+    <tr><td>Longer</td><td>Deep</td><td>All units, weekend checkpoints and three spaced revision loops</td></tr>
+  </table>
+  <ul>
+    <li>Topics are ordered by <strong>exam weight from the syllabus</strong>, with anything the student called weak moved to the front.</li>
+    <li>A plan <strong>never runs past the exam</strong> and stops at 11 PM.</li>
+  </ul>
+</section>
+
+<section>
+  <figure><img src="screenshots/12-plan-view.jpg" alt="" /><figcaption>Plan view: tick steps off, watch the progress ring fill, and replan from now if you fall behind.</figcaption></figure>
+  <ul>
+    <li><strong>Route-line timeline:</strong> current step in Ember, finished steps in green with a tick, the exam in Violet.</li>
+    <li><strong>Ticking a step</strong> draws the tick, plays a short burst and updates the ring.</li>
+    <li><strong>Replan from now</strong> keeps finished steps and rebuilds the rest for the time actually left.</li>
+    <li>The app warns when steps are <strong>behind schedule</strong>.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>6. Notes in three languages</h2>
+  <figure><img src="screenshots/13-notes-in-kannada.jpg" alt="" /><figcaption>Short notes on method overriding in Kannada, technical words kept in English, with the source page from the student's own PDF.</figcaption></figure>
+  <ul>
+    <li>Switch between <strong>English, <span class="kn">ಕನ್ನಡ</span> and हिन्दी</strong> on any note.</li>
+    <li>Proper Kannada and Devanagari fonts.</li>
+    <li>Copy button, and source chips when an answer came from an uploaded file.</li>
+    <li>Repeat questions are answered <strong>from saved answers</strong>, without calling the AI again.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>7. Important questions</h2>
+  <figure><img src="screenshots/14-important-questions.jpg" alt="" /><figcaption>2, 5 and 10-mark questions in the university's style, with "Practise these as a quiz".</figcaption></figure>
+</section>
+
+<section>
+  <h2>8. Quizzes</h2>
+  <figure><img src="screenshots/15-quiz.jpg" alt="" /><figcaption>One question at a time. The correct answer fills green from where you clicked, and an explanation opens below.</figcaption></figure>
+  <ul>
+    <li>Answer with the mouse or keys <strong>1 to 4</strong>.</li>
+    <li>A wrong pick shakes and gets a red outline, and the right answer is shown.</li>
+    <li>The score screen lists the <strong>topics to revise</strong>, with "Explain what I missed".</li>
+  </ul>
+</section>
+
+<section>
+  <h2>9. Flashcards</h2>
+  <figure><img src="screenshots/16-flashcards.jpg" alt="" /><figcaption>Cards flip in 3D. Swipe right or press → for "Know it", left or ← for "Again".</figcaption></figure>
+</section>
+
+<section>
+  <h2>10. Your files</h2>
+  <figure><img src="screenshots/17-files-uploading.jpg" alt="" /><figcaption>Uploads show real progress, then Checking, Processing and Ready. Unsupported files are refused with a clear reason.</figcaption></figure>
+  <ul>
+    <li><strong>Accepted:</strong> PDF, Word, PowerPoint, text, code files and photos, up to 50 MB each.</li>
+    <li><strong>Refused with a reason:</strong> programs such as .exe, and files over 50 MB ("Split it into parts, for example by chapter").</li>
+    <li>Ask about a file in chat with <code>@filename</code>. Answers show the file and page they came from.</li>
+    <li>Drag files onto the message box or the Files page.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>11. A chat that handles any message</h2>
+  <figure><img src="screenshots/11-chat-notes-and-help.jpg" alt="" /><figcaption>Study replies are documents (plans, notes, quizzes), not chat bubbles. Every reply says where it came from.</figcaption></figure>
+</section>
+
+<section>
+  <table>
+    <tr><th>Message</th><th>What happens</th></tr>
+    <tr><td>Study requests (plans, notes, questions, quiz, flashcards)</td><td>Answered instantly on our side from the syllabus</td></tr>
+    <tr><td>"hi", "thanks", "what can you do?"</td><td>A friendly reply with suggestions to tap</td></tr>
+    <tr><td>Anything else ("what is photosynthesis", "how to stay focused")</td><td>Sent to the AI model (Groq) on the server, in the student's language. Without an AI key, a polite note and suggestions</td></tr>
+    <tr><td>Something unclear or gibberish</td><td>"I didn't catch that" with suggestions</td></tr>
+    <tr><td>Changing topic mid-question</td><td>The app follows the new request instead of getting stuck</td></tr>
+    <tr><td>Offline, timeout or AI busy</td><td>A clear message and a "Try again" chip. Nothing breaks</td></tr>
+  </table>
+  <div class="note">To let the chat answer any question, put a free key from console.groq.com in <code>apps/web/.env.local</code> as <code>GROQ_API_KEY=...</code> and restart. The key stays on the server and never reaches the browser.</div>
+
+</section>
+
+<section>
+  <h2>12. Settings and your data</h2>
+  <figure><img src="screenshots/18-settings.jpg" alt="" /><figcaption>Profile, study preferences, theme, usage limits, data export and account deletion with typed confirmation.</figcaption></figure>
+</section>
+
+<section>
+  <ul>
+    <li><strong>Study preferences</strong> (language, short or detailed notes, favourite formats) apply to new answers.</li>
+    <li><strong>Theme:</strong> System, Light or Dark. Dark mode is designed, not inverted:</li>
+  </ul>
+  <figure><img src="screenshots/19-dashboard-dark.jpg" alt="" /><figcaption>Dashboard in dark mode.</figcaption></figure>
+  <ul>
+    <li><strong>Usage meter</strong> shows messages, plans and uploads against fair-use limits.</li>
+    <li><strong>Export my data</strong> downloads everything as a JSON file.</li>
+    <li><strong>Delete account</strong> needs the username typed (switched off for the demo account).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>13. Phone, tablet and laptop</h2>
+  <p class="lead">Every screen was built for phones first and checked automatically at 360 px (phone), 768 px (tablet) and 1280 px (laptop), with no sideways scrolling on any page.</p>
+  <div class="phones">
+    <figure><img src="screenshots/20-phone-landing.jpg" alt="" /><figcaption>Landing</figcaption></figure>
+    <figure><img src="screenshots/21-phone-dashboard.jpg" alt="" /><figcaption>Dashboard and bottom bar</figcaption></figure>
+    <figure><img src="screenshots/22-phone-session.jpg" alt="" /><figcaption>Study session</figcaption></figure>
+    <figure><img src="screenshots/23-phone-menu.jpg" alt="" /><figcaption>Slide-in menu</figcaption></figure>
+  </div>
+  <ul>
+    <li>Bottom tab bar with a central "New" button that's easy to reach with a thumb.</li>
+    <li>The menu slides in from the side; Esc or a tap outside closes it.</li>
+    <li>Touch swipes on flashcards; keyboard shortcuts on laptops.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>14. Security and privacy</h2>
+  <ul>
+    <li><strong>Data rules in the database (row level security):</strong> each student can read only their own sessions, plans, files and quizzes. 34 automated database tests are written to check that one student can never see another's data; they run once the cloud database is connected.</li>
+    <li><strong>Private file storage:</strong> each student's files sit in their own folder. Unsupported types and oversized files are refused, and files are never opened in the browser as web pages.</li>
+    <li><strong>Browser protection headers:</strong> a strict Content Security Policy with a fresh code per request, no framing by other sites, and no server version shown.</li>
+    <li><strong>No secrets in the browser.</strong> AI and database keys live only on the server.</li>
+    <li><strong>Secure sessions:</strong> the demo session cookie can't be read by page scripts.</li>
+    <li><strong>The demo can't be abused:</strong> demo mode is always off on the live website.</li>
+    <li><strong>Fair-use limits</strong> on messages, plans, uploads, sign-ups and the waitlist.</li>
+    <li><strong>Usernames</strong> are checked three times: in the browser, on the server and in the database.</li>
+    <li><strong>Privacy</strong> (India's DPDP Act 2023): a privacy notice, consent, export and delete. Files and chats never train any AI model.</li>
+  </ul>
+
+  <h2 style="margin-top:8mm">15. How it was tested</h2>
+  <table>
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>Automatic end-to-end run in Chrome (17 steps: sign-in guard, landing, demo, plan, notes, quiz, flashcards, replan, uploads, settings, 3 screen sizes, sign-out)</td><td>All passed, no browser errors</td></tr>
+    <tr><td>Web unit and component tests (parser, scheduler, chat replies, quiz, formats)</td><td>84 passed</td></tr>
+    <tr><td>API tests (sign-in tokens, usernames, profile, waitlist, rate limits)</td><td>33 passed</td></tr>
+    <tr><td>Accessibility scan and colour contrast (WCAG 2.2 AA)</td><td>No issues; text colours at 4.5:1 or better</td></tr>
+    <tr><td>Type checking, lint and production build</td><td>Clean</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>16. What comes next</h2>
+  <table>
+    <tr><th>Next step</th><th>What it adds</th></tr>
+    <tr><td>Connect the cloud database (Supabase)</td><td>Real accounts with email and Google sign-in, data saved across devices</td></tr>
+    <tr><td>Switch on the AI model (Groq)</td><td>Fully written notes and questions for any topic, and open questions in chat</td></tr>
+    <tr><td>Read uploaded files on the server</td><td>Text from PDFs, slides and photos, searchable and quoted in answers</td></tr>
+    <tr><td>Verify the syllabus</td><td>Check the seed topics against the official BCU SEP syllabus</td></tr>
+    <tr><td>Later: teacher side</td><td>Small live classes, payments, moderation and notifications</td></tr>
+  </table>
+  <p class="muted" style="margin-top:10mm">VibrantLearn. Built by Bipin A and Darshan H.S., Bengaluru, 2026.</p>
+</section>
+
+</body>
+</html>
