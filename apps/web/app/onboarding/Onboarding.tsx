@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type SubmitEvent } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
-import { api, ApiError } from "@/lib/api/client";
+import { createClient } from "@/lib/supabase/client";
 import { usernameProblem } from "@/lib/username";
 import { FORMAT_LABELS, SAMPLE_NOTE, type Format, type Lang, type Style } from "./preview-copy";
 
@@ -40,23 +40,15 @@ export function Onboarding({ initial, startAt }: { initial: ProfileDraft; startA
 
   const set = <K extends keyof ProfileDraft>(k: K, v: ProfileDraft[K]) => setDraft((d) => ({ ...d, [k]: v }));
 
-  // Live username check: local rules first, then the API. Debounced so typing isn't punished.
+  // Live username check: same rules as the database, shown after a short pause so typing isn't punished.
+  // Whether the name is free is confirmed when they continue (the unique index decides).
   useEffect(() => {
     if (step !== 1) return;
     const name = draft.username;
     if (!name) return;
     const local = usernameProblem(name);
-    const t = window.setTimeout(async () => {
-      if (local) return setCheck({ state: "bad", message: local });
-      setCheck({ state: "checking" });
-      try {
-        const r = await api<{ available: boolean; reason: string | null }>(
-          `/usernames/available?u=${encodeURIComponent(name)}`,
-        );
-        setCheck(r.available ? { state: "ok", message: "That name is free." } : { state: "bad", message: r.reason ?? "That name is taken." });
-      } catch (e) {
-        setCheck({ state: "idle", message: e instanceof ApiError ? e.message : undefined });
-      }
+    const t = window.setTimeout(() => {
+      setCheck(local ? { state: "bad", message: local } : { state: "ok", message: "Looks good. We'll make sure it's free when you continue." });
     }, 450);
     return () => window.clearTimeout(t);
   }, [draft.username, step]);
@@ -65,17 +57,37 @@ export function Onboarding({ initial, startAt }: { initial: ProfileDraft; startA
     headingRef.current?.focus();
   }, [step]);
 
-  async function save(body: Record<string, unknown>, then: () => void) {
+  /** Writes to the student's own profile row (RLS: id must equal their user id). */
+  async function save(write: (userId: string) => Promise<{ error: { code?: string; message: string } | null }>, then: () => void) {
     setSaving(true);
     setError(null);
     try {
-      await api("/me", { method: "PATCH", body: JSON.stringify(body) });
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) throw new Error("signed-out");
+      const { error: e } = await write(data.user.id);
+      if (e) {
+        if (e.code === "23505") setCheck({ state: "bad", message: "That name is taken. Try another." });
+        else if (e.code === "23514") setCheck({ state: "bad", message: "That name isn't allowed. Try another." });
+        else setError("Couldn't save. Check your connection and try again.");
+        return;
+      }
       then();
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Couldn't save. Try again.");
+    } catch {
+      setError("Your sign-in has expired. Sign in again to continue.");
     } finally {
       setSaving(false);
     }
+  }
+
+  const profiles = () => createClient().from("profiles");
+  async function saveUsername(userId: string) {
+    const inserted = await profiles().insert({ id: userId, username: draft.username, consent_at: new Date().toISOString() });
+    // Row already exists (they came back to this step): just change the name.
+    if (inserted.error?.code === "23505" && inserted.error.message.includes("profiles_pkey")) {
+      return profiles().update({ username: draft.username }).eq("id", userId);
+    }
+    return inserted;
   }
 
   const finish = () => {
@@ -89,16 +101,19 @@ export function Onboarding({ initial, startAt }: { initial: ProfileDraft; startA
       const problem = usernameProblem(draft.username);
       if (problem) return setCheck({ state: "bad", message: problem });
       if (!consent) return setError("Tick the box to accept the privacy notice.");
-      return save({ username: draft.username, consent: true }, () => setStep(2));
+      return save(saveUsername, () => setStep(2));
     }
     if (step === 2) {
       return save(
-        { university: draft.university, course: draft.course, semester: draft.semester, scheme: draft.scheme },
+        (id) => profiles().update({ university: draft.university, course: draft.course, semester: draft.semester, scheme: draft.scheme }).eq("id", id),
         () => setStep(3),
       );
     }
     return save(
-      { language: draft.language, style: draft.style, formats: draft.formats, finish_onboarding: true },
+      (id) =>
+        profiles()
+          .update({ language: draft.language, style: draft.style, formats: draft.formats, onboarded_at: new Date().toISOString() })
+          .eq("id", id),
       finish,
     );
   }
@@ -279,7 +294,7 @@ export function Onboarding({ initial, startAt }: { initial: ProfileDraft; startA
                 <button
                   type="button"
                   className="rounded-md px-2 py-2 font-medium text-link underline-offset-4 hover:underline"
-                  onClick={() => save({ finish_onboarding: true }, finish)}
+                  onClick={() => save((id) => profiles().update({ onboarded_at: new Date().toISOString() }).eq("id", id), finish)}
                   disabled={saving}
                 >
                   Skip for now

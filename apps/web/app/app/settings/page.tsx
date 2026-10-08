@@ -47,7 +47,7 @@ function Meter({ label, used, limit, unit = "" }: { label: string; used: number;
 }
 
 export default function SettingsPage() {
-  const { state, updateProfile, reset } = useDemo();
+  const { mode, state, updateProfile, reset } = useDemo();
   const p = state.profile;
   const [theme, setTheme] = useState<Theme>("system");
   const [confirm, setConfirm] = useState("");
@@ -197,9 +197,11 @@ export default function SettingsPage() {
               <button type="button" className="btn btn-secondary" onClick={exportData}>
                 <Download size={16} strokeWidth={2} aria-hidden="true" /> Export my data
               </button>
-              <button type="button" className="btn btn-secondary" onClick={reset}>
-                <RotateCcw size={16} strokeWidth={2} aria-hidden="true" /> Reset demo data
-              </button>
+              {mode === "demo" ? (
+                <button type="button" className="btn btn-secondary" onClick={reset}>
+                  <RotateCcw size={16} strokeWidth={2} aria-hidden="true" /> Reset demo data
+                </button>
+              ) : null}
             </div>
           </Section>
 

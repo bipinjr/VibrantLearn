@@ -1,7 +1,9 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { DEMO_COOKIE } from "@/lib/demo/mode";
 import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
@@ -37,6 +39,7 @@ export async function signIn(_: AuthState, form: FormData): Promise<AuthState> {
     if (error.status === 429) return { error: "Too many attempts. Wait a few minutes and try again." };
     return { error: "That email and password don't match. Check them and try again." };
   }
+  (await cookies()).delete(DEMO_COOKIE); // a real account replaces any demo session
   redirect(safeNext(form.get("next")));
 }
 

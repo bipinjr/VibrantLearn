@@ -1,7 +1,7 @@
 -- RLS + grants: user A must never see or change user B's data; anon sees nothing private.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(34);
+select plan(36);
 
 -- ---- fixtures (as postgres) -----------------------------------------------------------------
 insert into auth.users (id, email) values
@@ -85,15 +85,22 @@ select is((with u as (update public.study_sessions set title = 'hacked'
   'A cannot rename B''s session');
 select throws_ok($$update public.study_sessions set user_id = '00000000-0000-0000-0000-00000000000b'$$,
   '42501', null, 'A cannot move a session to another user');
-select throws_ok($$insert into public.messages (session_id, user_id, role)
-  values ('10000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000a', 'assistant')$$,
-  '42501', null, 'clients cannot insert messages (API only)');
-select throws_ok($$update public.profiles set username = 'new.name'$$, '42501', null,
-  'clients cannot change username directly (API only)');
+select throws_ok($$insert into public.messages (session_id, role, content)
+  values ('10000000-0000-0000-0000-00000000000b', 'user', 'sneaky')$$,
+  '42501', null, 'A cannot add a message to B''s session');
+select lives_ok($$insert into public.messages (session_id, role, content)
+  values ('10000000-0000-0000-0000-00000000000a', 'user', 'my question')$$,
+  'A can add a message to own session');
+select throws_ok($$insert into public.study_plans (session_id, subject, deadline_at, mode, language, style, plan, cache_key)
+  values ('10000000-0000-0000-0000-00000000000b', 'x', now(), 'crash', 'en', 'short', '{}', 'k')$$,
+  '42501', null, 'A cannot create a plan in B''s session');
+select throws_ok($$update public.profiles set username = 'admin'$$, '23514', null,
+  'reserved usernames are rejected by the database');
 select throws_ok($$update public.plan_checkpoints set title = 'x'$$, '42501', null,
   'checkpoint title is not client-editable');
-select throws_ok($$delete from public.study_sessions$$, '42501', null,
-  'session delete goes through the API (storage cleanup)');
+select is((with d as (delete from public.study_sessions
+  where id = '10000000-0000-0000-0000-00000000000b' returning 1) select count(*) from d)::int, 0,
+  'A cannot delete B''s session');
 select throws_ok($$insert into public.flashcard_reviews (content_id, card_idx)
   values ('50000000-0000-0000-0000-00000000000b', 1)$$, '42501', null,
   'A cannot review cards from B''s content');
@@ -102,10 +109,9 @@ select throws_ok($$insert into public.study_sessions (title, user_id)
   'A cannot create a session owned by B');
 select throws_ok($$select * from public.waitlist$$, '42501', null, 'waitlist is not client-readable');
 select throws_ok($$select * from internal.rate_limits$$, '42501', null, 'internal schema is closed');
--- RLS filters deletes silently, so assert nothing was removed.
-select is((with d as (delete from storage.objects
-  where name like '00000000-0000-0000-0000-00000000000b/%' returning 1) select count(*) from d)::int, 0,
-  'A cannot delete objects in B''s folder');
+-- Hosted Supabase blocks all direct SQL deletes on storage (Storage API only).
+select throws_ok($$delete from storage.objects where name like '00000000-0000-0000-0000-00000000000b/%'$$,
+  '42501', null, 'stored files can only be deleted through the Storage API');
 
 -- writes A is allowed to do
 select lives_ok($$update public.profiles set language = 'kn', formats = array['quiz']$$,

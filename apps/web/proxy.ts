@@ -69,6 +69,15 @@ export async function proxy(request: NextRequest) {
     return r;
   };
 
+  // Supabase falls back to the Site URL ("/") when a redirect isn't allow-listed: finish sign-in there.
+  const code = request.nextUrl.searchParams.get("code");
+  if (path === "/" && code) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    url.search = `?code=${encodeURIComponent(code)}&next=%2Fonboarding`;
+    return NextResponse.redirect(url);
+  }
+
   if (!signedIn && PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
     return redirect("/login", path);
   }

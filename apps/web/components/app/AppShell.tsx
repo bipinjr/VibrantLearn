@@ -127,6 +127,19 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+function SyncBanner() {
+  const { syncError, clearSyncError } = useDemo();
+  if (!syncError) return null;
+  return (
+    <p role="alert" className="pop-in m-4 flex items-center justify-between gap-3 rounded-[var(--radius-input)] bg-amber/15 px-4 py-2 text-sm">
+      {syncError}
+      <button type="button" className="font-medium underline" onClick={clearSyncError}>
+        Dismiss
+      </button>
+    </p>
+  );
+}
+
 const TABS = [
   { href: "/app", label: "Home", icon: Home },
   { href: "/app/plans", label: "Plans", icon: Route },
@@ -179,7 +192,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
           </header>
 
-          <div className="min-w-0 pb-24 lg:pb-0">{children}</div>
+          <div className="min-w-0 pb-24 lg:pb-0">
+            <SyncBanner />
+            {children}
+          </div>
         </div>
 
         <dialog ref={sheet} className="sheet" aria-label="Menu" onClick={(e) => e.target === sheet.current && sheet.current?.close()}>
