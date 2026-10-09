@@ -7,17 +7,17 @@ Living record for humans and AI agents. Read at the start of every session; upda
 ## Current status
 
 - **Phase:** Student side prototype v0.4 (target ~40% of full product)
-- **Milestone:** M0 done; M1 written, not yet applied (waiting for cloud Supabase link); M2 UI done; full app UI running on demo data
-- **Last updated:** 2026-10-08 by Bipin A + Claude. See HANDOFF.md for the PRD-format status.
+- **Milestone:** Supabase connected (project `vibrantlearn-dev`, Tokyo region), migrations + seed applied, 36/36 RLS tests pass; real accounts read/write Supabase; AI notes + open questions live via Groq; app UI in en/kn/hi
+- **Last updated:** 2026-10-09 by Bipin A + Claude. See HANDOFF.md for the PRD-format status.
 
 ### Milestone tracker
 
 | # | Milestone | Status |
 |---|---|---|
-| M0 | Repo, tooling, CI, env, Vercel + Supabase linked | ◐ repo/CI/env done; Vercel + Supabase not linked yet |
-| M1 | Schema, RLS, storage policies, seed, pgTAP | ◐ written (`supabase/`), not yet run: needs `db push` + `test db --linked` |
-| M2 | Design system, landing, auth, onboarding | ◐ built; auth untested until Supabase is linked; Lighthouse not run yet |
-| M3 | Dashboard shell, sessions, streaming chat | ◐ UI done on demo data; Supabase reads + SSE pending |
+| M0 | Repo, tooling, CI, env, Vercel + Supabase linked | ◐ Supabase linked; Vercel not yet |
+| M1 | Schema, RLS, storage policies, seed, pgTAP | ✅ applied on cloud; 36/36 pgTAP pass; advisors clean |
+| M2 | Design system, landing, auth, onboarding | ◐ email sign-in wired; real sign-up not yet tested end to end; Lighthouse not run |
+| M3 | Dashboard shell, sessions, streaming chat | ◐ real accounts load/save via Supabase; SSE pending |
 | M4 | ML intake (intent, entities, urgency) | ☐ |
 | M5 | Scheduler, plan view, checkpoints, replan | ☐ |
 | M6 | Uploads, validation, extraction, FTS, file mentions | ☐ |
@@ -42,6 +42,12 @@ Living record for humans and AI agents. Read at the start of every session; upda
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-09 | **Signed-in students write their own messages, plans and profile directly to Supabase** (column grants + RLS owner checks), not through the Python API, until the API is hosted. AI content and files stay server-only | Python API isn't hosted yet; every write still limited to the student's own rows |
+| 2026-10-09 | AI routes live in Next for now: `/api/notes` (syllabus topic → notes en/kn/hi) and `/api/demo/chat` (open questions), allowed for signed-in users (verified JWT) or the local demo; shared helper `lib/server/groq.ts` (timeout, one 429 retry, status-only error logs) | Python API not hosted; same server-only key rule |
+| 2026-10-09 | Notes are written in 3 Groq calls: write English → strict examiner review/correct → translate that exact text to kn/hi keeping technical terms in English. Cached per process per topic (`notes-v4`) | One-shot 3-language output had a factual error (lossy 2NF example) and translated terms (ಪ್ರಾಥಮಿಕ ಕೀ) |
+| 2026-10-09 | Groq models: `openai/gpt-oss-20b` (chat), `openai/gpt-oss-120b` (notes); override with GROQ_MODEL / GROQ_NOTES_MODEL. Python config updated to match | This project's key returns `model_not_found` for the Llama IDs |
+| 2026-10-09 | Parser reads Kannada/Devanagari script + digits and Kanglish/Hinglish (`toLatin`, `detectRomanLang` in `lib/demo/parse.ts`); replies use the language the student typed in | Owner: Kannada typed in English letters must be recognised |
+| 2026-10-09 | App interface in en/kn/hi: `t("English text")` from `lib/i18n/ui.ts` (missing key = English), switch in Settings → Appearance, cookie `vl_ui_lang` so the server renders it on first paint. Separate from the notes language | Some students want English menus with Kannada notes; no DB change |
 | 2026-10-08 | Demo-only Next route `/api/demo/chat` calls Groq server-side for open questions (cookie + DEMO_MODE gated, in-memory limit, 20 s timeout) | Owner wants any question answered in the demo; production path stays FastAPI app/llm |
 | 2026-10-08 | Specs moved to docs/handbook/, setup to docs/setup/, PDF source to docs/features-guide/; HANDOFF.md tracks PRD status | Owner asked for a clearly organised folder |
 | 2026-10-08 | Code lives in `E:StartupVibrantLearnCode` (monorepo root); original docs folder left untouched | Bipin A's choice |
@@ -94,7 +100,9 @@ Living record for humans and AI agents. Read at the start of every session; upda
 ## Open questions
 
 - [ ] Darshan H.S.'s role
-- [ ] Supabase cloud project: Bipin A to create + link (steps in docs/setup/SETUP_SUPABASE.md)
+- [ ] Real sign-up end to end with Bipin's email (`npm run demo:rebuild`). Supabase's built-in email only reaches org members: turn off "Confirm email" or add SMTP before others sign up
+- [ ] Native-speaker check of the Kannada/Hindi UI text (`apps/web/lib/i18n/ui.ts`) and AI notes
+- [ ] Rotate the Groq key (it was posted in chat)
 - [ ] Free disk space on C: so local Supabase (Docker) works
 - [ ] Forgot-password flow (not built yet)
 - [ ] Verify syllabus seed against the official BCU SEP PDF (marked unverified)
@@ -119,6 +127,7 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-09 | Bipin A + Claude | Kannada/Hindi script + Kanglish/Hinglish input with language detection; AI notes route (write → review → translate); Groq models switched to gpt-oss; app UI in kn/hi with Settings switch; Flashcards hydration fix; docs + PDF say Supabase connected. 135 web tests, 17/17 E2E with AI on |
 | 2026-10-08 | Bipin A + Claude | Demo packaging (START-DEMO.bat, npm run demo, .env.demo), 17-step E2E smoke (Chrome, 3 screen sizes), chatbot handling for any message + Groq demo route, weak-topic-first scheduling, AA contrast fixes, one source for kn/hi notes, folder reorganised (docs/handbook, docs/setup, docs/features-guide), HANDOFF.md, VibrantLearn_Features.pdf |
 | 2026-10-08 | Bipin A + Claude | Monorepo in Code/, CI, Supabase schema + RLS + seed + pgTAP (unapplied), FastAPI core (auth, rate limits, profile, waitlist; 33 tests), landing, auth, onboarding, full demo app (dashboard, sessions, plans, quiz, flashcards, files, settings), local parser + scheduler (73 web tests) |
 | 2026-10-08 | Bipin + Claude | Final logo set (wordmark), FRONTEND.md (anti-slop + motion), brand/palette updates |

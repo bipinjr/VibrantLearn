@@ -11,15 +11,18 @@ import { BlockView, ServedBadge } from "@/components/learn/Blocks";
 import { ProgressRing } from "@/components/learn/ProgressRing";
 import type { StudyFile } from "@/lib/demo/data";
 import { useDemo } from "@/lib/demo/store";
+import { useUi } from "@/lib/i18n/context";
+import { MODE_LABEL } from "@/lib/i18n/ui";
 import { clock, dayInline, fileSize, timeLeft } from "@/lib/format";
 
 export function FileStatus({ f }: { f: StudyFile }) {
+  const { t } = useUi();
   const map = {
-    uploading: { text: `Uploading ${f.progress ?? 0}%`, icon: <Loader2 size={13} className="animate-spin motion-reduce:animate-none" />, cls: "text-muted" },
-    scanning: { text: "Checking", icon: <Loader2 size={13} className="animate-spin motion-reduce:animate-none" />, cls: "text-muted" },
-    processing: { text: "Processing", icon: <Loader2 size={13} className="animate-spin motion-reduce:animate-none" />, cls: "text-muted" },
-    ready: { text: "Ready", icon: <CheckCircle2 size={13} className="pop-in" />, cls: "text-done" },
-    failed: { text: "Failed", icon: <AlertCircle size={13} />, cls: "text-danger" },
+    uploading: { text: t("Uploading {n}%", { n: f.progress ?? 0 }), icon: <Loader2 size={13} className="animate-spin motion-reduce:animate-none" />, cls: "text-muted" },
+    scanning: { text: t("Checking"), icon: <Loader2 size={13} className="animate-spin motion-reduce:animate-none" />, cls: "text-muted" },
+    processing: { text: t("Processing"), icon: <Loader2 size={13} className="animate-spin motion-reduce:animate-none" />, cls: "text-muted" },
+    ready: { text: t("Ready"), icon: <CheckCircle2 size={13} className="pop-in" />, cls: "text-done" },
+    failed: { text: t("Failed"), icon: <AlertCircle size={13} />, cls: "text-danger" },
   } as const;
   const s = map[f.status];
   return (
@@ -33,6 +36,7 @@ export function FileStatus({ f }: { f: StudyFile }) {
 export function SessionView({ id }: { id: string }) {
   const router = useRouter();
   const { state, now, thinking, fresh, send, addFiles, deleteSession } = useDemo();
+  const { t, lang } = useUi();
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [confirming, setConfirming] = useState(false);
   const end = useRef<HTMLDivElement>(null);
@@ -56,11 +60,11 @@ export function SessionView({ id }: { id: string }) {
     return (
       <main id="main" className="mx-auto grid min-h-[70dvh] max-w-md place-content-center gap-4 px-4 text-center">
         <h1 id="page-title" tabIndex={-1} className="text-3xl font-bold outline-none">
-          This session isn&rsquo;t here
+          {t("This session isn’t here")}
         </h1>
-        <p className="text-muted">It may have been deleted. Start a new one with your next test.</p>
+        <p className="text-muted">{t("It may have been deleted. Start a new one with your next test.")}</p>
         <Link href="/app/new" className="btn btn-primary mx-auto">
-          New study session
+          {t("New study session")}
         </Link>
       </main>
     );
@@ -80,13 +84,13 @@ export function SessionView({ id }: { id: string }) {
                   {session.title}
                 </h1>
                 <p className="truncate text-sm text-muted">
-                  {session.subject || "Tell me the subject and the exam date to get a plan"}
-                  {session.deadline ? `. Exam ${dayInline(session.deadline, nowIso)}, ${clock(session.deadline)}` : ""}
+                  {session.subject || t("Tell me the subject and the exam date to get a plan")}
+                  {session.deadline ? `. ${t("Exam {day}, {time}", { day: dayInline(session.deadline, nowIso, lang), time: clock(session.deadline) })}` : ""}
                 </p>
               </div>
               {session.deadline ? (
                 <span className="hidden shrink-0 rounded-full bg-ember/15 px-3 py-1 text-sm font-semibold tabular-nums sm:inline">
-                  {timeLeft(session.deadline, nowIso)} left
+                  {t("{left} left", { left: timeLeft(session.deadline, nowIso, lang) })}
                 </span>
               ) : null}
               {confirming ? (
@@ -99,17 +103,17 @@ export function SessionView({ id }: { id: string }) {
                       router.push("/app", { transitionTypes: ["nav-back"] });
                     }}
                   >
-                    Delete session
+                    {t("Delete session")}
                   </button>
                   <button type="button" className="btn min-h-9 px-3 text-sm" onClick={() => setConfirming(false)}>
-                    Keep
+                    {t("Keep")}
                   </button>
                 </span>
               ) : (
                 <button
                   type="button"
                   className="grid size-9 shrink-0 place-items-center rounded-[10px] text-muted transition-colors hover:bg-rose/10 hover:text-danger"
-                  aria-label="Delete session"
+                  aria-label={t("Delete session")}
                   onClick={() => setConfirming(true)}
                 >
                   <Trash2 size={17} strokeWidth={1.75} />
@@ -121,8 +125,8 @@ export function SessionView({ id }: { id: string }) {
           <div className="mx-auto w-full max-w-3xl flex-1 px-4 pt-6 pb-40 sm:px-8" aria-live="polite" aria-busy={busy}>
             {messages.length === 0 && !busy ? (
               <div className="grid place-items-center py-24 text-center">
-                <p className="font-display text-3xl font-bold">What&rsquo;s your next test?</p>
-                <p className="mt-2 text-muted">Subject and when it is. That&rsquo;s all I need.</p>
+                <p className="font-display text-3xl font-bold">{t("What’s your next test?")}</p>
+                <p className="mt-2 text-muted">{t("Subject and when it is. That’s all I need.")}</p>
               </div>
             ) : null}
 
@@ -159,7 +163,7 @@ export function SessionView({ id }: { id: string }) {
                   <span />
                   <span />
                 </span>
-                {thinking?.label}…
+                {thinking ? t(thinking.label) : null}…
               </div>
             ) : null}
             <div ref={end} />
@@ -177,27 +181,27 @@ export function SessionView({ id }: { id: string }) {
           </div>
         </main>
 
-        <aside className="hidden border-l border-line bg-surface xl:block" aria-label="Session files and plan">
+        <aside className="hidden border-l border-line bg-surface xl:block" aria-label={t("Session files and plan")}>
           <div className="sticky top-0 grid max-h-dvh gap-8 overflow-y-auto p-5">
             {plan ? (
               <section>
-                <h2 className="font-sans text-sm font-semibold tracking-normal">Plan</h2>
+                <h2 className="font-sans text-sm font-semibold tracking-normal">{t("Plan")}</h2>
                 <Link href={`/app/plans/${plan.id}`} transitionTypes={["nav-forward"]} className="lift mt-3 flex items-center gap-3 rounded-[var(--radius-card)] border border-line p-3 text-text no-underline">
                   <ProgressRing value={plan.steps.filter((s) => s.done).length / Math.max(1, plan.steps.length - 1)} size={44} stroke={5} />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold">{plan.subject}</span>
                     <span className="block text-xs text-muted">
-                      {plan.mode[0].toUpperCase() + plan.mode.slice(1)} plan, {plan.steps.filter((s) => !s.done && s.kind !== "exam").length} steps left
+                      {t(MODE_LABEL[plan.mode])}, {t("{n} steps left", { n: plan.steps.filter((s) => !s.done && s.kind !== "exam").length })}
                     </span>
                   </span>
                 </Link>
               </section>
             ) : null}
             <section>
-              <h2 className="font-sans text-sm font-semibold tracking-normal">Files in this session</h2>
+              <h2 className="font-sans text-sm font-semibold tracking-normal">{t("Files in this session")}</h2>
               {files.length === 0 ? (
                 <p className="mt-3 rounded-[var(--radius-card)] border border-dashed border-line p-4 text-sm text-muted">
-                  Drop PDFs, slides or photos of your notes on the message box. Then ask about them with @.
+                  {t("Drop PDFs, slides or photos of your notes on the message box. Then ask about them with @.")}
                 </p>
               ) : (
                 <ul className="mt-3 grid gap-2">
@@ -210,12 +214,12 @@ export function SessionView({ id }: { id: string }) {
                       <p className="mt-1.5 flex items-center justify-between text-xs text-muted">
                         <span>
                           {fileSize(f.sizeBytes)}
-                          {f.pages ? `, ${f.pages} pages` : ""}
+                          {f.pages ? `, ${t("{n} pages", { n: f.pages })}` : ""}
                         </span>
                         <FileStatus f={f} />
                       </p>
                       {f.status === "uploading" ? (
-                        <span className="mt-2 block h-1 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow={f.progress ?? 0} aria-valuemin={0} aria-valuemax={100} aria-label={`Uploading ${f.name}`}>
+                        <span className="mt-2 block h-1 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow={f.progress ?? 0} aria-valuemin={0} aria-valuemax={100} aria-label={t("Uploading {name}", { name: f.name })}>
                           <span className="block h-full origin-left rounded-full bg-link transition-transform duration-200" style={{ transform: `scaleX(${(f.progress ?? 0) / 100})` }} />
                         </span>
                       ) : null}

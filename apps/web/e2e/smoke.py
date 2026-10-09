@@ -99,9 +99,13 @@ def run() -> None:
         assert re.search(r"[ಀ-೿]", page.locator("p[lang=kn]").last.inner_text())
         step("notes for the right topic, in Kannada script")
 
+        ai_badges = page.get_by_text("Written by AI", exact=False)
+        before_ai = ai_badges.count()
         send(page, "who won the cricket match yesterday?")
         if os.environ.get("EXPECT_AI") == "1":
-            expect(page.get_by_text("Written by AI", exact=False).last).to_be_visible(timeout=25000)
+            # Notes are AI-written too, so wait for one more AI badge, not just any.
+            expect(ai_badges).to_have_count(before_ai + 1, timeout=25000)
+            expect(page.get_by_role("status")).to_have_count(0, timeout=25000)
         else:
             expect(page.get_by_text("isn't switched on in this demo", exact=False).last).to_be_visible(timeout=10000)
         send(page, "thanks")

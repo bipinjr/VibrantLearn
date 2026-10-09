@@ -26,8 +26,8 @@
   --color-rose-soft: #ffb4a0; /* error text on Ink panels */
 
 
-  --font-display: var(--font-bricolage), system-ui, sans-serif;
-  --font-sans: var(--font-figtree), system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-noto-kn), var(--font-noto-hi), system-ui, sans-serif;
+  --font-sans: var(--font-figtree), var(--font-noto-kn), var(--font-noto-hi), system-ui, sans-serif;
   --font-kn: var(--font-noto-kn), var(--font-figtree), sans-serif;
   --font-hi: var(--font-noto-hi), var(--font-figtree), sans-serif;
 
@@ -134,6 +134,12 @@
   :lang(hi) {
     font-family: var(--font-hi);
     line-height: 1.7;
+  }
+  /* Display/UI fonts fall back to Noto per glyph (see --font-display); just undo the tight Latin spacing. */
+  :lang(kn) :is(h1, h2, h3),
+  :lang(hi) :is(h1, h2, h3) {
+    letter-spacing: 0;
+    line-height: 1.35;
   }
   a {
     color: var(--link);

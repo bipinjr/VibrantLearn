@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <title>VibrantLearn: Features and demo guide</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&display=swap" rel="stylesheet" />
 <style>
   @page { size: A4; margin: 18mm 16mm 20mm; }
   @page :first { margin: 0; }
@@ -116,7 +116,7 @@
       <tr><td>Double-click</td><td><code>START-DEMO.bat</code> in the folder</td></tr>
       <tr><td>Any terminal</td><td><code>npm run demo</code> from the folder</td></tr>
     </table>
-    <p>The first run installs packages and builds the app (a few minutes). After that it starts in seconds and opens <code>http://localhost:3000</code>. Press <strong>Try the demo</strong> to enter the app with a sample 3rd-semester BCA student. No account and no internet database are needed; the demo keeps its data in the browser.</p>
+    <p>The first run installs packages and builds the app (a few minutes). After that it starts in seconds and opens <code>http://localhost:3000</code>. Press <strong>Try the demo</strong> to enter the app with a sample 3rd-semester BCA student. No account is needed for the demo; it keeps its data in the browser. Real accounts (email sign-in) save to the cloud database.</p>
     <div class="note">To rebuild after code changes: <code>npm run demo:rebuild</code>. To run the full automatic check: <code>uv run --no-project --with playwright python apps/web/e2e/smoke.py</code> (17 steps).</div>
 </section>
 
@@ -127,7 +127,7 @@
   <ul>
     <li><strong>Live plan demo</strong> in the hero, with a Replay button. People who prefer reduced motion see the finished plan straight away.</li>
     <li><strong>Scroll motion:</strong> a brand-coloured progress line, sections that ease in, and a header that turns solid as you scroll.</li>
-    <li><strong>One-click demo</strong> from the header or hero. "Create an account" is ready for when the database is connected.</li>
+    <li><strong>One-click demo</strong> from the header or hero. "Create an account" creates a real account in the cloud database.</li>
   </ul>
   <figure><img src="screenshots/02-landing-how-it-works.jpg" alt="" /><figcaption>How it works: three real steps, each shown with the actual app fragment.</figcaption></figure>
 </section>
@@ -146,7 +146,7 @@
 
 <section>
   <h2>3. Demo sign-in and dashboard</h2>
-  <figure><img src="screenshots/06-sign-in-demo.jpg" alt="" /><figcaption>Sign-in page. In demo mode one button opens the app; email and Google sign-in switch on when the database is connected.</figcaption></figure>
+  <figure><img src="screenshots/06-sign-in-demo.jpg" alt="" /><figcaption>Sign-in page. In demo mode one button opens the app; email sign-in creates a real account saved in the cloud database.</figcaption></figure>
   <figure><img src="screenshots/07-dashboard.jpg" alt="" /><figcaption>Dashboard: the next study block, a live countdown to the exam, progress and all active plans.</figcaption></figure>
   <ul>
     <li><strong>Next up</strong> shows exactly what to study now, with Start block and Mark done.</li>
@@ -171,8 +171,12 @@
     <tr><td>python lab exam on friday</td><td>Python Programming, the coming Friday</td></tr>
     <tr><td>data structures sem exam in 5 weeks</td><td>Data Structures, five weeks, steady plan</td></tr>
     <tr><td>explain deadlocks in kannada</td><td>Operating Systems notes, Kannada</td></tr>
+    <tr><td>overriding bagge swalpa heli</td><td>Java notes; answers in Kannada (Kannada typed in English letters)</td></tr>
+    <tr><td>DBMS 3 dinadalli exam ide</td><td>DBMS, in 3 days ("3 dinadalli")</td></tr>
+    <tr><td><span class="kn">ನಾಳೆ ಬೆಳಿಗ್ಗೆ ೯:೩೦ ಜಾವಾ ಪರೀಕ್ಷೆ</span></td><td>Java, tomorrow 9:30 AM, typed in Kannada script with Kannada digits</td></tr>
+    <tr><td>कल सुबह १० बजे जावा परीक्षा</td><td>Java, tomorrow 10:00 AM, typed in Hindi script</td></tr>
   </table>
-  <p class="muted">This step runs on our side without any AI call, so it is instant and free. The parser is covered by automated tests on 32 phrasings.</p>
+  <p class="muted">The app notices which language the student is writing in (Kannada or Hindi, in its own script or in English letters) and answers in that language. This step runs on our side without any AI call, so it is instant and free. The parser is covered by automated tests on more than 80 phrasings.</p>
 </section>
 
 <section>
@@ -208,7 +212,9 @@
     <li>Switch between <strong>English, <span class="kn">ಕನ್ನಡ</span> and हिन्दी</strong> on any note.</li>
     <li>Proper Kannada and Devanagari fonts.</li>
     <li>Copy button, and source chips when an answer came from an uploaded file.</li>
+    <li>Notes for every syllabus topic are <strong>written by AI in three steps</strong>: write the English note, have a strict "examiner" check and correct it, then translate that exact text, keeping technical terms in English.</li>
     <li>Repeat questions are answered <strong>from saved answers</strong>, without calling the AI again.</li>
+    <li>The whole app (menus, buttons, labels, dates) can be switched to <strong><span class="kn">ಕನ್ನಡ</span> or हिन्दी</strong> in Settings.</li>
   </ul>
 </section>
 
@@ -299,7 +305,7 @@
 <section>
   <h2>14. Security and privacy</h2>
   <ul>
-    <li><strong>Data rules in the database (row level security):</strong> each student can read only their own sessions, plans, files and quizzes. 34 automated database tests are written to check that one student can never see another's data; they run once the cloud database is connected.</li>
+    <li><strong>Data rules in the database (row level security):</strong> each student can read only their own sessions, plans, files and quizzes. 34 automated database tests are written to check that one student can never see another's data; 36 of 36 pass on the live cloud database.</li>
     <li><strong>Private file storage:</strong> each student's files sit in their own folder. Unsupported types and oversized files are refused, and files are never opened in the browser as web pages.</li>
     <li><strong>Browser protection headers:</strong> a strict Content Security Policy with a fresh code per request, no framing by other sites, and no server version shown.</li>
     <li><strong>No secrets in the browser.</strong> AI and database keys live only on the server.</li>
@@ -325,8 +331,8 @@
   <h2>16. What comes next</h2>
   <table>
     <tr><th>Next step</th><th>What it adds</th></tr>
-    <tr><td>Connect the cloud database (Supabase)</td><td>Real accounts with email and Google sign-in, data saved across devices</td></tr>
-    <tr><td>Switch on the AI model (Groq)</td><td>Fully written notes and questions for any topic, and open questions in chat</td></tr>
+    <tr><td>Host the Python API and deploy</td><td>The live website, with AI and uploads served from the API</td></tr>
+    <tr><td>Native-speaker review</td><td>Kannada and Hindi text checked by native speakers</td></tr>
     <tr><td>Read uploaded files on the server</td><td>Text from PDFs, slides and photos, searchable and quoted in answers</td></tr>
     <tr><td>Verify the syllabus</td><td>Check the seed topics against the official BCU SEP syllabus</td></tr>
     <tr><td>Later: teacher side</td><td>Small live classes, payments, moderation and notifications</td></tr>

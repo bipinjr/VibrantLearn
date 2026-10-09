@@ -2,7 +2,7 @@
 
 import { createContext, startTransition, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import * as persist from "@/lib/account/persist";
-import type { Demo, Message, Plan, StudyFile } from "./data";
+import type { Demo, Lang, Message, Plan, StudyFile } from "./data";
 import { respond, type Pending, type Reply } from "./respond";
 import { buildPlan } from "./scheduler";
 
@@ -178,6 +178,18 @@ export function DemoProvider({ seed, children, account }: { seed: Demo; children
         save(sessionId, () => persist.patchSession(sessionId, final.sessionPatch ?? {}));
       };
 
+      if (reply.aiNotes) {
+        // AI-written notes for this syllabus topic; any failure keeps the syllabus summary already in the reply.
+        fetch("/api/notes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(reply.aiNotes) })
+          .then(async (res) => {
+            const body = (await res.json().catch(() => null)) as { notes?: Record<Lang, string>; servedFrom?: "llm" | "cache" } | null;
+            if (!res.ok || !body?.notes) return deliver(reply);
+            const notes = body.notes;
+            deliver({ ...reply, servedFrom: body.servedFrom ?? "llm", blocks: reply.blocks.map((b) => (b.type === "notes" ? { ...b, text: notes } : b)) });
+          })
+          .catch(() => deliver(reply));
+        return;
+      }
       if (!reply.open) {
         window.setTimeout(() => deliver(reply), reply.servedFrom === "llm" ? 1400 : reply.plan ? 1100 : 650);
         return;
@@ -194,7 +206,7 @@ export function DemoProvider({ seed, children, account }: { seed: Demo; children
       fetch("/api/demo/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: reply.open.slice(0, 2000), language: s.profile.language, history }),
+        body: JSON.stringify({ message: reply.open.slice(0, 2000), language: reply.lang ?? s.profile.language, history }),
       })
         .then(async (res) => {
           const body = (await res.json().catch(() => null)) as { text?: string; configured?: boolean; error?: { message?: string } } | null;

@@ -7,24 +7,26 @@ import { Main, PageHeader, PageTransition } from "@/components/app/Page";
 import { MiniPath } from "@/components/learn/MiniPath";
 import { ProgressRing } from "@/components/learn/ProgressRing";
 import { useDemo } from "@/lib/demo/store";
+import { useUi } from "@/lib/i18n/context";
 import { clock, dayInline, timeLeft } from "@/lib/format";
 
 export default function PlansPage() {
   const { state, now } = useDemo();
+  const { t, lang } = useUi();
   const nowIso = now.toISOString();
   const plans = [...state.plans].sort((a, b) => a.deadline.localeCompare(b.deadline));
 
   return (
     <PageTransition>
-      <title>Plans | VibrantLearn</title>
+      <title>{`${t("Plans")} | VibrantLearn`}</title>
       <Main wide>
-        <PageHeader title="Plans" sub="Every plan you're working on, soonest exam first." actions={<Link href="/app/new" className="btn btn-primary">New plan</Link>} />
+        <PageHeader title={t("Plans")} sub={t("Every plan you're working on, soonest exam first.")} actions={<Link href="/app/new" className="btn btn-primary">{t("New plan")}</Link>} />
         {plans.length === 0 ? (
           <div className="mt-10 rounded-[var(--radius-sheet)] border border-dashed border-line p-10 text-center">
-            <p className="font-display text-2xl font-bold">No plans yet</p>
-            <p className="mt-2 text-muted">Tell us your next test and the plan appears in a few seconds.</p>
+            <p className="font-display text-2xl font-bold">{t("No plans yet")}</p>
+            <p className="mt-2 text-muted">{t("Tell us your next test and the plan appears in a few seconds.")}</p>
             <Link href="/app/new" className="btn btn-primary mt-5">
-              Plan my next test
+              {t("Plan my next test")}
             </Link>
           </div>
         ) : (
@@ -39,14 +41,14 @@ export default function PlansPage() {
                     <div className="min-w-0">
                       <p className="text-lg font-semibold">{p.subject}</p>
                       <p className="text-sm text-muted">
-                        Exam {dayInline(p.deadline, nowIso)} at {clock(p.deadline)}. {timeLeft(p.deadline, nowIso)} left, {done} of {steps.length} steps done.
+                        {t("Exam {day} at {time}. {left} left, {done} of {total} steps done.", { day: dayInline(p.deadline, nowIso, lang), time: clock(p.deadline), left: timeLeft(p.deadline, nowIso, lang), done, total: steps.length })}
                       </p>
                       <div className="mt-4 max-w-xl">
                         <MiniPath steps={p.steps} />
                       </div>
                     </div>
                     <span className="inline-flex items-center gap-1 text-sm font-medium text-link">
-                      Open <ArrowUpRight size={16} strokeWidth={1.75} className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+                      {t("Open")} <ArrowUpRight size={16} strokeWidth={1.75} className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
                     </span>
                   </Link>
                 </li>

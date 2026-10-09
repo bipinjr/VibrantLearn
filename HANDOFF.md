@@ -5,7 +5,7 @@
 | **Product** | VibrantLearn, *Web: AI-Powered Personalized Learning Path Generator (Smart EdTech Learning System)* |
 | **Owners** | Bipin A (lead), Darshan H.S. |
 | **Phase** | Student-side prototype v0.4 |
-| **Status date** | 8 October 2026 |
+| **Status date** | 9 October 2026 |
 | **Full spec** | [docs/handbook/PRD.md](docs/handbook/PRD.md) (this file tracks progress against it) |
 | **Demo** | `START-DEMO.bat` → http://localhost:3000 → *Try the demo* |
 | **Feature guide** | [VibrantLearn_Features.pdf](VibrantLearn_Features.pdf) |
@@ -22,7 +22,9 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 
 - **A complete, working front end** runs on localhost in demo mode. Every screen works end to end on sample data: landing, sign-in, dashboard, chat sessions, plans, quizzes, flashcards, files and settings.
 - **Real intelligence for the demo is local.** A request parser (Kanglish/Hinglish) and a plan scheduler for all four plan types run in TypeScript, so most replies need no AI call. Open questions go to Groq when a key is set.
-- **The backend is written but not connected.** The database schema with row level security, the syllabus seed and the FastAPI core are done and unit-tested. They are not yet deployed or linked to the app, because local Docker couldn't run (C: drive full) and the cloud Supabase project isn't created yet.
+- **The database is connected.** Cloud Supabase project `vibrantlearn-dev` (Tokyo region): 3 migrations applied, syllabus seeded (6 subjects, 82 topics), 36/36 security tests pass, advisors clean. Signed-in students load and save their own sessions, messages, plans and profile.
+- **AI is on.** Notes for every syllabus topic are written by Groq (write → examiner check → translate to Kannada/Hindi) and cached; open questions are answered in the student's language.
+- **Kannada and Hindi everywhere.** Students can type in Kannada/Hindi script or in English letters (Kanglish/Hinglish) and get answers in that language; the whole interface switches to ಕನ್ನಡ/हिन्दी in Settings.
 
 ## 3. Success criteria (PRD §3)
 
@@ -40,14 +42,14 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 | # | Feature | Status | Notes |
 |---|---|---|---|
 | F1 | Landing page | ✅ | Live plan hero, scroll motion, language switch, privacy, teacher waitlist (demo saves locally; API endpoint ✅ with tests) |
-| F2 | Auth + onboarding | 🟡 | Email/Google sign-in, PKCE callback, 3-step onboarding with live preview, all built. Untested until Supabase is linked. Demo sign-in ✅. **Missing:** forgot-password flow |
+| F2 | Auth + onboarding | 🟡 | Email sign-in wired to live Supabase, onboarding saves to the profile. Real sign-up not yet run end to end. Demo sign-in ✅. **Missing:** forgot-password flow |
 | F3 | Dashboard shell | ✅ | Sidebar, mobile menu and bottom bar, next-up with live countdown, active plans, recent sessions |
 | F4 | Study session chat | 🟡 | Document-style replies, `@file` mentions, drag-drop, follow-up chips, retry on failure, every message type handled. Saved in browser only; server SSE streaming not built |
-| F5 | Request understanding | 🟡 | TypeScript parser: intent, subject, deadline (IST), hours, language, weak topics; 32 test phrasings (more needed for the PRD's 40). **Not built:** Python scikit-learn intent model + `data/intents.csv` + `docs/ml-report.md` (M4) |
+| F5 | Request understanding | 🟡 | TypeScript parser: intent, subject, deadline (IST), hours, language, weak topics; Kannada/Hindi script, native digits, Kanglish/Hinglish with language detection; 80+ test phrasings (more needed for the PRD's 40). **Not built:** Python scikit-learn intent model + `data/intents.csv` + `docs/ml-report.md` (M4) |
 | F6 | Learning path generation | 🟡 | Scheduler for sprint/crash/steady/deep, weak topics first, never past the exam, tick + replan ✅. **Not built:** Python version in API, lazy LLM block content |
 | F7 | Uploads | 🟡 | UI, allowlist, 50 MB cap, progress, statuses ✅ (simulated pipeline). **Not built:** signed upload URLs, magic-byte check, text extraction, chunking, Tesseract OCR |
 | F8 | Talk to your files (RAG) | ⬜ | Full-text index exists in schema; retrieval + re-rank not built |
-| F9 | Study content | 🟡 | Notes (en/kn/hi), 2/5/10-mark questions, quiz, flashcards from syllabus templates ✅. Groq for open questions ✅ (demo route). **Not built:** Groq-written notes/questions with Pydantic validation, repair-retry, LLM cache |
+| F9 | Study content | 🟡 | AI notes for every syllabus topic in en/kn/hi (write → review → translate, zod-validated, retry, cache) ✅; open questions via Groq ✅. **Not built:** AI-written questions/quizzes, shared DB cache |
 | F10 | Settings + data control | 🟡 | Preferences, theme, usage meter, JSON export ✅. **Not built:** account deletion backend, session delete with storage cleanup on server |
 | F11 | Rate limits + usage | 🟡 | Postgres limiter in API (username checks, waitlist) ✅ tested; demo chat limiter ✅. **Not built:** limits on messages/plans/uploads/content in API |
 
@@ -56,11 +58,11 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 | Area | Status |
 |---|---|
 | Security headers (nonce CSP, frame-ancestors, nosniff, HSTS, no X-Powered-By) | ✅ verified in production build |
-| Row level security on every table, storage folder policies, internal schema | 🟡 written + 34 pgTAP tests; run after Supabase link |
+| Row level security on every table, storage folder policies, internal schema | ✅ 36/36 pgTAP pass on the live database |
 | No secrets in the browser; demo mode impossible in production | ✅ |
 | Accessibility (WCAG 2.2 AA) | ✅ scan clean, text contrast ≥ 4.5:1, keyboard focus, reduced motion, aria-live chat |
 | Phone / tablet / laptop | ✅ checked automatically at 360, 768 and 1280 px |
-| Languages (en / kn / hi) | ✅ fonts and notes. Kannada/Hindi text reviewed, **needs a native-speaker sign-off** |
+| Languages (en / kn / hi) | ✅ notes, input (script + English letters), whole interface. **Needs a native-speaker sign-off** (`lib/i18n/ui.ts`, AI notes) |
 | Performance (LCP < 2 s, Lighthouse ≥ 90) | ⬜ not measured yet |
 | Observability (JSON logs, request IDs, audit log) | 🟡 API logs + request IDs ✅; audit log table only |
 | Privacy (DPDP basics) | 🟡 notice, consent at onboarding, export ✅; account erasure backend ⬜ |
@@ -70,7 +72,7 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 | # | Milestone | Status |
 |---|---|---|
 | M0 | Repo, tooling, CI, env | ✅ monorepo, CI workflow, Dependabot, gitleaks hook · ⬜ Vercel + Supabase linking |
-| M1 | Schema, RLS, storage, seed, pgTAP | 🟡 written, not applied |
+| M1 | Schema, RLS, storage, seed, pgTAP | ✅ applied on cloud, 36/36 |
 | M2 | Design system, landing, auth, onboarding | 🟡 built; auth needs a live check |
 | M3 | Dashboard, sessions, chat | 🟡 UI complete on demo data |
 | M4 | ML intake (Python) | ⬜ (TypeScript version done for the demo) |
@@ -84,7 +86,8 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 
 | Priority | Task | Done when | Who |
 |---|---|---|---|
-| P0 | Create the Supabase cloud project and link it ([docs/setup/SETUP_SUPABASE.md](docs/setup/SETUP_SUPABASE.md)) | `db push` ok, `test db --linked` 34/34, advisors clean | Bipin A (account) + agent |
+| P0 | Test a real sign-up: `npm run demo:rebuild`, sign up with your email. For other people: turn off "Confirm email" or add SMTP in the Supabase dashboard | Account created, data visible on a second device | Bipin A |
+| P0 | Rotate the Groq key (posted in chat) and put the new one in `apps/web/.env.local` | Old key revoked | Bipin A |
 | P0 | Native-speaker check of Kannada and Hindi text in `apps/web/lib/demo/notes-i18n.ts` | Signed off by a Kannada and a Hindi speaker | Bipin A / Darshan H.S. |
 | P1 | Wire real reads/writes: sessions, messages, plans from Supabase instead of the demo store | A real account sees its data on any device; RLS tests pass | Agent |
 | P1 | Groq key + server LLM pipeline in FastAPI (prompts, schemas, cache, usage log) | Notes/questions written by AI, cached, `served_from` logged | Agent (key from team) |
@@ -97,7 +100,7 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 
 ## 8. Risks and open questions
 
-- **C: drive is full** (0 GB). Local Docker Supabase can't run until space is freed. The cloud project is the workaround.
+- Supabase project is in **Tokyo**, not Mumbai: higher latency from India. Move before launch.
 - **Syllabus seed is unverified** against the official BCU SEP PDF (marked "draft-v1" in the data).
 - **Supabase SSR cookies are readable by page scripts by design**, but SECURITY.md T7 asks for HttpOnly. Decide: accept, or route all API calls through the Next server.
 - Open: Darshan H.S.'s role, production domain, faculty guide name, security contact email.
@@ -106,7 +109,7 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 
 1. `START-DEMO.bat`, then wait for the browser.
 2. In another terminal: `uv run --no-project --with playwright python apps/web/e2e/smoke.py`. Expect **"All 17 steps passed."**
-3. Unit tests: `cd apps/web && pnpm test` (84) · `cd apps/api && uv run pytest -q` (33 + 5 that need the database).
+3. Unit tests: `cd apps/web && pnpm test` (135). With a Groq key set, run the smoke test with `EXPECT_AI=1` · `cd apps/api && uv run pytest -q` (33 + 5 that need the database).
 
 ## 10. Key decisions (full log in [MEMORY.md](MEMORY.md))
 

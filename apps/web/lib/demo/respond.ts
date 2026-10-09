@@ -2,7 +2,7 @@
 // and the LLM step simulated with templates. Mirrors the pipeline in PRD §9.
 import { JAVA_CARDS, JAVA_NOTES, JAVA_QUIZ, type Block, type Flashcard, type Lang, type Mode, type QuizQuestion } from "./data";
 import { topicNote } from "./notes-i18n";
-import { modeFor, parseDeadline, parseRequest } from "./parse";
+import { modeFor, parseDeadline, parseRequest, toLatin } from "./parse";
 import { buildPlan, priority } from "./scheduler";
 import { SUBJECTS, topicsFor, type Topic } from "./syllabus";
 import type { PlanStep, StudyFile } from "./data";
@@ -17,6 +17,10 @@ export type Reply = {
   sessionPatch?: { title?: string; subject?: string; deadline?: string; mode?: Mode };
   /** Set when the question is outside the local engine: the store asks the AI with this text. */
   open?: string;
+  /** Language to answer in: what the student wrote in (Kannada/Hindi script or English letters), else their setting. */
+  lang?: Lang;
+  /** Syllabus topic whose notes the AI should write (template text is the fallback). */
+  aiNotes?: { subject: string; topic: string };
 };
 
 type Ctx = {
@@ -109,7 +113,7 @@ function planReply(p: { subject: string; deadline: Date; hours?: number; weak?: 
 }
 
 export function respond(text: string, ctx: Ctx): Reply {
-  const s = text.toLowerCase().trim();
+  const s = toLatin(text).toLowerCase().trim(); // Kannada/Hindi script read as Latin words
   const parsed = parseRequest(text, ctx.now);
 
   // A reply to a follow-up continues the pending request. Anything else drops it and is routed fresh.
@@ -158,18 +162,18 @@ export function respond(text: string, ctx: Ctx): Reply {
 
   switch (parsed.intent) {
     case "make_plan":
-      return continuePlan({ subject, deadline: parsed.deadline?.toISOString(), hours: parsed.hours, weak: weakTopics(text), awaiting: "subject" }, ctx);
+      return continuePlan({ subject, deadline: parsed.deadline?.toISOString(), hours: parsed.hours, weak: weakTopics(s), awaiting: "subject" }, ctx);
     case "smalltalk":
       return { servedFrom: "ml", pending: null, blocks: [{ type: "followup", text: "Hi! Tell me your next test and when it is, and I'll plan the hours you have. Or ask me anything you're stuck on.", chips: starters }] };
     case "out_of_scope":
-      return openQuestion(text);
+      return openQuestion(text, lang);
     case "ask_about_file": {
       const ready = ctx.files.filter((f) => f.status === "ready");
-      const named = ctx.files.find((f) => text.toLowerCase().includes(f.name.toLowerCase()) || text.toLowerCase().includes(f.name.toLowerCase().split(/[_.]/)[0]));
+      const named = ctx.files.find((f) => s.includes(f.name.toLowerCase()) || s.includes(f.name.toLowerCase().split(/[_.]/)[0]));
       if (named && named.status !== "ready") return { servedFrom: "ml", blocks: [{ type: "text", text: `${named.name} is still being processed. Ask again in a moment and I'll answer from it.` }] };
       const file = named ?? ready[0];
       if (!file) return { servedFrom: "ml", blocks: [{ type: "text", text: "This session has no notes yet. Attach a PDF, slides or photos with the clip button and ask again." }] };
-      const t = findTopic(subject, parsed.topicHint ?? text);
+      const t = findTopic(subject, parsed.topicHint ?? s);
       const key = `file|${file.id}|${t?.topic}|${lang}`;
       const hit = ctx.seen.has(key);
       ctx.seen.add(key);
@@ -178,13 +182,14 @@ export function respond(text: string, ctx: Ctx): Reply {
     }
     case "explain_topic": {
       // Not one of our syllabus topics: treat it as an open question for the AI.
-      if (!parsed.subject && !matchesSyllabus(parsed.topicHint ?? text)) return openQuestion(text);
-      const t = findTopic(subject, parsed.topicHint ?? text);
-      if (!t) return openQuestion(text);
+      if (!parsed.subject && !matchesSyllabus(parsed.topicHint ?? s)) return openQuestion(text, lang);
+      const t = findTopic(subject, parsed.topicHint ?? s);
+      if (!t) return openQuestion(text, lang);
       const key = `notes|${t.topic}`;
       const hit = ctx.seen.has(key);
       ctx.seen.add(key);
-      return { servedFrom: hit ? "cache" : "llm", blocks: [{ type: "notes", topic: t.topic, text: notesFor(t), sources: ctx.files.some((f) => f.status === "ready") ? [`${ctx.files.find((f) => f.status === "ready")!.name} · p. 4`] : undefined }] };
+      const aiNotes = /overriding/i.test(t.topic) ? undefined : { subject: t.subject, topic: t.topic }; // overriding has hand-written notes
+      return { servedFrom: hit ? "cache" : "llm", lang, aiNotes, blocks: [{ type: "notes", topic: t.topic, text: notesFor(t), lang, sources: ctx.files.some((f) => f.status === "ready") ? [`${ctx.files.find((f) => f.status === "ready")!.name} · p. 4`] : undefined }] };
     }
     case "important_questions": {
       if (!subject) return { servedFrom: "ml", blocks: [{ type: "followup", text: "Which subject should the questions be from?", chips: SUBJECTS.slice(0, 4).map((s) => `Important questions for ${short(s)}`) }] };
@@ -192,7 +197,7 @@ export function respond(text: string, ctx: Ctx): Reply {
       return { servedFrom: "llm", blocks: [{ type: "questions", topic: t ? t.topic : `${short(subject)}: most likely questions`, items: questionsFor(subject, t) }] };
     }
     case "make_quiz": {
-      const subj = subject ?? findTopic(undefined, text)?.subject;
+      const subj = subject ?? findTopic(undefined, s)?.subject;
       if (!subj) return { servedFrom: "ml", blocks: [{ type: "followup", text: "Quiz on which subject?", chips: SUBJECTS.slice(0, 4).map((s) => `Quiz me on ${short(s)}`) }] };
       const key = `quiz|${subj}`;
       const hit = ctx.seen.has(key);
@@ -200,7 +205,7 @@ export function respond(text: string, ctx: Ctx): Reply {
       return { servedFrom: hit ? "cache" : "llm", blocks: [{ type: "quiz", topic: short(subj), questions: quizFor(subj) }] };
     }
     case "make_flashcards": {
-      const subj = subject ?? findTopic(undefined, text)?.subject;
+      const subj = subject ?? findTopic(undefined, s)?.subject;
       if (!subj) return { servedFrom: "ml", blocks: [{ type: "followup", text: "Flashcards for which subject?", chips: SUBJECTS.slice(0, 4).map((s) => `Flashcards for ${short(s)}`) }] };
       return { servedFrom: "cache", blocks: [{ type: "flashcards", topic: `${short(subj)} key terms`, cards: cardsFor(subj) }] };
     }
@@ -214,9 +219,10 @@ function matchesSyllabus(hint: string): boolean {
 }
 
 /** Anything outside the syllabus engine goes to the AI. `fallback` is shown if AI is off or fails. */
-function openQuestion(text: string): Reply {
+function openQuestion(text: string, lang?: Lang): Reply {
   return {
     servedFrom: "llm",
+    lang,
     pending: null,
     open: text,
     blocks: [{

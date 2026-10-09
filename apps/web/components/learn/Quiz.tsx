@@ -1,10 +1,12 @@
 import { Check, RotateCcw, X } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import type { QuizQuestion } from "@/lib/demo/data";
+import { useT } from "@/lib/i18n/context";
 import { ProgressRing } from "./ProgressRing";
 import styles from "./quiz.module.css";
 
 export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRevise?: (topics: string[]) => void }) {
+  const t = useT();
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [origin, setOrigin] = useState({ x: "50%", y: "50%" });
@@ -47,17 +49,17 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
     const wrongTopics = [...new Set(questions.filter((qq, k) => answers[k] !== qq.answer).map((qq) => qq.topic))];
     return (
       <div className="pop-in grid gap-5 sm:grid-cols-[auto_1fr] sm:items-center">
-        <ProgressRing value={score / questions.length} size={88} stroke={8} label={`Scored ${score} of ${questions.length}`} />
+        <ProgressRing value={score / questions.length} size={88} stroke={8} label={t("Scored {s} of {n}", { s: score, n: questions.length })} />
         <div>
           <p className="font-display text-2xl font-bold">
-            {score} of {questions.length} right
+            {t("{s} of {n} right", { s: score, n: questions.length })}
           </p>
           <p className="mt-1 text-sm text-muted">
-            {score === questions.length ? "Clean sweep. This checkpoint is done." : score >= questions.length / 2 ? "Good. Fix the few you missed before the exam." : "These need another pass. Revise, then try again."}
+            {t(score === questions.length ? "Clean sweep. This checkpoint is done." : score >= questions.length / 2 ? "Good. Fix the few you missed before the exam." : "These need another pass. Revise, then try again.")}
           </p>
           {wrongTopics.length ? (
             <div className="mt-3">
-              <p className="text-sm font-medium">Revise these</p>
+              <p className="text-sm font-medium">{t("Revise these")}</p>
               <ul className="mt-2 flex flex-wrap gap-2">
                 {wrongTopics.map((t) => (
                   <li key={t} className="rounded-full bg-rose/10 px-3 py-1 text-sm">
@@ -69,11 +71,11 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
           ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
             <button type="button" className="btn btn-secondary min-h-10 text-sm" onClick={() => { setAnswers([]); setI(0); setPicked(null); setFinished(false); }}>
-              <RotateCcw size={15} strokeWidth={2} aria-hidden="true" /> Try again
+              <RotateCcw size={15} strokeWidth={2} aria-hidden="true" /> {t("Try again")}
             </button>
             {wrongTopics.length && onRevise ? (
               <button type="button" className="btn btn-primary min-h-10 text-sm" onClick={() => onRevise(wrongTopics)}>
-                Explain what I missed
+                {t("Explain what I missed")}
               </button>
             ) : null}
           </div>
@@ -86,7 +88,7 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
     <div ref={root} className="grid gap-4">
       <div className="flex items-center gap-3 text-sm text-muted">
         <span className="tabular-nums">
-          Question {i + 1} of {questions.length}
+          {t("Question {i} of {n}", { i: i + 1, n: questions.length })}
         </span>
         <span className="h-1 flex-1 overflow-hidden rounded-full bg-line" aria-hidden="true">
           <span className="block h-full origin-left rounded-full bg-text transition-transform duration-500 ease-[var(--ease-out)]" style={{ transform: `scaleX(${(i + (picked !== null ? 1 : 0)) / questions.length})` }} />
@@ -111,8 +113,8 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
               >
                 <kbd className={styles.key}>{idx + 1}</kbd>
                 <span className="relative flex-1 text-left">{o}</span>
-                {state === "right" ? <Check size={18} strokeWidth={2.5} className="relative" aria-label="Correct answer" /> : null}
-                {state === "wrong" ? <X size={18} strokeWidth={2.5} className="relative" aria-label="Your answer, wrong" /> : null}
+                {state === "right" ? <Check size={18} strokeWidth={2.5} className="relative" aria-label={t("Correct answer")} /> : null}
+                {state === "wrong" ? <X size={18} strokeWidth={2.5} className="relative" aria-label={t("Your answer, wrong")} /> : null}
               </button>
             </li>
           );
@@ -121,17 +123,17 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
       <div className="reveal" data-open={picked !== null}>
         <div>
           <p id={`why-${i}`} role="status" className="rounded-[var(--radius-input)] bg-bg px-4 py-3 text-sm">
-            <strong>{picked === q.answer ? "Correct. " : "Not quite. "}</strong>
+            <strong>{t(picked === q.answer ? "Correct." : "Not quite.")} </strong>
             {q.why}
           </p>
           <div className="mt-3 flex justify-end">
             {i < questions.length - 1 ? (
               <button type="button" className="btn btn-primary min-h-10 text-sm" onClick={next}>
-                Next question
+                {t("Next question")}
               </button>
             ) : (
               <button type="button" className="btn btn-primary min-h-10 text-sm" onClick={() => setFinished(true)}>
-                See my score
+                {t("See my score")}
               </button>
             )}
           </div>

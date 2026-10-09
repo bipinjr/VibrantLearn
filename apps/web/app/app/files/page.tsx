@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRef, useState, type CSSProperties } from "react";
 import { Main, PageHeader, PageTransition } from "@/components/app/Page";
 import { useDemo } from "@/lib/demo/store";
+import { useUi } from "@/lib/i18n/context";
 import { ago, fileSize } from "@/lib/format";
 import { FileStatus } from "../s/[id]/SessionView";
 
@@ -12,6 +13,7 @@ const FILTERS = ["All", "Ready", "In progress", "Failed"] as const;
 
 export default function FilesPage() {
   const { state, now, addFiles } = useDemo();
+  const { t, lang } = useUi();
   const sessions = [...state.sessions].sort((a, b) => b.updated.localeCompare(a.updated));
   const [target, setTarget] = useState(sessions[0]?.id ?? "");
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
@@ -23,14 +25,14 @@ export default function FilesPage() {
   const files = state.files.filter((f) =>
     filter === "All" ? true : filter === "Ready" ? f.status === "ready" : filter === "Failed" ? f.status === "failed" : !["ready", "failed"].includes(f.status),
   );
-  const sessionName = (id: string) => state.sessions.find((s) => s.id === id)?.title ?? "Deleted session";
+  const sessionName = (id: string) => state.sessions.find((s) => s.id === id)?.title ?? t("Deleted session");
   const upload = (list: File[]) => target && setErrors(addFiles(target, list));
 
   return (
     <PageTransition>
-      <title>Files | VibrantLearn</title>
+      <title>{`${t("Files")} | VibrantLearn`}</title>
       <Main wide>
-        <PageHeader title="Files" sub="Notes, slides and photos you've added, across all sessions. Only you can see them." />
+        <PageHeader title={t("Files")} sub={t("Notes, slides and photos you've added, across all sessions. Only you can see them.")} />
 
         <div
           className={`rise mt-8 grid gap-4 rounded-[var(--radius-sheet)] border-2 border-dashed p-6 transition-colors sm:grid-cols-[1fr_auto] sm:items-center ${drag ? "border-link bg-link/5" : "border-line bg-surface"}`}
@@ -47,12 +49,12 @@ export default function FilesPage() {
           }}
         >
           <div>
-            <p className="font-semibold">{drag ? `Drop to add to ${sessionName(target)}` : "Drop files here or choose them"}</p>
-            <p className="mt-1 text-sm text-muted">PDF, Word, PowerPoint, text, code and photos. Up to 50 MB each.</p>
+            <p className="font-semibold">{drag ? t("Drop to add to {title}", { title: sessionName(target) }) : t("Drop files here or choose them")}</p>
+            <p className="mt-1 text-sm text-muted">{t("PDF, Word, PowerPoint, text, code and photos. Up to 50 MB each.")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <label htmlFor="target" className="sr-only">
-              Add to session
+              {t("Add to session")}
             </label>
             <select id="target" className="field w-auto min-w-48" value={target} onChange={(e) => setTarget(e.target.value)}>
               {sessions.map((s) => (
@@ -62,7 +64,7 @@ export default function FilesPage() {
               ))}
             </select>
             <button type="button" className="btn btn-primary" onClick={() => input.current?.click()} disabled={!target}>
-              <Upload size={16} strokeWidth={2} aria-hidden="true" /> Upload notes
+              <Upload size={16} strokeWidth={2} aria-hidden="true" /> {t("Upload notes")}
             </button>
             <input ref={input} type="file" multiple hidden onChange={(e) => { if (e.target.files) upload([...e.target.files]); e.target.value = ""; }} />
           </div>
@@ -75,26 +77,26 @@ export default function FilesPage() {
           </ul>
         ) : null}
 
-        <div role="tablist" aria-label="Filter files" className="mt-8 inline-flex rounded-full bg-text/[0.05] p-1">
+        <div role="tablist" aria-label={t("Filter files")} className="mt-8 inline-flex rounded-full bg-text/[0.05] p-1">
           {FILTERS.map((f) => (
             <button key={f} role="tab" type="button" aria-selected={filter === f} onClick={() => setFilter(f)} className={`rounded-full px-4 py-1.5 text-sm transition-colors ${filter === f ? "bg-surface font-semibold shadow-sm" : "text-muted hover:text-text"}`}>
-              {f}
+              {t(f)}
             </button>
           ))}
         </div>
 
         {files.length === 0 ? (
-          <p className="mt-6 rounded-[var(--radius-card)] border border-line bg-surface p-8 text-center text-muted">Nothing here. Upload your notes and they&rsquo;ll show up with their status.</p>
+          <p className="mt-6 rounded-[var(--radius-card)] border border-line bg-surface p-8 text-center text-muted">{t("Nothing here. Upload your notes and they’ll show up with their status.")}</p>
         ) : (
           <div className="mt-6 overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
             <table className="hidden w-full text-left text-sm md:table">
               <thead className="border-b border-line text-xs text-muted">
                 <tr>
-                  <th className="px-5 py-3 font-medium">Name</th>
-                  <th className="px-5 py-3 font-medium">Session</th>
-                  <th className="px-5 py-3 font-medium">Size</th>
-                  <th className="px-5 py-3 font-medium">Status</th>
-                  <th className="px-5 py-3 font-medium">Added</th>
+                  <th className="px-5 py-3 font-medium">{t("Name")}</th>
+                  <th className="px-5 py-3 font-medium">{t("Session")}</th>
+                  <th className="px-5 py-3 font-medium">{t("Size")}</th>
+                  <th className="px-5 py-3 font-medium">{t("Status")}</th>
+                  <th className="px-5 py-3 font-medium">{t("Added")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -120,9 +122,9 @@ export default function FilesPage() {
                     <td className="px-5 py-3 tabular-nums text-muted">{fileSize(f.sizeBytes)}</td>
                     <td className="px-5 py-3">
                       <FileStatus f={f} />
-                      <span className="sr-only">{f.status}</span>
+                      <span className="sr-only">{t({ uploading: "In progress", scanning: "In progress", processing: "In progress", ready: "Ready", failed: "Failed" }[f.status])}</span>
                     </td>
-                    <td className="px-5 py-3 text-muted">{ago(f.added, nowIso)}</td>
+                    <td className="px-5 py-3 text-muted">{ago(f.added, nowIso, lang)}</td>
                   </tr>
                 ))}
               </tbody>

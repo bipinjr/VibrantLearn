@@ -1,6 +1,7 @@
 import { ArrowUp, FileText, Paperclip } from "lucide-react";
 import { useId, useRef, useState, type KeyboardEvent } from "react";
 import type { StudyFile } from "@/lib/demo/data";
+import { useT } from "@/lib/i18n/context";
 
 type Props = {
   files: StudyFile[];
@@ -19,6 +20,7 @@ export function Composer({ files, sessionTitle, busy, onSend, onFiles, autoFocus
   const area = useRef<HTMLTextAreaElement>(null);
   const picker = useRef<HTMLInputElement>(null);
   const listId = useId();
+  const t = useT();
 
   const matches = mention ? files.filter((f) => f.name.toLowerCase().includes(mention.query.toLowerCase())).slice(0, 6) : [];
 
@@ -93,7 +95,7 @@ export function Composer({ files, sessionTitle, busy, onSend, onFiles, autoFocus
       }}
     >
       {mention && matches.length ? (
-        <ul id={listId} role="listbox" aria-label="Files in this session" className="pop-in absolute inset-x-0 bottom-full mb-2 overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface p-1 shadow-[var(--shadow-float)]">
+        <ul id={listId} role="listbox" aria-label={t("Files in this session")} className="pop-in absolute inset-x-0 bottom-full mb-2 overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface p-1 shadow-[var(--shadow-float)]">
           {matches.map((f, i) => (
             <li key={f.id} role="option" aria-selected={i === mention.index}>
               <button
@@ -104,7 +106,7 @@ export function Composer({ files, sessionTitle, busy, onSend, onFiles, autoFocus
               >
                 <FileText size={15} strokeWidth={1.75} className="text-muted" aria-hidden="true" />
                 <span className="truncate">{f.name}</span>
-                <span className="ml-auto text-xs capitalize text-muted">{f.status}</span>
+                <span className="ml-auto text-xs text-muted">{t({ uploading: "Uploading {n}%", scanning: "Checking", processing: "Processing", ready: "Ready", failed: "Failed" }[f.status], { n: f.progress ?? 0 })}</span>
               </button>
             </li>
           ))}
@@ -112,7 +114,7 @@ export function Composer({ files, sessionTitle, busy, onSend, onFiles, autoFocus
       ) : null}
 
       <div className={`composer flex items-end gap-2 rounded-[var(--radius-sheet)] border bg-surface p-2 pl-3 shadow-[var(--shadow-float)] transition-colors ${drag ? "border-link border-dashed" : "border-line"}`}>
-        <button type="button" className="grid size-10 shrink-0 place-items-center rounded-[12px] text-muted transition-colors hover:bg-text/[0.06] hover:text-text" aria-label="Attach notes" onClick={() => picker.current?.click()}>
+        <button type="button" className="grid size-10 shrink-0 place-items-center rounded-[12px] text-muted transition-colors hover:bg-text/[0.06] hover:text-text" aria-label={t("Attach notes")} onClick={() => picker.current?.click()}>
           <Paperclip size={19} strokeWidth={1.75} />
         </button>
         <input
@@ -127,7 +129,7 @@ export function Composer({ files, sessionTitle, busy, onSend, onFiles, autoFocus
           }}
         />
         <label htmlFor={`${listId}-input`} className="sr-only">
-          Message
+          {t("Message")}
         </label>
         <textarea
           id={`${listId}-input`}
@@ -136,7 +138,7 @@ export function Composer({ files, sessionTitle, busy, onSend, onFiles, autoFocus
           autoFocus={autoFocus}
           value={text}
           maxLength={4000}
-          placeholder={placeholder ?? "Ask for a plan, notes or a quiz. @ for files"}
+          placeholder={placeholder ?? t("Ask for a plan, notes or a quiz. @ for files")}
           onChange={(e) => {
             setText(e.target.value);
             updateMention(e.target.value, e.target.selectionStart);
@@ -148,14 +150,14 @@ export function Composer({ files, sessionTitle, busy, onSend, onFiles, autoFocus
           aria-autocomplete="list"
           className="max-h-48 min-h-10 flex-1 resize-none bg-transparent py-2 text-[0.98rem] outline-none [field-sizing:content] placeholder:text-muted/80"
         />
-        <button type="button" onClick={submit} disabled={!text.trim() || busy} aria-label="Send" className="btn btn-primary size-10 shrink-0 rounded-[12px] p-0">
+        <button type="button" onClick={submit} disabled={!text.trim() || busy} aria-label={t("Send")} className="btn btn-primary size-10 shrink-0 rounded-[12px] p-0">
           <ArrowUp size={19} strokeWidth={2.25} />
         </button>
       </div>
 
       {drag ? (
         <div className="pointer-events-none absolute inset-0 grid place-items-center rounded-[var(--radius-sheet)] bg-surface/90 text-sm font-medium">
-          Drop to add to {sessionTitle}
+          {t("Drop to add to {title}", { title: sessionTitle })}
         </div>
       ) : null}
     </div>

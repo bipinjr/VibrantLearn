@@ -2,6 +2,7 @@ import { Flag } from "lucide-react";
 import { useState, type CSSProperties } from "react";
 import type { Plan } from "@/lib/demo/data";
 import { dayLabel, timeRange } from "@/lib/format";
+import { useUi } from "@/lib/i18n/context";
 import styles from "./plan-timeline.module.css";
 
 const BURST = Array.from({ length: 10 }, (_, k) => {
@@ -12,10 +13,11 @@ const BURST = Array.from({ length: 10 }, (_, k) => {
 
 export function PlanTimeline({ plan, nowIso, onToggle, limit }: { plan: Plan; nowIso: string; onToggle: (stepId: string) => void; limit?: number }) {
   const [bursts, setBursts] = useState<Record<string, number>>({});
+  const { t, lang } = useUi();
   const nextIdx = plan.steps.findIndex((s) => !s.done && s.kind !== "exam");
   const steps = limit ? plan.steps.slice(Math.max(0, nextIdx - 1), Math.max(0, nextIdx - 1) + limit) : plan.steps;
 
-  const days = steps.map((s) => dayLabel(s.start, nowIso));
+  const days = steps.map((s) => dayLabel(s.start, nowIso, lang));
   return (
     <div className={styles.wrap}>
       <span className={styles.route} aria-hidden="true" />
@@ -37,7 +39,7 @@ export function PlanTimeline({ plan, nowIso, onToggle, limit }: { plan: Plan; no
                     type="button"
                     role="checkbox"
                     aria-checked={s.done}
-                    aria-label={`${s.done ? "Mark not done" : "Mark done"}: ${s.title}`}
+                    aria-label={`${t(s.done ? "Mark not done" : "Mark done")}: ${s.title}`}
                     className={styles.node}
                     onClick={() => {
                       if (!s.done) setBursts((b) => ({ ...b, [s.id]: (b[s.id] ?? 0) + 1 }));
@@ -59,15 +61,15 @@ export function PlanTimeline({ plan, nowIso, onToggle, limit }: { plan: Plan; no
                 <div className="min-w-0">
                   <p className={styles.time}>
                     {timeRange(s.start, s.end)}
-                    {state === "now" ? <span className={styles.nowPill}>Now</span> : null}
+                    {state === "now" ? <span className={styles.nowPill}>{t("Now")}</span> : null}
                   </p>
                   <p className={styles.title}>
-                    {s.kind === "checkpoint" ? <span className={styles.kind}>Checkpoint </span> : null}
+                    {s.kind === "checkpoint" ? <span className={styles.kind}>{t("Checkpoint")} </span> : null}
                     {s.title}
                   </p>
                   {s.unit ? <p className={styles.meta}>{s.unit}</p> : null}
                 </div>
-                {s.minutes ? <span className={styles.minutes}>{s.minutes >= 120 ? `${Math.round(s.minutes / 60)} h` : `${s.minutes} min`}</span> : null}
+                {s.minutes ? <span className={styles.minutes}>{s.minutes >= 120 ? t("{h} h", { h: Math.round(s.minutes / 60) }) : t("{m} min", { m: s.minutes })}</span> : null}
               </div>
             </li>
           );

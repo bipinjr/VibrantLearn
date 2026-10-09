@@ -3,6 +3,8 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Block, Lang, Message } from "@/lib/demo/data";
 import { useDemo } from "@/lib/demo/store";
+import { useUi } from "@/lib/i18n/context";
+import { MODE_LABEL } from "@/lib/i18n/ui";
 import { Flashcards } from "./Flashcards";
 import { PlanTimeline } from "./PlanTimeline";
 import { ProgressRing } from "./ProgressRing";
@@ -34,9 +36,10 @@ function StreamText({ text, animate }: { text: string; animate: boolean }) {
 }
 
 function Sources({ items }: { items?: string[] }) {
+  const { t } = useUi();
   if (!items?.length) return null;
   return (
-    <ul className="mt-3 flex flex-wrap gap-2" aria-label="Sources">
+    <ul className="mt-3 flex flex-wrap gap-2" aria-label={t("Sources")}>
       {items.map((s) => (
         <li key={s} className="inline-flex items-center gap-1.5 rounded-full bg-bg px-3 py-1 text-xs text-muted">
           <FileText size={13} strokeWidth={1.75} aria-hidden="true" />
@@ -48,6 +51,7 @@ function Sources({ items }: { items?: string[] }) {
 }
 
 function CopyButton({ text }: { text: string }) {
+  const { t } = useUi();
   const [done, setDone] = useState(false);
   return (
     <button
@@ -64,7 +68,7 @@ function CopyButton({ text }: { text: string }) {
       }}
     >
       {done ? <Check size={14} strokeWidth={2} aria-hidden="true" /> : <Copy size={14} strokeWidth={1.75} aria-hidden="true" />}
-      {done ? "Copied" : "Copy"}
+      {done ? t("Copied") : t("Copy")}
     </button>
   );
 }
@@ -92,14 +96,15 @@ const LANGS: { id: Lang; label: string }[] = [
 
 function Notes({ block, animate }: { block: Extract<Block, { type: "notes" }>; animate: boolean }) {
   const { state } = useDemo();
-  const [lang, setLang] = useState<Lang>(state.profile.language);
+  const { t } = useUi();
+  const [lang, setLang] = useState<Lang>(block.lang ?? state.profile.language);
   return (
     <Card
       icon={<BookOpenText size={16} strokeWidth={1.75} />}
-      title={`Notes: ${block.topic}`}
+      title={t("Notes: {topic}", { topic: block.topic })}
       tools={<CopyButton text={block.text[lang]} />}
     >
-      <div role="radiogroup" aria-label="Language" className="mb-3 inline-flex rounded-full bg-bg p-1">
+      <div role="radiogroup" aria-label={t("Language")} className="mb-3 inline-flex rounded-full bg-bg p-1">
         {LANGS.map((l) => (
           <button
             key={l.id}
@@ -115,7 +120,7 @@ function Notes({ block, animate }: { block: Extract<Block, { type: "notes" }>; a
         ))}
       </div>
       <p key={lang} lang={lang} className="max-w-[68ch] animate-[fade_var(--dur-base)_var(--ease-out)]">
-        <StreamText text={block.text[lang]} animate={animate && lang === state.profile.language} />
+        <StreamText text={block.text[lang]} animate={animate && lang === (block.lang ?? state.profile.language)} />
       </p>
       <Sources items={block.sources} />
     </Card>
@@ -124,24 +129,25 @@ function Notes({ block, animate }: { block: Extract<Block, { type: "notes" }>; a
 
 function PlanCard({ planId }: { planId: string }) {
   const { state, now, toggleStep } = useDemo();
+  const { t } = useUi();
   const plan = state.plans.find((p) => p.id === planId);
-  if (!plan) return <p className="text-sm text-muted">This plan was replaced by a newer one in this session.</p>;
+  if (!plan) return <p className="text-sm text-muted">{t("This plan was replaced by a newer one in this session.")}</p>;
   const steps = plan.steps.filter((s) => s.kind !== "exam");
   const pct = steps.length ? steps.filter((s) => s.done).length / steps.length : 0;
   return (
     <Card
       icon={<Route size={16} strokeWidth={1.75} />}
-      title={`${plan.subject}: ${plan.mode} plan`}
+      title={`${plan.subject}: ${t(MODE_LABEL[plan.mode])}`}
       tools={
         <Link href={`/app/plans/${plan.id}`} transitionTypes={["nav-forward"]} className="inline-flex items-center gap-1 rounded-[8px] px-2 py-1 text-xs font-medium no-underline hover:bg-text/[0.06]">
-          Open plan <ArrowUpRight size={14} strokeWidth={1.75} aria-hidden="true" />
+          {t("Open plan")} <ArrowUpRight size={14} strokeWidth={1.75} aria-hidden="true" />
         </Link>
       }
     >
       <div className="mb-4 flex items-center gap-4">
         <ProgressRing value={pct} size={48} stroke={5} />
         <p className="text-sm text-muted">
-          {steps.filter((s) => s.done).length} of {steps.length} steps done. Tick a step when you finish it.
+          {t("{done} of {total} steps done. Tick a step when you finish it.", { done: steps.filter((s) => s.done).length, total: steps.length })}
         </p>
       </div>
       <PlanTimeline plan={plan} nowIso={now.toISOString()} onToggle={(id) => toggleStep(plan.id, id)} limit={5} />
@@ -150,6 +156,7 @@ function PlanCard({ planId }: { planId: string }) {
 }
 
 export function BlockView({ block, animate, onSend }: { block: Block; animate: boolean; onSend: (text: string) => void }) {
+  const { t } = useUi();
   switch (block.type) {
     case "text":
       return (
@@ -190,7 +197,7 @@ export function BlockView({ block, animate, onSend }: { block: Block; animate: b
       return (
         <Card
           icon={<ListChecks size={16} strokeWidth={1.75} />}
-          title={`Important questions: ${block.topic}`}
+          title={t("Important questions: {topic}", { topic: block.topic })}
           tools={<CopyButton text={block.items.map((q) => `[${q.marks} marks] ${q.q}`).join("\n")} />}
         >
           <ol className="grid gap-3">
@@ -201,26 +208,26 @@ export function BlockView({ block, animate, onSend }: { block: Block; animate: b
                     q.marks === 10 ? "bg-violet/15" : q.marks === 5 ? "bg-orchid/15" : "bg-text/[0.06]"
                   }`}
                 >
-                  {q.marks} marks
+                  {t("{n} marks", { n: q.marks })}
                 </span>
                 <span>{q.q}</span>
               </li>
             ))}
           </ol>
           <button type="button" className="mt-4 text-sm font-medium text-link hover:underline" onClick={() => onSend("quiz me on these")}>
-            Practise these as a quiz
+            {t("Practise these as a quiz")}
           </button>
         </Card>
       );
     case "quiz":
       return (
-        <Card icon={<Sparkles size={16} strokeWidth={1.75} />} title={`Quiz: ${block.topic}`}>
+        <Card icon={<Sparkles size={16} strokeWidth={1.75} />} title={t("Quiz: {topic}", { topic: block.topic })}>
           <Quiz questions={block.questions} onRevise={(topics) => onSend(`explain ${topics[0]}`)} />
         </Card>
       );
     case "flashcards":
       return (
-        <Card icon={<Layers size={16} strokeWidth={1.75} />} title={`Flashcards: ${block.topic}`}>
+        <Card icon={<Layers size={16} strokeWidth={1.75} />} title={t("Flashcards: {topic}", { topic: block.topic })}>
           <Flashcards cards={block.cards} />
         </Card>
       );
@@ -234,12 +241,13 @@ const SERVED: Record<NonNullable<Message["servedFrom"]>, { label: string; icon: 
 };
 
 export function ServedBadge({ from }: { from?: Message["servedFrom"] }) {
+  const { t } = useUi();
   if (!from) return null;
   const s = SERVED[from];
   return (
     <span className="inline-flex items-center gap-1 text-[0.7rem] text-muted">
       <span aria-hidden="true">{s.icon}</span>
-      {s.label}
+      {t(s.label)}
     </span>
   );
 }

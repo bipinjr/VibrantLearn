@@ -8,6 +8,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { timeLeft } from "@/lib/format";
 import { useDemo } from "@/lib/demo/store";
+import { useUi } from "@/lib/i18n/context";
 
 const NAV = [
   { href: "/app", label: "Home", icon: Home },
@@ -28,6 +29,7 @@ function urgency(deadline: string, now: Date): "now" | "soon" | "later" {
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const path = usePathname();
   const { state, now } = useDemo();
+  const { t, lang } = useUi();
   const sessions = [...state.sessions].sort((a, b) => b.updated.localeCompare(a.updated));
 
   return (
@@ -38,10 +40,10 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 
       <Link href="/app/new" onClick={onNavigate} className="btn btn-primary w-full justify-start gap-2" transitionTypes={["nav-forward"]}>
         <Plus size={18} strokeWidth={2.25} aria-hidden="true" />
-        New study session
+        {t("New study session")}
       </Link>
 
-      <nav aria-label="Main">
+      <nav aria-label={t("Main")}>
         <ul className="grid gap-0.5">
           {NAV.map(({ href, label, icon: Icon }) => {
             const active = isActive(path, href);
@@ -57,7 +59,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                   className={`relative flex items-center gap-3 rounded-[10px] px-3 py-2 text-[0.95rem] no-underline transition-colors duration-150 ${active ? "font-semibold text-text" : "text-muted hover:text-text"}`}
                 >
                   <Icon size={19} strokeWidth={1.75} aria-hidden="true" />
-                  {label}
+                  {t(label)}
                 </Link>
               </li>
             );
@@ -65,15 +67,15 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
           <li>
             <span className="flex cursor-default items-center gap-3 rounded-[10px] px-3 py-2 text-[0.95rem] text-muted/70" aria-disabled="true">
               <Video size={19} strokeWidth={1.75} aria-hidden="true" />
-              Live classes
-              <span className="ml-auto rounded-full bg-text/[0.06] px-2 py-0.5 text-[0.7rem] font-medium">Soon</span>
+              {t("Live classes")}
+              <span className="ml-auto rounded-full bg-text/[0.06] px-2 py-0.5 text-[0.7rem] font-medium">{t("Soon")}</span>
             </span>
           </li>
         </ul>
       </nav>
 
       <div className="flex min-h-0 flex-1 flex-col">
-        <h2 className="px-3 font-sans text-xs font-medium tracking-normal text-muted">Study sessions</h2>
+        <h2 className="px-3 font-sans text-xs font-medium tracking-normal text-muted">{t("Study sessions")}</h2>
         <ul className="mt-2 grid max-h-full gap-0.5 overflow-x-hidden overflow-y-auto pr-1 [scrollbar-width:thin]">
           {sessions.map((s, i) => {
             const active = path === `/app/s/${s.id}`;
@@ -89,14 +91,14 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                 >
                   <span className={`truncate text-sm ${active ? "font-semibold text-text" : "font-medium text-text"}`}>{s.title}</span>
                   <span className="flex min-w-0 items-center gap-2 text-xs text-muted">
-                    <span className="min-w-0 truncate">{s.subject.replace(" Programming", "").replace("Database Management Systems", "DBMS") || "No subject yet"}</span>
+                    <span className="min-w-0 truncate">{s.subject.replace(" Programming", "").replace("Database Management Systems", "DBMS") || t("No subject yet")}</span>
                     {s.deadline ? (
                       <span
                         className={`ml-auto shrink-0 rounded-full px-1.5 py-px text-[0.68rem] font-semibold tabular-nums ${
                           u === "now" ? "bg-ember/20 text-text" : u === "soon" ? "bg-amber/20 text-text" : "bg-text/[0.06]"
                         }`}
                       >
-                        {timeLeft(s.deadline, now.toISOString())}
+                        {timeLeft(s.deadline, now.toISOString(), lang)}
                       </span>
                     ) : null}
                   </span>
@@ -114,11 +116,11 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">{state.profile.username}</span>
           <span className="block truncate text-xs text-muted">
-            {state.profile.course}, semester {state.profile.semester}
+            {t("{course}, semester {n}", { course: state.profile.course, n: state.profile.semester })}
           </span>
         </span>
         <form action="/auth/signout" method="post">
-          <button type="submit" className="grid size-9 place-items-center rounded-[10px] text-muted transition-colors hover:bg-text/[0.06] hover:text-text" aria-label="Sign out">
+          <button type="submit" className="grid size-9 place-items-center rounded-[10px] text-muted transition-colors hover:bg-text/[0.06] hover:text-text" aria-label={t("Sign out")}>
             <LogOut size={17} strokeWidth={1.75} />
           </button>
         </form>
@@ -129,12 +131,13 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 
 function SyncBanner() {
   const { syncError, clearSyncError } = useDemo();
+  const { t } = useUi();
   if (!syncError) return null;
   return (
     <p role="alert" className="pop-in m-4 flex items-center justify-between gap-3 rounded-[var(--radius-input)] bg-amber/15 px-4 py-2 text-sm">
-      {syncError}
+      {t(syncError)}
       <button type="button" className="font-medium underline" onClick={clearSyncError}>
-        Dismiss
+        {t("Dismiss")}
       </button>
     </p>
   );
@@ -151,6 +154,7 @@ const TABS = [
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const sheet = useRef<HTMLDialogElement>(null);
+  const { t, lang } = useUi();
 
   // Theme chosen in Settings (per-browser). System theme is the default.
   useEffect(() => {
@@ -166,13 +170,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     <MotionConfig reducedMotion="user">
       <LayoutGroup>
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">
-          Skip to content
+          {t("Skip to content")}
         </a>
-        <div className="min-h-dvh lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+        <div lang={lang} className="min-h-dvh lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
           <aside
             className="sticky top-0 hidden h-dvh border-r border-line bg-surface lg:block"
             style={{ viewTransitionName: "app-sidebar" }}
-            aria-label="App navigation"
+            aria-label={t("App navigation")}
           >
             <SidebarBody />
           </aside>
@@ -185,7 +189,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               className="grid size-10 place-items-center rounded-[10px] hover:bg-text/[0.06]"
-              aria-label="Open menu"
+              aria-label={t("Open menu")}
               onClick={() => sheet.current?.showModal()}
             >
               <Menu size={22} strokeWidth={1.75} />
@@ -198,16 +202,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <dialog ref={sheet} className="sheet" aria-label="Menu" onClick={(e) => e.target === sheet.current && sheet.current?.close()}>
+        <dialog ref={sheet} className="sheet" aria-label={t("Menu")} lang={lang} onClick={(e) => e.target === sheet.current && sheet.current?.close()}>
           <div className="relative h-full w-[min(20rem,86vw)] bg-surface">
-            <button type="button" className="absolute right-3 top-3 z-10 grid size-10 place-items-center rounded-[10px] hover:bg-text/[0.06]" aria-label="Close menu" onClick={() => sheet.current?.close()}>
+            <button type="button" className="absolute right-3 top-3 z-10 grid size-10 place-items-center rounded-[10px] hover:bg-text/[0.06]" aria-label={t("Close menu")} onClick={() => sheet.current?.close()}>
               <X size={20} strokeWidth={1.75} />
             </button>
             <SidebarBody onNavigate={() => sheet.current?.close()} />
           </div>
         </dialog>
 
-        <nav aria-label="Quick" className="fixed inset-x-3 bottom-3 z-30 rounded-[18px] border border-line bg-surface/90 shadow-[var(--shadow-float)] backdrop-blur-md lg:hidden">
+        <nav aria-label={t("Quick")} lang={lang} className="fixed inset-x-3 bottom-3 z-30 rounded-[18px] border border-line bg-surface/90 shadow-[var(--shadow-float)] backdrop-blur-md lg:hidden">
           <ul className="grid grid-cols-5">
             {TABS.map(({ href, label, icon: Icon }) => {
               const active = isActive(path, href);
@@ -229,7 +233,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     ) : (
                       <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
                     )}
-                    <span className={isNew ? "sr-only" : undefined}>{label}</span>
+                    <span className={isNew ? "sr-only" : undefined}>{t(label)}</span>
                   </Link>
                 </li>
               );

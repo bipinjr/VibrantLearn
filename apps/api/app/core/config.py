@@ -17,8 +17,9 @@ class Settings(BaseSettings):
     max_upload_mb: int = 50
 
     # Groq model routing (verify against console.groq.com/docs/models before changing)
-    groq_model_small: str = "llama-3.1-8b-instant"
-    groq_model_large: str = "llama-3.3-70b-versatile"
+    # Models this project's Groq key can use (checked 2026-10-09; Llama IDs returned model_not_found).
+    groq_model_small: str = "openai/gpt-oss-20b"
+    groq_model_large: str = "openai/gpt-oss-120b"
 
     @property
     def is_prod(self) -> bool:

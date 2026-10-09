@@ -2,10 +2,12 @@ import { RotateCcw } from "lucide-react";
 import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from "motion/react";
 import { useState } from "react";
 import type { Flashcard } from "@/lib/demo/data";
+import { useT } from "@/lib/i18n/context";
 import styles from "./flashcards.module.css";
 
 /** Flip on click / Space, swipe or arrow keys: right = "Know it", left = "Again" (simple Leitner). */
 export function Flashcards({ cards }: { cards: Flashcard[] }) {
+  const t = useT();
   const [i, setI] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState(0);
@@ -38,12 +40,12 @@ export function Flashcards({ cards }: { cards: Flashcard[] }) {
       <div className="pop-in flex flex-wrap items-center justify-between gap-4 rounded-[var(--radius-card)] bg-bg p-5">
         <div>
           <p className="font-display text-xl font-bold">
-            {known} known, {again.length} to see again
+            {t("{k} known, {a} to see again", { k: known, a: again.length })}
           </p>
-          <p className="text-sm text-muted">Cards you marked &ldquo;Again&rdquo; come back first next time.</p>
+          <p className="text-sm text-muted">{t("Cards you marked “Again” come back first next time.")}</p>
         </div>
         <button type="button" className="btn btn-secondary min-h-10 text-sm" onClick={() => { setI(0); setKnown(0); setAgain([]); }}>
-          <RotateCcw size={15} strokeWidth={2} aria-hidden="true" /> Go again
+          <RotateCcw size={15} strokeWidth={2} aria-hidden="true" /> {t("Go again")}
         </button>
       </div>
     );
@@ -72,32 +74,32 @@ export function Flashcards({ cards }: { cards: Flashcard[] }) {
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.9}
           onDragEnd={onDragEnd}
-          initial={reduced ? false : { scale: 0.96, opacity: 0 }}
+          initial={i === 0 || reduced ? false : { scale: 0.96, opacity: 0 }} // first card: no entrance, so server and client HTML match
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 420, damping: 30 }}
         >
           <motion.span className={`${styles.stamp} ${styles.know}`} style={{ opacity: knowOpacity }} aria-hidden="true">
-            Know it
+            {t("Know it")}
           </motion.span>
           <motion.span className={`${styles.stamp} ${styles.again}`} style={{ opacity: againOpacity }} aria-hidden="true">
-            Again
+            {t("Again")}
           </motion.span>
           <button
             type="button"
             className={styles.card}
             data-flipped={flipped}
             onClick={() => setFlipped((f) => !f)}
-            aria-label={flipped ? `Answer: ${card.back}. Press to see the question.` : `${card.front}. Press to see the answer.`}
+            aria-label={flipped ? t("Answer: {back}. Press to see the question.", { back: card.back }) : t("{front}. Press to see the answer.", { front: card.front })}
           >
             <span className={styles.face}>
-              <span className="text-xs text-muted">Card {i + 1} of {cards.length}</span>
+              <span className="text-xs text-muted">{t("Card {i} of {n}", { i: i + 1, n: cards.length })}</span>
               <span className="font-display text-2xl font-bold sm:text-3xl">{card.front}</span>
-              <span className="text-xs text-muted">Tap or press Space to flip</span>
+              <span className="text-xs text-muted">{t("Tap or press Space to flip")}</span>
             </span>
             <span className={`${styles.face} ${styles.back}`}>
-              <span className="text-xs text-muted">Answer</span>
+              <span className="text-xs text-muted">{t("Answer")}</span>
               <span className="text-lg leading-snug">{card.back}</span>
-              <span className="text-xs text-muted">Swipe or use the arrow keys</span>
+              <span className="text-xs text-muted">{t("Swipe or use the arrow keys")}</span>
             </span>
           </button>
         </motion.div>
@@ -105,10 +107,10 @@ export function Flashcards({ cards }: { cards: Flashcard[] }) {
 
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className="btn btn-secondary" onClick={() => void decide(false)}>
-          Again
+          {t("Again")}
         </button>
         <button type="button" className="btn btn-primary" onClick={() => void decide(true)}>
-          Know it
+          {t("Know it")}
         </button>
       </div>
     </div>

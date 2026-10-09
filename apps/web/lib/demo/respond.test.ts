@@ -111,4 +111,17 @@ describe("respond: message in, study material out", () => {
     const switched = respond("quiz me on java", ctx(asked.pending));
     expect(switched.blocks[0].type).toBe("quiz");
   });
+
+  it("answers in the language the student typed in, and asks the AI for real notes", () => {
+    const kn = respond("normalization bagge heli", { ...ctx(), language: "en" });
+    expect(kn.lang).toBe("kn");
+    expect(kn.blocks[0]).toMatchObject({ type: "notes", lang: "kn" });
+    expect(kn.aiNotes).toEqual({ subject: "Database Management Systems", topic: "Normal forms 1NF to BCNF" });
+
+    const hi = respond("डेडलॉक समझाओ", { ...ctx(), language: "en" });
+    expect(hi.lang).toBe("hi");
+
+    // Method overriding has hand-written notes in all three languages: no AI call.
+    expect(respond("explain method overriding", ctx()).aiNotes).toBeUndefined();
+  });
 });

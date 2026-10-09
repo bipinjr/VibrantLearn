@@ -6,28 +6,38 @@ import { loadAccount } from "@/lib/account/load";
 import { getDemo } from "@/lib/demo/data";
 import { DEMO_COOKIE, demoEnabled } from "@/lib/demo/mode";
 import { DemoProvider } from "@/lib/demo/store";
+import { UiLangProvider } from "@/lib/i18n/context";
+import { isLang, UI_LANG_COOKIE } from "@/lib/i18n/ui";
 import { getUserId } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: { default: "Home", template: "%s | VibrantLearn" } };
 
 export default async function AppLayout({ children }: LayoutProps<"/app">) {
+  const jar = await cookies();
+  const saved = jar.get(UI_LANG_COOKIE)?.value;
+  const uiLang = isLang(saved) ? saved : "en";
+
   // A real signed-in account always wins over the demo cookie.
   const userId = await getUserId();
   if (userId) {
     const data = await loadAccount(userId);
     if (!data) redirect("/onboarding");
     return (
-      <DemoProvider seed={data} account={{ userId }}>
-        <AppShell>{children}</AppShell>
-      </DemoProvider>
+      <UiLangProvider initial={uiLang}>
+        <DemoProvider seed={data} account={{ userId }}>
+          <AppShell>{children}</AppShell>
+        </DemoProvider>
+      </UiLangProvider>
     );
   }
 
-  const demo = demoEnabled() && (await cookies()).get(DEMO_COOKIE)?.value === "1";
+  const demo = demoEnabled() && jar.get(DEMO_COOKIE)?.value === "1";
   if (!demo) redirect("/login?next=/app");
   return (
-    <DemoProvider seed={getDemo()}>
-      <AppShell>{children}</AppShell>
-    </DemoProvider>
+    <UiLangProvider initial={uiLang}>
+      <DemoProvider seed={getDemo()}>
+        <AppShell>{children}</AppShell>
+      </DemoProvider>
+    </UiLangProvider>
   );
 }
