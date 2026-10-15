@@ -153,7 +153,8 @@ create policy "own_folder_read" on storage.objects
 
 - Implemented in Postgres (`internal.rate_limits`, fixed-window counter via one atomic `insert … on conflict … do update … returning count`), so it works across stateless serverless instances.
 - Per user: messages 30 / 10 min, plans 10 / hour, content 40 / hour, uploads 20 / day and 300 MB / day.
-- Per IP (salted hash, never raw IP stored): sign-in/up attempts, username checks 30 / min, waitlist 5 / hour.
+- Per IP (salted hash, never raw IP stored) is a coarse backstop; user-id buckets are the real limit. `x-forwarded-for` is trusted only when `TRUSTED_PROXY=true` (set on Vercel), and then only its last hop; otherwise the socket address is used, so a client cannot pick a fresh bucket by sending its own header.
+- Per IP buckets: sign-in/up attempts, username checks 30 / min, waitlist 5 / hour.
 - Global circuit breaker: if Groq returns 429s, back off, serve cache, and show a friendly message.
 - Return `429` with `Retry-After`.
 - Enable Supabase Auth CAPTCHA (hCaptcha/Turnstile) if scripted sign-ups appear.

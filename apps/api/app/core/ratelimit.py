@@ -1,4 +1,8 @@
-"""Fixed-window limits in Postgres so they hold across serverless instances (SECURITY.md §11)."""
+"""Fixed-window limits in Postgres so they hold across serverless instances (SECURITY.md §11).
+
+IP buckets are a coarse backstop for endpoints without a signed-in user (waitlist, sign-up).
+User-id buckets are the real limit: an IP is easy to rotate and shared by whole college networks.
+"""
 
 import hashlib
 
@@ -33,9 +37,18 @@ def hit(
         raise ApiError(429, "rate_limited", message, headers={"Retry-After": str(row["retry"])})
 
 
+def client_ip(request: Request) -> str:
+    """The caller's IP. x-forwarded-for counts only when TRUSTED_PROXY is on, and then only its last
+    hop (added by our proxy); earlier entries are whatever the client chose to send."""
+    if get_settings().trusted_proxy:
+        last = request.headers.get("x-forwarded-for", "").split(",")[-1].strip()
+        if last:
+            return last
+    return request.client.host if request.client else "unknown"
+
+
 def ip_hash(request: Request) -> str:
-    # Vercel sets x-forwarded-for; first entry is the client. Only the salted hash is ever stored.
-    fwd = request.headers.get("x-forwarded-for", "")
-    ip = fwd.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+    # Only the salted hash is ever stored, never the raw IP.
+    ip = client_ip(request)
     salt = get_settings().ip_hash_salt.get_secret_value()
     return "ip:" + hashlib.sha256(f"{salt}:{ip}".encode()).hexdigest()[:32]
