@@ -17,6 +17,8 @@ The first run installs and builds (a few minutes); after that it starts in secon
 - Let the chat answer any question: put `GROQ_API_KEY=...` (free key from console.groq.com) in `apps/web/.env.local`, then rebuild.
 - Full feature walkthrough with screenshots: **[VibrantLearn_Features.pdf](VibrantLearn_Features.pdf)**
 - What's done and what's left: **[HANDOFF.md](HANDOFF.md)**
+- The remaining work, as an ordered task list: **[BUILD_PLAN.md](BUILD_PLAN.md)**
+- Steps only a human can do (keys, Supabase, deploy): **[docs/setup/MANUAL_STEPS.md](docs/setup/MANUAL_STEPS.md)**
 
 ## What's in this folder
 

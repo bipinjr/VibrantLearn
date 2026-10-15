@@ -42,6 +42,9 @@ Living record for humans and AI agents. Read at the start of every session; upda
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-15 | **Security fixes applied after an external code review**: `safeNext` rejects control characters and re-checks the resolved path; the client INSERT policy on `storage.objects` is dropped (uploads go through server-issued signed URLs only); the username rate limit is keyed by user id instead of a spoofable `x-forwarded-for` | Three real holes found by review; see Security review log |
+| 2026-10-15 | **Crash-plan scheduler fills the exam-day morning with real syllabus topics** and only offers "Redo the questions you got wrong" after a quiz actually happened; 20 minutes are reserved so the closing mock test always fits | A student opening the app at 10:40 PM got a plan with zero topics |
+| 2026-10-15 | `BUILD_PLAN.md` (ordered task list for Claude Code) and `docs/setup/MANUAL_STEPS.md` (human-only steps) are the two documents that drive the rest of v0.4 | One place to resume from |
 | 2026-10-09 | **Signed-in students write their own messages, plans and profile directly to Supabase** (column grants + RLS owner checks), not through the Python API, until the API is hosted. AI content and files stay server-only | Python API isn't hosted yet; every write still limited to the student's own rows |
 | 2026-10-09 | AI routes live in Next for now: `/api/notes` (syllabus topic → notes en/kn/hi) and `/api/demo/chat` (open questions), allowed for signed-in users (verified JWT) or the local demo; shared helper `lib/server/groq.ts` (timeout, one 429 retry, status-only error logs) | Python API not hosted; same server-only key rule |
 | 2026-10-09 | Notes are written in 3 Groq calls: write English → strict examiner review/correct → translate that exact text to kn/hi keeping technical terms in English. Cached per process per topic (`notes-v4`) | One-shot 3-language output had a factual error (lossy 2NF example) and translated terms (ಪ್ರಾಥಮಿಕ ಕೀ) |
@@ -102,7 +105,7 @@ Living record for humans and AI agents. Read at the start of every session; upda
 - [ ] Darshan H.S.'s role
 - [ ] Real sign-up end to end with Bipin's email (`npm run demo:rebuild`). Supabase's built-in email only reaches org members: turn off "Confirm email" or add SMTP before others sign up
 - [ ] Native-speaker check of the Kannada/Hindi UI text (`apps/web/lib/i18n/ui.ts`) and AI notes
-- [ ] Rotate the Groq key (it was posted in chat)
+- [ ] **Rotate the Groq key** (it was posted in chat) — steps in `docs/setup/MANUAL_STEPS.md` §1
 - [ ] Free disk space on C: so local Supabase (Docker) works
 - [ ] Forgot-password flow (not built yet)
 - [ ] Verify syllabus seed against the official BCU SEP PDF (marked unverified)
@@ -117,7 +120,19 @@ _None yet._
 
 ## Security review log
 
-_None yet._
+### 2026-10-15 — external review of the whole repo (read-only), fixes applied the same day
+
+| # | Finding | Severity | Status |
+|---|---|---|---|
+| 1 | `safeNext` allowed `/<tab>/evil.com`: browsers strip control characters before resolving, so it became `//evil.com` and redirected off-site after sign-in | High | Fixed, 16 tests |
+| 2 | Crash plans scheduled no syllabus topics when the student started late at night; the exam-day morning only ever held fixed revision items | High (product) | Fixed, 2 regression tests |
+| 3 | `own_folder_insert` on `storage.objects` let a signed-in client upload any file straight to the bucket, bypassing extension/size/magic-byte checks and the `files` row | Medium | Fixed, migration `20261015180000_lock_storage_uploads.sql` + pgTAP test 37 |
+| 4 | Username rate limit keyed on the first `x-forwarded-for` entry, which the client controls; behind the Next rewrite it could also collapse to one shared bucket | Medium | Keyed by user id; proxy handling tracked as BUILD_PLAN A1 |
+| 5 | `savePlan` uses `.upsert()` while the client holds only `update (plan, updated_at)` grants — would fail `42501` on an existing plan id | Low (latent) | Tracked as BUILD_PLAN A2 |
+| 6 | Session delete removes the row but not storage objects; will orphan files once uploads are real | Low (latent) | Tracked as BUILD_PLAN A3 |
+| 7 | Scheduler tests all started at 8:30 PM IST and never asserted that a plan contains a real topic, which is why #2 survived | Process | `expectRealTopics()` helper added |
+
+Not re-checked (unchanged since the 8 Oct review): CSP and security headers, JWT verification, error shape, no secrets in the client bundle.
 
 ## Incidents
 
@@ -127,6 +142,8 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | A1: `ip_hash` trusts `x-forwarded-for` only with `TRUSTED_PROXY=true` (last hop); 4 new pytest cases; docs + .env.example |
+| 2026-10-15 | Bipin A + Claude | Security review; fixed open redirect, crash-plan scheduler, storage upload policy, rate-limit key; added BUILD_PLAN.md and docs/setup/MANUAL_STEPS.md |
 | 2026-10-09 | Bipin A + Claude | Kannada/Hindi script + Kanglish/Hinglish input with language detection; AI notes route (write → review → translate); Groq models switched to gpt-oss; app UI in kn/hi with Settings switch; Flashcards hydration fix; docs + PDF say Supabase connected. 135 web tests, 17/17 E2E with AI on |
 | 2026-10-08 | Bipin A + Claude | Demo packaging (START-DEMO.bat, npm run demo, .env.demo), 17-step E2E smoke (Chrome, 3 screen sizes), chatbot handling for any message + Groq demo route, weak-topic-first scheduling, AA contrast fixes, one source for kn/hi notes, folder reorganised (docs/handbook, docs/setup, docs/features-guide), HANDOFF.md, VibrantLearn_Features.pdf |
 | 2026-10-08 | Bipin A + Claude | Monorepo in Code/, CI, Supabase schema + RLS + seed + pgTAP (unapplied), FastAPI core (auth, rate limits, profile, waitlist; 33 tests), landing, auth, onboarding, full demo app (dashboard, sessions, plans, quiz, flashcards, files, settings), local parser + scheduler (73 web tests) |

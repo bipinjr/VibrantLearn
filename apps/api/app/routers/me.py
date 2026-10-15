@@ -1,7 +1,7 @@
 from typing import Annotated, Literal
 
 import psycopg
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core import ratelimit
@@ -54,14 +54,15 @@ _COLUMNS = (
 
 @router.get("/usernames/available")
 def username_available(
-    request: Request,
     user: CurrentUser,
     conn: Conn,
     u: Annotated[str, Query(max_length=30)],
 ) -> dict[str, object]:
+    # Keyed by user id, not IP: x-forwarded-for is attacker-controlled off Vercel, and behind the
+    # Next rewrite every student can share one source address (SECURITY.md §11).
     ratelimit.hit(
         conn,
-        ratelimit.ip_hash(request),
+        f"user:{user.id}",
         "username_check",
         30,
         60,

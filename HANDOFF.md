@@ -5,8 +5,9 @@
 | **Product** | VibrantLearn, *Web: AI-Powered Personalized Learning Path Generator (Smart EdTech Learning System)* |
 | **Owners** | Bipin A (lead), Darshan H.S. |
 | **Phase** | Student-side prototype v0.4 |
-| **Status date** | 9 October 2026 |
+| **Status date** | 15 October 2026 |
 | **Full spec** | [docs/handbook/PRD.md](docs/handbook/PRD.md) (this file tracks progress against it) |
+| **What's next** | [BUILD_PLAN.md](BUILD_PLAN.md) — ordered tasks · [docs/setup/MANUAL_STEPS.md](docs/setup/MANUAL_STEPS.md) — human-only steps |
 | **Demo** | `START-DEMO.bat` → http://localhost:3000 → *Try the demo* |
 | **Feature guide** | [VibrantLearn_Features.pdf](VibrantLearn_Features.pdf) |
 
@@ -26,6 +27,18 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 - **AI is on.** Notes for every syllabus topic are written by Groq (write → examiner check → translate to Kannada/Hindi) and cached; open questions are answered in the student's language.
 - **Kannada and Hindi everywhere.** Students can type in Kannada/Hindi script or in English letters (Kanglish/Hinglish) and get answers in that language; the whole interface switches to ಕನ್ನಡ/हिन्दी in Settings.
 
+## 2b. Security review, 15 October
+
+An external read-through of the whole repo found seven issues. Four are fixed and tested; three are
+latent and tracked in `BUILD_PLAN.md` (A1–A3). Full table in `MEMORY.md` → *Security review log*.
+
+| Fixed | What it was |
+|---|---|
+| Open redirect | A crafted `?next=/<tab>/evil.com` sent students off-site after sign-in |
+| Empty crash plans | Starting late at night produced a plan with no syllabus topics at all |
+| Storage upload hole | Clients could write any file straight to the bucket, skipping validation |
+| Rate-limit key | Keyed on a client-controlled header instead of the user id |
+
 ## 3. Success criteria (PRD §3)
 
 | Goal | Target | Status |
@@ -34,7 +47,7 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 | Urgent requests | "Test in 2 hrs" gives a ≤ 2 h plan, top topics only | ✅ sprint mode, tested |
 | Uses the student's own files | Mention a file, answer from it with source shown | 🟡 UI and source chips work; real text extraction not built |
 | Saves tokens | ≥ 40% answered without an LLM call | ✅ shown live on dashboard (~78% in demo) |
-| Secure | Zero advisor errors, RLS tests pass, no secret in client | 🟡 34 RLS tests written, not yet run; no secrets in client ✅ |
+| Secure | Zero advisor errors, RLS tests pass, no secret in client | 🟡 37 RLS tests (36 passing on cloud; the 37th ships with the 15 Oct storage migration — run `db push` then `test db`); no secrets in client ✅ |
 | Looks top notch | Lighthouse ≥ 90 | 🟡 professional UI, AA contrast ✅; Lighthouse not run yet |
 
 ## 4. Features (PRD §4)
@@ -86,8 +99,9 @@ Indian college students (BCA/BCom/BSc/PU) cram for internals and semester exams 
 
 | Priority | Task | Done when | Who |
 |---|---|---|---|
+| P0 | Apply the 15 Oct migration: `npx supabase db push --linked && npx supabase test db --linked` (expect 37/37) | Storage upload hole closed on the live database | Bipin A |
 | P0 | Test a real sign-up: `npm run demo:rebuild`, sign up with your email. For other people: turn off "Confirm email" or add SMTP in the Supabase dashboard | Account created, data visible on a second device | Bipin A |
-| P0 | Rotate the Groq key (posted in chat) and put the new one in `apps/web/.env.local` | Old key revoked | Bipin A |
+| P0 | Rotate the Groq key (posted in chat) — `docs/setup/MANUAL_STEPS.md` §1 | Old key revoked | Bipin A |
 | P0 | Native-speaker check of Kannada and Hindi text in `apps/web/lib/demo/notes-i18n.ts` | Signed off by a Kannada and a Hindi speaker | Bipin A / Darshan H.S. |
 | P1 | Wire real reads/writes: sessions, messages, plans from Supabase instead of the demo store | A real account sees its data on any device; RLS tests pass | Agent |
 | P1 | Groq key + server LLM pipeline in FastAPI (prompts, schemas, cache, usage log) | Notes/questions written by AI, cached, `served_from` logged | Agent (key from team) |

@@ -81,11 +81,36 @@ export function buildPlan({ subject, deadline, now, mode, hoursPerDay, idPrefix,
         add("checkpoint", d === 0 ? "10-question quiz on tonight's topics" : "Quiz on today's topics", t, 10);
       }
     }
+    // Exam-day morning. Topics the evenings couldn't reach come FIRST: a student who opens the app
+    // at 10:40 PM has no usable evening left, and the morning is the only study time they have.
+    // Only then the revision extras, and only if there was something to revise.
     const morning = istAt(deadline, 0, 6, 30);
-    if (days >= 1 && deadline.getTime() - morning.getTime() >= 90 * MIN) {
-      let t = add("block", "Redo the questions you got wrong", morning, 30);
-      t = new Date(t.getTime() + 5 * MIN);
-      if (t.getTime() + 15 * MIN <= deadline.getTime() - 30 * MIN) add("checkpoint", "15-minute mock test", t, 15);
+    const morningEnd = new Date(deadline.getTime() - 30 * MIN); // walk-to-the-hall buffer
+    if (days >= 1 && morningEnd.getTime() - morning.getTime() >= 45 * MIN) {
+      let t = morning;
+      let used = 0;
+      // Hold back 20 minutes so the mock test that closes a crash plan always fits.
+      const studyEnd = new Date(morningEnd.getTime() - 20 * MIN);
+      const room = (minutes: number) =>
+        used + minutes <= budget && t.getTime() + minutes * MIN <= studyEnd.getTime();
+      for (let k = 0; k < queue.length; ) {
+        const tp = queue[k];
+        if (!room(tp.minutes)) {
+          k++;
+          continue;
+        }
+        queue.splice(k, 1);
+        t = add("block", tp.topic, t, tp.minutes, `Unit ${tp.unit}`);
+        t = new Date(t.getTime() + 5 * MIN);
+        used += tp.minutes + 5;
+      }
+      // "Redo the questions you got wrong" only makes sense after a quiz has actually happened.
+      if (steps.some((s) => s.kind === "checkpoint") && room(30)) {
+        t = add("block", "Redo the questions you got wrong", t, 30);
+        t = new Date(t.getTime() + 5 * MIN);
+        used += 35;
+      }
+      if (t.getTime() + 15 * MIN <= morningEnd.getTime()) add("checkpoint", "15-minute mock test", t, 15);
     }
     exam();
     return steps;

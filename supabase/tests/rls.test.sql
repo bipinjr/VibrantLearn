@@ -1,7 +1,7 @@
 -- RLS + grants: user A must never see or change user B's data; anon sees nothing private.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(36);
+select plan(37);
 
 -- ---- fixtures (as postgres) -----------------------------------------------------------------
 insert into auth.users (id, email) values
@@ -112,6 +112,11 @@ select throws_ok($$select * from internal.rate_limits$$, '42501', null, 'interna
 -- Hosted Supabase blocks all direct SQL deletes on storage (Storage API only).
 select throws_ok($$delete from storage.objects where name like '00000000-0000-0000-0000-00000000000b/%'$$,
   '42501', null, 'stored files can only be deleted through the Storage API');
+-- Uploads are server-validated: no client INSERT policy on storage (SECURITY.md §8).
+select throws_ok($$insert into storage.objects (bucket_id, name, owner_id)
+  values ('user-files', '00000000-0000-0000-0000-00000000000a/s/f/sneaky.exe',
+          '00000000-0000-0000-0000-00000000000a')$$,
+  '42501', null, 'clients cannot upload straight to storage, even into their own folder');
 
 -- writes A is allowed to do
 select lives_ok($$update public.profiles set language = 'kn', formats = array['quiz']$$,

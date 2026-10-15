@@ -6,6 +6,26 @@ Read this file, `docs/handbook/SECURITY.md`, `AGENTS.md`, `MEMORY.md` and `HANDO
 
 VibrantLearn (official title: *Web - AI-Powered Personalized Learning Path Generator [Smart EdTech Learning System]*) turns a student's request ("Java internal tomorrow, BCA SEP, Kannada, quizzes") or their uploaded notes into a personal learning path: timetable, checkpoints, notes, important questions, quizzes and flashcards. Current phase: **student side prototype (v0.4)**. Teacher marketplace, live classes, moderation, payments and notifications are out of scope and appear only as "Coming soon". It belongs to Bipin A and Darshan H.S. and will become a startup, so security and code quality are non-negotiable.
 
+## Documentation map
+
+Full index: [docs/README.md](docs/README.md). The ones you will need most:
+
+| Before you… | Read |
+|---|---|
+| add anything | [docs/handbook/ARCHITECTURE.md](docs/handbook/ARCHITECTURE.md) — where code goes, and what can be data instead of code |
+| touch a table or migration | [docs/handbook/DATABASE.md](docs/handbook/DATABASE.md) |
+| add or call an endpoint | [docs/handbook/API.md](docs/handbook/API.md) |
+| touch auth, uploads, prompts or another user's data | [docs/handbook/SECURITY.md](docs/handbook/SECURITY.md) |
+| build UI | [docs/handbook/FRONTEND.md](docs/handbook/FRONTEND.md) + [ACCESSIBILITY.md](docs/handbook/ACCESSIBILITY.md) |
+| write words a student reads | [docs/handbook/CONTENT_STYLE.md](docs/handbook/CONTENT_STYLE.md) |
+| write a test | [docs/handbook/TESTING.md](docs/handbook/TESTING.md) |
+| store a new field | [docs/handbook/PRIVACY.md](docs/handbook/PRIVACY.md) |
+| name something | [docs/handbook/GLOSSARY.md](docs/handbook/GLOSSARY.md) |
+| deploy or debug production | [docs/ops/DEPLOYMENT.md](docs/ops/DEPLOYMENT.md) · [docs/ops/RUNBOOK.md](docs/ops/RUNBOOK.md) |
+| pick up the next piece of work | [BUILD_PLAN.md](BUILD_PLAN.md) |
+
+When you change behaviour, update the page that describes it **in the same commit** ([CONTRIBUTING.md](CONTRIBUTING.md) §8).
+
 ## Stack (do not change without asking)
 
 | Layer | Choice |

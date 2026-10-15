@@ -1,16 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { buildPlan } from "./scheduler";
+import { topicsFor } from "./syllabus";
 
 const NOW = new Date("2026-10-08T15:00:00Z"); // Thu 8:30 PM IST
 const h = (n: number) => new Date(NOW.getTime() + n * 3_600_000);
 
-function check(steps: ReturnType<typeof buildPlan>, deadline: Date) {
+function check(steps: ReturnType<typeof buildPlan>, deadline: Date, from: Date = NOW) {
   const exam = steps.at(-1)!;
   expect(exam.kind).toBe("exam");
   for (const s of steps.slice(0, -1)) {
     expect(new Date(s.end ?? s.start).getTime()).toBeLessThanOrEqual(deadline.getTime());
-    expect(new Date(s.start).getTime()).toBeGreaterThanOrEqual(NOW.getTime() - 5 * 60_000);
+    expect(new Date(s.start).getTime()).toBeGreaterThanOrEqual(from.getTime() - 5 * 60_000);
   }
+}
+
+/** A plan is only useful if it tells the student which syllabus topics to study. */
+function expectRealTopics(steps: ReturnType<typeof buildPlan>, subject: string) {
+  const names = new Set(topicsFor(subject).map((t) => t.topic));
+  const taught = steps.filter((s) => s.kind === "block" && names.has(s.title));
+  expect(taught.length).toBeGreaterThan(0);
 }
 
 describe("buildPlan", () => {
@@ -35,6 +43,42 @@ describe("buildPlan", () => {
       perDay.set(day, (perDay.get(day) ?? 0) + (s.minutes ?? 0));
     }
     for (const m of perDay.values()) expect(m).toBeLessThanOrEqual(2 * 60);
+  });
+
+  // Regression: a student opening the app at 10:40 PM used to get a plan with no syllabus topics
+  // at all, because the exam-day morning only ever held "Redo the questions you got wrong".
+  it("crash: late at night, still teaches real topics in the exam-day morning", () => {
+    const lateNight = new Date("2026-10-08T17:10:00Z"); // Thu 10:40 PM IST
+    const deadline = new Date("2026-10-09T04:30:00Z"); // Fri 10:00 AM IST
+    const steps = buildPlan({
+      subject: "Database Management Systems",
+      deadline,
+      now: lateNight,
+      mode: "crash",
+      hoursPerDay: 2,
+      idPrefix: "t",
+    });
+    check(steps, deadline, lateNight);
+    expectRealTopics(steps, "Database Management Systems");
+    // Nothing was quizzed yet, so there is nothing to redo.
+    expect(steps.some((s) => s.title === "Redo the questions you got wrong")).toBe(false);
+    expect(steps.at(-2)?.title).toBe("15-minute mock test");
+  });
+
+  it("crash: every plan ends with the mock test before the exam", () => {
+    for (const hours of [1, 2, 3, 5]) {
+      const deadline = new Date("2026-10-09T04:30:00Z");
+      const steps = buildPlan({
+        subject: "Java Programming",
+        deadline,
+        now: new Date("2026-10-08T13:30:00Z"), // 7:00 PM IST
+        mode: "crash",
+        hoursPerDay: hours,
+        idPrefix: `t${hours}`,
+      });
+      expectRealTopics(steps, "Java Programming");
+      expect(steps.at(-2)?.title).toBe("15-minute mock test");
+    }
   });
 
   it("steady: weekly milestones with weekend checkpoints", () => {
