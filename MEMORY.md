@@ -142,6 +142,7 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | A3: DELETE /api/v1/sessions/{id}: ownership 404, storage objects removed + verified, then row, audit; client DELETE revoked (migration applied, RLS 37/37); 4 API tests with in-memory fakes |
 | 2026-10-16 | Bipin A + Claude | A2: savePlan uses insert, not upsert (client lacks UPDATE on most columns); persist.test.ts asserts create -> replan -> create never upserts |
 | 2026-10-16 | Bipin A + Claude | A1: `ip_hash` trusts `x-forwarded-for` only with `TRUSTED_PROXY=true` (last hop); 4 new pytest cases; docs + .env.example |
 | 2026-10-15 | Bipin A + Claude | Security review; fixed open redirect, crash-plan scheduler, storage upload policy, rate-limit key; added BUILD_PLAN.md and docs/setup/MANUAL_STEPS.md |

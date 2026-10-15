@@ -118,8 +118,8 @@ Block types: `text`, `followup`, `plan`, `notes`, `questions`, `quiz`, `flashcar
 Pipeline: parse → entities → urgency → one follow-up if something essential is missing → cache → local answer → LLM only if needed. The finished message is persisted with `served_from`. A dropped connection must not leave a half-written row.
 Limit: 30 per 10 minutes.
 
-**`DELETE /sessions/{id}`** ⬜
-Verify ownership → delete storage objects under `{user_id}/{session_id}/` → delete the row (cascade clears messages, files, chunks, plans). Returns `204`.
+**`DELETE /sessions/{id}`** ✅
+Limit 30/hour. Verify ownership (`404` if not yours) → delete storage objects under `{user_id}/{session_id}/` → verify none remain → delete the row (cascade clears messages, files, chunks, plans) → audit `session_deleted`. Returns `204`. Clients have no DELETE grant on `study_sessions`, so this is the only way to delete one.
 
 ---
 

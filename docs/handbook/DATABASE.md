@@ -85,7 +85,7 @@ Every table has `id uuid primary key default gen_random_uuid()` (except where no
 
 Index: `(user_id, updated_at desc)` — the sidebar's query.
 
-**Access:** owner CRUD. Delete is granted to the client today because no files are stored yet; once uploads are real it moves to the API so storage objects are removed with the row ([BUILD_PLAN.md](../../BUILD_PLAN.md) A3).
+**Access:** owner creates, reads, renames. **Delete goes through the API** (`DELETE /api/v1/sessions/{id}`), which removes the session's storage objects first; clients have no DELETE grant (migration `20261016100000`).
 
 ### 3.3 `messages` — the thread
 
@@ -200,6 +200,7 @@ Current migrations:
 | `20261008172845_client_owned_writes.sql` | Let signed-in students write their own profile, messages and plans directly while the API is unhosted; added the reserved-username CHECK |
 | `20261008173310_client_ids.sql` | Client-generated UUIDs for sessions and messages, so navigation is instant |
 | `20261015180000_lock_storage_uploads.sql` | Removed the client INSERT policy on storage; uploads are server-validated only |
+| `20261016100000_sessions_delete_via_api.sql` | Revoked client DELETE on `study_sessions`; the API deletes stored files, then the row |
 
 ---
 
@@ -210,7 +211,7 @@ Current migrations:
 It creates two users, A and B, with a full set of rows each, then asserts:
 
 - A sees exactly one of everything, never B's
-- A cannot rename, delete or reassign B's session
+- A cannot rename or reassign B's session, and cannot delete any session directly (the API does it)
 - A cannot insert a message, plan or flashcard review into B's data
 - A cannot change a checkpoint title, only `done_at`
 - A cannot upload straight to storage, even into their own folder

@@ -98,9 +98,9 @@ select throws_ok($$update public.profiles set username = 'admin'$$, '23514', nul
   'reserved usernames are rejected by the database');
 select throws_ok($$update public.plan_checkpoints set title = 'x'$$, '42501', null,
   'checkpoint title is not client-editable');
-select is_empty($$delete from public.study_sessions
-  where id = '10000000-0000-0000-0000-00000000000b' returning 1$$,
-  'A cannot delete B''s session');
+select throws_ok($$delete from public.study_sessions
+  where id = '10000000-0000-0000-0000-00000000000a'$$, '42501', null,
+  'clients cannot delete sessions, even their own (the API removes stored files first)');
 select throws_ok($$insert into public.flashcard_reviews (content_id, card_idx)
   values ('50000000-0000-0000-0000-00000000000b', 1)$$, '42501', null,
   'A cannot review cards from B''s content');

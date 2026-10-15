@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Response
 
 from app.core import errors
 from app.core.config import get_settings
-from app.routers import health, me, waitlist
+from app.routers import health, me, sessions, waitlist
 
 
 class _JsonFormatter(logging.Formatter):
@@ -59,5 +59,5 @@ async def request_id(
     return response
 
 
-for r in (health.router, me.router, waitlist.router):
+for r in (health.router, me.router, sessions.router, waitlist.router):
     app.include_router(r, prefix="/api/v1")

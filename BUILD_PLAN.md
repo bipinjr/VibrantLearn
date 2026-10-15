@@ -71,7 +71,7 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
   - `apps/web/lib/account/persist.ts`: the client holds `update (plan, updated_at)` only, so an upsert over an existing plan id will fail with `42501`. Replace `.upsert(...)` with an explicit insert, and route "same plan changed" through `updatePlanSteps`.
   - **Verify:** new vitest covering create → replan → create-again in one session; `pnpm typecheck`.
 
-- [ ] **A3. Session delete must remove its files**
+- [x] **A3. Session delete must remove its files**
   - Today `deleteSession` only deletes the row. Once uploads are real (Phase C) the storage objects would be orphaned.
   - Add `DELETE /api/v1/sessions/{id}` in FastAPI: verify ownership, delete storage objects under `{user_id}/{session_id}/`, then the row (cascade clears messages, files, chunks, plans). Point the client at it; keep the client-side delete only while `DEMO_MODE` is on.
   - **Verify:** pytest asserting objects are gone after the call, and that user B cannot delete user A's session.

@@ -2,6 +2,7 @@
 // student's own rows (tested: supabase/tests/rls.test.sql). Errors are returned, never thrown,
 // so the UI can show "couldn't save" without losing what's on screen.
 import type { Demo, Message, Plan, Session } from "@/lib/demo/data";
+import { api, ApiError } from "@/lib/api/client";
 import { createClient } from "@/lib/supabase/client";
 
 type Result = { error?: string };
@@ -23,9 +24,14 @@ export async function patchSession(id: string, p: Partial<Session>): Promise<Res
   return fail(error);
 }
 
+/** Through the API: it removes the session's stored files first, then the row (BUILD_PLAN A3). */
 export async function deleteSession(id: string): Promise<Result> {
-  const { error } = await db().from("study_sessions").delete().eq("id", id);
-  return fail(error);
+  try {
+    await api(`/sessions/${encodeURIComponent(id)}`, { method: "DELETE" });
+    return {};
+  } catch (e) {
+    return { error: e instanceof ApiError ? e.message : "Couldn't delete that session." };
+  }
 }
 
 export async function addMessage(sessionId: string, m: Message): Promise<Result> {
