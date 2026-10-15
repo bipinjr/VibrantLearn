@@ -67,7 +67,7 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
   - Add a module docstring note: IP buckets are a coarse backstop; user-id buckets are the real limit.
   - **Verify:** `cd apps/api && uv run pytest -q` and a new test asserting a spoofed `x-forwarded-for` does not create a fresh bucket when `TRUSTED_PROXY` is unset.
 
-- [ ] **A2. Fix the latent `savePlan` upsert**
+- [x] **A2. Fix the latent `savePlan` upsert**
   - `apps/web/lib/account/persist.ts`: the client holds `update (plan, updated_at)` only, so an upsert over an existing plan id will fail with `42501`. Replace `.upsert(...)` with an explicit insert, and route "same plan changed" through `updatePlanSteps`.
   - **Verify:** new vitest covering create → replan → create-again in one session; `pnpm typecheck`.
 

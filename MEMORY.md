@@ -142,6 +142,7 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | A2: savePlan uses insert, not upsert (client lacks UPDATE on most columns); persist.test.ts asserts create -> replan -> create never upserts |
 | 2026-10-16 | Bipin A + Claude | A1: `ip_hash` trusts `x-forwarded-for` only with `TRUSTED_PROXY=true` (last hop); 4 new pytest cases; docs + .env.example |
 | 2026-10-15 | Bipin A + Claude | Security review; fixed open redirect, crash-plan scheduler, storage upload policy, rate-limit key; added BUILD_PLAN.md and docs/setup/MANUAL_STEPS.md |
 | 2026-10-09 | Bipin A + Claude | Kannada/Hindi script + Kanglish/Hinglish input with language detection; AI notes route (write → review → translate); Groq models switched to gpt-oss; app UI in kn/hi with Settings switch; Flashcards hydration fix; docs + PDF say Supabase connected. 135 web tests, 17/17 E2E with AI on |

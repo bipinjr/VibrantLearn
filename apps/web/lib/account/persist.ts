@@ -40,13 +40,17 @@ export async function addMessage(sessionId: string, m: Message): Promise<Result>
   return fail(error);
 }
 
+/** Stores a newly built plan, replacing any older plan in the same session. */
 export async function savePlan(plan: Plan, profile: Demo["profile"], replaceInSession = true): Promise<Result> {
   const client = db();
   if (replaceInSession) {
     const { error } = await client.from("study_plans").delete().eq("session_id", plan.sessionId).neq("id", plan.id);
     if (error) return fail(error);
   }
-  const { error } = await client.from("study_plans").upsert({
+  // Plain insert, never upsert: the client may only UPDATE (plan, updated_at), and an upsert needs
+  // UPDATE rights on every column it sends, so it fails with 42501. A plan that changes later goes
+  // through updatePlanSteps.
+  const { error } = await client.from("study_plans").insert({
     id: plan.id,
     session_id: plan.sessionId,
     subject: plan.subject,
