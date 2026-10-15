@@ -116,6 +116,8 @@ Living record for humans and AI agents. Read at the start of every session; upda
 
 ## Handoffs
 
+- **2026-10-16 → next session:** see [NEXT_SESSION.md](NEXT_SESSION.md). E1/E2/E5 on disk, uncommitted (lint + hybrid threshold to tune). Blocked on Bipin: `apps/api/.env` secret key + DB password.
+
 _None yet._
 
 ## Security review log
