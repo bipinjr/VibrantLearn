@@ -80,8 +80,8 @@ select is((select count(*) from storage.objects where bucket_id = 'user-files'):
 select ok((select count(*) from public.syllabus_topics) > 0, 'signed-in users can read the syllabus');
 
 -- writes A must not be able to do
-select is((with u as (update public.study_sessions set title = 'hacked'
-  where id = '10000000-0000-0000-0000-00000000000b' returning 1) select count(*) from u)::int, 0,
+select is_empty($$update public.study_sessions set title = 'hacked'
+  where id = '10000000-0000-0000-0000-00000000000b' returning 1$$,
   'A cannot rename B''s session');
 select throws_ok($$update public.study_sessions set user_id = '00000000-0000-0000-0000-00000000000b'$$,
   '42501', null, 'A cannot move a session to another user');
@@ -98,8 +98,8 @@ select throws_ok($$update public.profiles set username = 'admin'$$, '23514', nul
   'reserved usernames are rejected by the database');
 select throws_ok($$update public.plan_checkpoints set title = 'x'$$, '42501', null,
   'checkpoint title is not client-editable');
-select is((with d as (delete from public.study_sessions
-  where id = '10000000-0000-0000-0000-00000000000b' returning 1) select count(*) from d)::int, 0,
+select is_empty($$delete from public.study_sessions
+  where id = '10000000-0000-0000-0000-00000000000b' returning 1$$,
   'A cannot delete B''s session');
 select throws_ok($$insert into public.flashcard_reviews (content_id, card_idx)
   values ('50000000-0000-0000-0000-00000000000b', 1)$$, '42501', null,

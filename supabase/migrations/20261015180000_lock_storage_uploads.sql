@@ -15,6 +15,5 @@
 
 drop policy if exists "own_folder_insert" on storage.objects;
 
-comment on table storage.objects is
-  'VibrantLearn: clients may read and delete only their own {user_id}/... objects. Writes happen '
-  'through server-issued signed upload URLs after validation (SECURITY.md §8).';
+-- (No COMMENT on storage.objects: the table belongs to supabase_storage_admin, so a project
+-- migration cannot comment on it. Applied 2026-10-16.)
