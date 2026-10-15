@@ -142,6 +142,8 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | E4: Python scheduler port (app/ml/scheduler.py): 22 parity cases incl. 10:40 PM regression match TS step-for-step |
+| 2026-10-16 | Bipin A + Claude | E3: Python entities/urgency port (app/ml/parse.py): script + Kanglish/Hinglish, IST deadlines, modes; 40 phrasings match TS exactly |
 | 2026-10-16 | Bipin A + Claude | A3: DELETE /api/v1/sessions/{id}: ownership 404, storage objects removed + verified, then row, audit; client DELETE revoked (migration applied, RLS 37/37); 4 API tests with in-memory fakes |
 | 2026-10-16 | Bipin A + Claude | A2: savePlan uses insert, not upsert (client lacks UPDATE on most columns); persist.test.ts asserts create -> replan -> create never upserts |
 | 2026-10-16 | Bipin A + Claude | A1: `ip_hash` trusts `x-forwarded-for` only with `TRUSTED_PROXY=true` (last hop); 4 new pytest cases; docs + .env.example |

@@ -3,11 +3,18 @@ name = "vibrantlearn-api"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "defusedxml>=0.7.1",
     "fastapi>=0.143.0",
     "httpx>=0.28.1",
     "psycopg[binary]>=3.3.6",
     "pydantic-settings>=2.15.0",
     "pyjwt[crypto]>=2.15.1",
+    "pypdf>=6.20.1",
+    "python-docx>=1.2.0",
+    "python-pptx>=1.0.2",
+    "rapidfuzz>=3.14.6",
+    "scikit-learn>=1.9.1",
+    "yake>=0.7.3",
 ]
 
 [dependency-groups]

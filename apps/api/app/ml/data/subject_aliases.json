@@ -1,0 +1,8 @@
+{
+ "Java Programming": "\\bjava\\b|inheritance|overrid|polymorph|applet|jvm",
+ "Python Programming": "\\bpython\\b|\\bpy\\b|lambda|dictionar|tuple",
+ "Database Management Systems": "\\bdbms\\b|database|\\bsql\\b|normali[sz]|\\ber diagram|transaction",
+ "Data Structures": "data ?structures?|\\bdsa?\\b|linked ?list|\\bstack|\\bqueue|binary tree|\\bbst\\b",
+ "Computer Networks": "computer networks?|\\bnetworks?\\b|\\bcn\\b|subnet|osi model|tcp",
+ "Operating Systems": "operating systems?|\\bos\\b|deadlock|paging|cpu scheduling|semaphore"
+}
