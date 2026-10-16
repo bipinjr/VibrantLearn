@@ -1,4 +1,3 @@
-import { teacherStatus } from "@/lib/account/role";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -11,7 +10,6 @@ export default async function OnboardingPage() {
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub;
   if (!userId) redirect("/login?next=/onboarding");
-  if (await teacherStatus(userId)) redirect("/teacher");
 
   // RLS limits this to the user's own row.
   const { data: profile } = await supabase

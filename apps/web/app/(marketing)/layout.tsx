@@ -25,7 +25,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
             <a href="#live" className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted no-underline hover:text-text md:inline">
               Live classes
             </a>
-            <Link href="/teacher-signup" className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted no-underline hover:text-text lg:inline">
+            <Link href="/teach/signup" className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted no-underline hover:text-text lg:inline">
               For teachers
             </Link>
             <ThemeToggle />
@@ -67,8 +67,8 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
             <p className="font-semibold">VibrantLearn</p>
             <Link href="/privacy" className="text-muted no-underline hover:text-text">Privacy notice</Link>
             <Link href="/login" className="text-muted no-underline hover:text-text">Student sign in</Link>
-            <Link href="/teacher-login" className="text-muted no-underline hover:text-text">Teacher sign in</Link>
-            <Link href="/teacher-signup" className="text-muted no-underline hover:text-text">Teach on VibrantLearn</Link>
+            <Link href="/teach/login" className="text-muted no-underline hover:text-text">Teacher sign in</Link>
+            <Link href="/teach/signup" className="text-muted no-underline hover:text-text">Teach on VibrantLearn</Link>
           </nav>
         </div>
         <div className="border-t border-line">

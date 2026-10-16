@@ -9,7 +9,7 @@ from app.core import ratelimit
 from app.core.auth import CurrentUser
 from app.core.db import get_conn
 from app.llm.client import Llm, get_llm
-from app.services import class_chat, classes
+from app.services import class_chat, classes, teachers
 
 router = APIRouter()
 Conn = Annotated[psycopg.Connection[dict[str, object]], Depends(get_conn)]
@@ -35,6 +35,8 @@ class ApplyIn(BaseModel):
     levels: list[Literal["beginner", "exam_prep", "all"]] = Field(
         default=["all"], min_length=1, max_length=3
     )
+    organisation: str = Field(default="", max_length=120)
+    consent: Literal[True]
 
 
 class ClassIn(BaseModel):
@@ -51,18 +53,22 @@ class ClassIn(BaseModel):
 def my_teacher_profile(user: CurrentUser, conn: Conn) -> dict[str, Any]:
     t = classes.teacher(conn, user.id)
     if not t:
-        return {"teacher": None, "earnings": None, "stats": None}
+        return {"teacher": None, "earnings": None, "stats": None, "payout": None}
     return {
         "teacher": t,
         "earnings": classes.earnings(conn, user.id),
         "stats": classes.stats(conn, user.id),
+        "payout": teachers.payout_masked(conn, user.id),
+        "review_promise": teachers.REVIEW_PROMISE,
+        "rules": classes.rules(),
     }
 
 
 @router.post("/teachers/apply")
 def apply(body: ApplyIn, user: CurrentUser, conn: Conn) -> dict[str, Any]:
     ratelimit.hit(conn, user.id, "teacher_apply", 5, 86400, "Too many applications today.")
-    return {"teacher": classes.apply(conn, user.id, body.model_dump())}
+    teachers.check_subjects(conn, body.subjects)
+    return {"teacher": classes.apply(conn, user.id, body.model_dump(exclude={"consent"}))}
 
 
 @router.post("/teachers/withdraw")

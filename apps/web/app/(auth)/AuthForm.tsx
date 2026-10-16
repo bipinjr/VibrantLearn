@@ -122,11 +122,11 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
       <p className="mt-8 text-sm">
         {mode === "signin" ? (
           <>
-            New here? <Link href={teacher ? "/teacher-signup" : "/signup"}>{teacher ? "Create a teacher account" : "Create an account"}</Link>
+            New here? <Link href={teacher ? "/teach/signup" : "/signup"}>{teacher ? "Create a teacher account" : "Create an account"}</Link>
           </>
         ) : (
           <>
-            Already have an account? <Link href={teacher ? "/teacher-login" : "/login"}>Sign in</Link>
+            Already have an account? <Link href={teacher ? "/teach/login" : "/login"}>Sign in</Link>
           </>
         )}
       </p>
@@ -137,7 +137,7 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
           </>
         ) : (
           <>
-            Teaching? <Link href="/teacher-login">Teacher sign in</Link>
+            Teaching? <Link href="/teach/login">Teacher sign in</Link>
           </>
         )}
       </p>

@@ -5,6 +5,7 @@ there is none. Times are moved by editing `starts_at`, the same way the clock wo
 """
 
 import json
+import os
 import uuid
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
@@ -22,7 +23,7 @@ from tests.conftest import make_token
 
 def sql(q: str, args: tuple[Any, ...] = ()) -> list[tuple[Any, ...]]:
     """One short connection per statement (some test servers allow a single connection at a time)."""
-    with psycopg.connect(get_settings().database_url.get_secret_value(), connect_timeout=2) as c:
+    with psycopg.connect(get_settings().database_url.get_secret_value(), connect_timeout=10) as c:
         cur = c.execute(q, args)
         rows = cur.fetchall() if cur.description else []
         c.commit()
@@ -51,6 +52,8 @@ def env(monkeypatch: pytest.MonkeyPatch) -> Iterator[tuple[TestClient, Judge]]:
     monkeypatch.setattr(
         get_settings(), "teacher_auto_verify", False
     )  # a local demo .env may turn it on
+    if os.environ.get("E2E_DB") != "1":
+        pytest.skip("writes real rows: run with E2E_DB=1 against a test database")
     try:
         sql("select 1 from internal.class_messages limit 1")
     except psycopg.Error:
@@ -89,13 +92,77 @@ def test_live_class_and_moderation_bot(env: tuple[TestClient, Judge]) -> None:
     r = api.post("/api/v1/teachers/apply", headers=teacher,
                  json={"display_name": "Ravi Sir", "subjects": ["Java Programming"], "qualification": "MCA",
                        "experience_years": 6, "languages": ["en", "kn"], "preferred_days": ["mon", "wed"],
-                       "preferred_slots": ["7-8pm"], "levels": ["exam_prep"]})  # fmt: skip
+                       "preferred_slots": ["7-8pm"], "levels": ["exam_prep"],
+                       "organisation": "Seshadripuram College", "consent": True})  # fmt: skip
+    assert r.status_code == 200, r.text
     prof = r.json()["teacher"]
     assert (
         prof["status"] == "pending"
         and prof["languages"] == ["en", "kn"]
         and prof["preferred_slots"] == ["7-8pm"]
     )
+    # T1: no consent or a subject outside the syllabus is refused; payout details come back masked
+    bad = {"display_name": "Ravi Sir", "subjects": ["Java Programming"], "consent": False}
+    assert api.post("/api/v1/teachers/apply", headers=teacher, json=bad).status_code == 422
+    bad = {"display_name": "Ravi Sir", "subjects": ["Astrology"], "consent": True}
+    assert api.post("/api/v1/teachers/apply", headers=teacher, json=bad).status_code == 422
+    p = api.put(
+        "/api/v1/teachers/payout",
+        headers=teacher,
+        json={"method": "upi", "upi_id": "ravikumar@okaxis"},
+    )
+    assert (
+        p.status_code == 200
+        and p.json()["payout"]["display"].startswith("ra")
+        and "vikumar" not in p.json()["payout"]["display"]
+    )
+    assert (
+        api.put(
+            "/api/v1/teachers/payout", headers=teacher, json={"method": "bank", "ifsc": "nope"}
+        ).status_code
+        == 422
+    )
+    me = api.get("/api/v1/teachers/me", headers=teacher).json()
+    assert (
+        me["payout"]["method"] == "upi" and me["teacher"]["organisation"] == "Seshadripuram College"
+    )
+    # a teacher can't see the review queue or approve themselves
+    assert api.get("/api/v1/review/teachers", headers=teacher).status_code == 404
+    assert (
+        api.post(
+            f"/api/v1/review/teachers/{t_id}", headers=teacher, json={"decision": "verify"}
+        ).status_code
+        == 404
+    )
+    # a reviewer rejects with a reason; resubmitting puts it back in the queue
+    rv_id, reviewer = person("reviewer")
+    sql("insert into internal.reviewers (user_id) values (%s)", (rv_id,))
+    assert any(
+        x["user_id"] == t_id
+        for x in api.get("/api/v1/review/teachers", headers=reviewer).json()["teachers"]
+    )
+    assert (
+        api.post(
+            f"/api/v1/review/teachers/{t_id}", headers=reviewer, json={"decision": "reject"}
+        ).status_code
+        == 422
+    )
+    rj = api.post(
+        f"/api/v1/review/teachers/{t_id}",
+        headers=reviewer,
+        json={"decision": "reject", "note": "Document is blurry."},
+    )
+    assert rj.json()["status"] == "rejected"
+    me = api.get("/api/v1/teachers/me", headers=teacher).json()["teacher"]
+    assert me["status"] == "rejected" and me["review_note"] == "Document is blurry."
+    resubmit = {"display_name": "Ravi Sir", "subjects": ["Java Programming"], "consent": True}
+    assert (
+        api.post("/api/v1/teachers/apply", headers=teacher, json=resubmit).json()["teacher"][
+            "status"
+        ]
+        == "pending"
+    )
+
     start = (datetime.now(UTC) + timedelta(hours=2)).isoformat()
     body = {
         "subject": "Java Programming",
@@ -104,10 +171,8 @@ def test_live_class_and_moderation_bot(env: tuple[TestClient, Judge]) -> None:
         "duration_min": 60,
     }
     assert api.post("/api/v1/classes", headers=teacher, json=body).status_code == 403
-    sql(
-        "update public.teachers set status = 'verified', verified_at = now() where user_id = %s",
-        (t_id,),
-    )
+    ok = api.post(f"/api/v1/review/teachers/{t_id}", headers=reviewer, json={"decision": "verify"})
+    assert ok.json()["status"] == "verified"
     cid = new_class(api, teacher)
 
     # 12 students mark interested; queue order is kept; one more student never does
@@ -265,7 +330,11 @@ def test_auto_cancel_and_teacher_no_show(env: tuple[TestClient, Judge]) -> None:
     api.post(
         "/api/v1/teachers/apply",
         headers=teacher,
-        json={"display_name": "Asha Madam", "subjects": ["DBMS"]},
+        json={
+            "display_name": "Asha Madam",
+            "subjects": ["Database Management Systems"],
+            "consent": True,
+        },
     )
     sql("update public.teachers set status = 'verified' where user_id = %s", (t_id,))
     viewer = person("v")[1]

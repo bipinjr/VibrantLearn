@@ -91,10 +91,10 @@ export function LiveTonight() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3 md:justify-end">
-            <Link href="/teacher-signup" className="btn btn-primary min-h-12 px-6 text-lg">
+            <Link href="/teach/signup" className="btn btn-primary min-h-12 px-6 text-lg">
               Start teaching
             </Link>
-            <Link href="/teacher-login" className="font-medium">
+            <Link href="/teach/login" className="font-medium">
               Teacher sign in
             </Link>
           </div>

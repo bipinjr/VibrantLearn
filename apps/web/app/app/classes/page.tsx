@@ -62,7 +62,7 @@ function Row({ c, nowIso, onChange }: { c: LiveClass; nowIso: string; onChange: 
   }
 
   return (
-    <li className="grid gap-2 py-5 sm:grid-cols-[7.5rem_1fr_auto] sm:items-start sm:gap-6">
+    <li id={`c-${c.id}`} className="grid scroll-mt-24 gap-2 py-5 target:bg-violet/5 sm:grid-cols-[7.5rem_1fr_auto] sm:items-start sm:gap-6">
       <p className="text-sm text-muted tabular-nums">
         <span className="block font-semibold text-text">{clock(c.starts_at)}</span>
         {dayLabel(c.starts_at, nowIso, lang)}, {t("{m} min", { m: c.duration_min })}

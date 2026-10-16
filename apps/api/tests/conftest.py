@@ -1,5 +1,6 @@
 """Test helpers: sign tokens with a throwaway EC key and point the verifier at it."""
 
+import os
 import time
 import uuid
 from collections.abc import Iterator
@@ -26,6 +27,15 @@ def fake_jwks(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(auth, "_jwks", lambda: _FakeJwks())
 
 
+@pytest.fixture(autouse=True)
+def production_rules(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Tests check the real class rules, whatever a local demo .env lowers them to."""
+    s = get_settings()
+    monkeypatch.setattr(s, "class_min_students", 10)
+    monkeypatch.setattr(s, "class_min_lead_min", 30)
+    monkeypatch.setattr(s, "teacher_auto_verify", False)
+
+
 def make_token(sub: str, **overrides: object) -> str:
     now = int(time.time())
     claims: dict[str, object] = {
@@ -42,6 +52,8 @@ def make_token(sub: str, **overrides: object) -> str:
 
 @pytest.fixture
 def db() -> Iterator[psycopg.Connection[tuple[object, ...]]]:
+    if os.environ.get("E2E_DB") != "1":
+        pytest.skip("writes real rows: run with E2E_DB=1 against a test database")
     try:
         conn = psycopg.connect(get_settings().database_url.get_secret_value(), connect_timeout=2)
     except psycopg.OperationalError:

@@ -1,10 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { DEMO_COOKIE, demoEnabled } from "@/lib/demo/mode";
+import { SIGNUP_AS_COOKIE } from "@/lib/theme";
 
-const PROTECTED = ["/app", "/onboarding", "/teacher"];
+const PROTECTED = ["/app", "/onboarding", "/review"];
 const AUTH_ONLY_FOR_GUESTS = ["/login", "/signup"];
-const TEACHER_GUEST_PAGES = ["/teacher-login", "/teacher-signup"];
+const TEACHER_GUEST_PAGES = ["/teach/login", "/teach/signup"];
 
 function csp(nonce: string): string {
   const dev = process.env.NODE_ENV === "development";
@@ -75,18 +76,19 @@ export async function proxy(request: NextRequest) {
   if (path === "/" && code) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/callback";
-    url.search = `?code=${encodeURIComponent(code)}&next=%2Fonboarding`;
+    const teacher = request.cookies.get(SIGNUP_AS_COOKIE)?.value === "teacher";
+    url.search = `?code=${encodeURIComponent(code)}&next=${encodeURIComponent(teacher ? "/teach" : "/onboarding")}`;
     return NextResponse.redirect(url);
   }
 
-  const teacherPage = path === "/teacher" || path.startsWith("/teacher/");
-  if (teacherPage && !data?.claims?.sub) return redirect("/teacher-login", path);
+  const teacherPage = (path === "/teach" || path.startsWith("/teach/")) && !TEACHER_GUEST_PAGES.includes(path);
+  if (teacherPage && !data?.claims?.sub) return redirect("/teach/login", path);
   if (!signedIn && PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
     return redirect("/login", path);
   }
   // Only a real account skips the teacher sign-in: the demo has no teacher portal.
   if (data?.claims?.sub && TEACHER_GUEST_PAGES.includes(path)) {
-    return redirect("/teacher");
+    return redirect("/teach");
   }
   if (signedIn && AUTH_ONLY_FOR_GUESTS.includes(path)) {
     return redirect("/app");

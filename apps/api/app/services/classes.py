@@ -53,6 +53,25 @@ class Klass:
         return self.starts_at + timedelta(minutes=self.duration_min)
 
 
+def min_students() -> int:
+    return max(
+        1, min(get_settings().class_min_students, MIN_STUDENTS)
+    )  # a setting can only lower it
+
+
+def rules() -> dict[str, int]:
+    """What the teacher sees before creating a room (TEACHER.md T3: no surprises later)."""
+    lead = max(0, get_settings().class_min_lead_min)
+    return {
+        "min_students": min_students(),
+        "max_students": MAX_STUDENTS,
+        "min_lead_min": lead,
+        "gross_paise": CLASS_GROSS_PAISE,
+        "net_paise": CLASS_GROSS_PAISE - round(CLASS_GROSS_PAISE * PLATFORM_FEE),
+        "fee_percent": round(PLATFORM_FEE * 100),
+    }
+
+
 # ---- pure rules -------------------------------------------------------------------------------
 
 
@@ -83,8 +102,9 @@ def settle_decision(c: Klass, interested: int, students_joined: int, now: dateti
     start; a missing teacher cancels at +10 min; a class that ran ends as done (and is paid)."""
     if c.status != "scheduled" or now < c.starts_at:
         return Settlement(c.status)
-    if interested < MIN_STUDENTS and students_joined == 0:
-        return Settlement("cancelled", f"Fewer than {MIN_STUDENTS} students were interested.")
+    need = min_students()
+    if interested < need and students_joined == 0:
+        return Settlement("cancelled", f"Fewer than {need} students were interested.")
     if c.teacher_joined_at is None and now >= c.starts_at + NO_SHOW_AFTER:
         return Settlement("cancelled", "The teacher didn't join.", warn_teacher=True)
     if now >= c.ends_at:
@@ -231,14 +251,15 @@ def display_name(conn: Conn, user_id: str) -> str:
 def teacher(conn: Conn, user_id: str) -> dict[str, Any] | None:
     r = conn.execute(
         "select user_id, display_name, bio, subjects, status, qualification, experience_years, languages, "
-        "preferred_days, preferred_slots, levels from public.teachers where user_id = %s",
+        "preferred_days, preferred_slots, levels, organisation, review_note, "
+        "document_path is not null as has_document from public.teachers where user_id = %s",
         (user_id,),
     ).fetchone()
     return dict(r) if r else None
 
 
 PROFILE_FIELDS = (
-    "display_name", "bio", "subjects", "qualification", "experience_years", "languages",
+    "display_name", "bio", "subjects", "organisation", "qualification", "experience_years", "languages",
     "preferred_days", "preferred_slots", "levels",
 )  # fmt: skip
 
@@ -249,8 +270,9 @@ def apply(conn: Conn, user_id: str, profile: dict[str, Any]) -> dict[str, Any]:
     vals = ", ".join(["%s"] * len(PROFILE_FIELDS))
     sets = ", ".join(f"{c} = excluded.{c}" for c in PROFILE_FIELDS)
     conn.execute(
-        f"insert into public.teachers (user_id, {cols}) values (%s, {vals}) "  # noqa: S608 - constant columns
-        f"on conflict (user_id) do update set {sets}",
+        f"insert into public.teachers (user_id, {cols}, consent_at, submitted_at) values (%s, {vals}, now(), now()) "  # noqa: S608 - constant columns
+        f"on conflict (user_id) do update set {sets}, submitted_at = now(), "
+        "status = case when public.teachers.status = 'rejected' then 'pending' else public.teachers.status end",
         (user_id, *(profile[c] for c in PROFILE_FIELDS)),
     )
     if get_settings().teacher_auto_verify:
@@ -277,9 +299,18 @@ def create(
             "forbidden",
             "Only verified teachers can post classes. Your application is being reviewed.",
         )
-    if not now + timedelta(minutes=30) <= starts_at <= now + timedelta(days=30):
+    lead = get_settings().class_min_lead_min
+    if (
+        not now + timedelta(minutes=lead) - timedelta(seconds=90)
+        <= starts_at
+        <= now + timedelta(days=30)
+    ):
         raise ApiError(
-            422, "invalid_input", "Schedule the class between 30 minutes and 30 days from now."
+            422,
+            "invalid_input",
+            f"Schedule the room between {lead} minutes and 30 days from now."
+            if lead
+            else "Schedule the room within the next 30 days.",
         )
     row = conn.execute(
         "insert into public.classes (teacher_id, subject, topic, level, starts_at, duration_min) "
@@ -431,7 +462,7 @@ def listing(conn: Conn, user_id: str, now: datetime | None = None) -> list[dict[
                 "phase": phase(c, now),
                 "cancel_reason": reason if c.status == "cancelled" else None,
                 "interested": len(queue),
-                "min_students": MIN_STUDENTS,
+                "min_students": min_students(),
                 "max_students": MAX_STUDENTS,
                 "mine_interested": user_id in queue,
                 "position": queue.index(user_id) + 1 if user_id in queue else None,

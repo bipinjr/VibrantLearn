@@ -1,7 +1,7 @@
 -- RLS + grants: user A must never see or change user B's data; anon sees nothing private.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(45);
+select plan(48);
 
 -- ---- fixtures (as postgres) -----------------------------------------------------------------
 insert into auth.users (id, email) values
@@ -123,6 +123,9 @@ select throws_ok($$insert into storage.objects (bucket_id, name, owner_id)
 select throws_ok($$select * from internal.class_rooms$$, '42501', null, 'class room names are never client-readable');
 select throws_ok($$select * from internal.class_messages$$, '42501', null, 'class chat is server-only (the bot checks every message)');
 select throws_ok($$select * from internal.class_ratings$$, '42501', null, 'class ratings are server-only');
+select throws_ok($$select * from internal.teacher_payout_details$$, '42501', null, 'payout details are server-only (shown masked by the API)');
+select throws_ok($$select * from internal.reviewers$$, '42501', null, 'the reviewer list is server-only');
+select throws_ok($$insert into internal.reviewers (user_id) values ('00000000-0000-0000-0000-00000000000a')$$, '42501', null, 'nobody can make themselves a reviewer');
 select throws_ok($$update public.teachers set status = 'verified'$$, '42501', null, 'a teacher cannot verify themselves');
 select throws_ok($$insert into public.teachers (user_id, display_name, status)
   values ('00000000-0000-0000-0000-00000000000a', 'Self', 'verified')$$,

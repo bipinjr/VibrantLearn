@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { DEMO_COOKIE } from "@/lib/demo/mode";
+import { SIGNUP_AS_COOKIE } from "@/lib/theme";
 import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
@@ -58,6 +59,11 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
     }
     if (error.status === 429) return { error: "Too many sign-ups from here. Wait a few minutes and try again." };
     return { error: "Couldn't create the account. Check the email and try again." };
+  }
+  // Remember a teacher sign-up, so the confirmation link lands in the teacher portal even when
+  // Supabase falls back to the Site URL (proxy.ts). A hint for routing only, never a permission.
+  if (safeNext(form.get("next"), "/onboarding").startsWith("/teach")) {
+    (await cookies()).set(SIGNUP_AS_COOKIE, "teacher", { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 });
   }
   // Same message whether or not the email already had an account (no account enumeration).
   return { sentTo: parsed.data.email };

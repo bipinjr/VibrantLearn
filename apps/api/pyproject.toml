@@ -6,7 +6,7 @@ dependencies = [
     "defusedxml>=0.7.1",
     "fastapi>=0.143.0",
     "httpx>=0.28.1",
-    "psycopg[binary]>=3.3.6",
+    "psycopg[binary,pool]>=3.3.6",
     "pydantic-settings>=2.15.0",
     "pyjwt[crypto]>=2.15.1",
     "pypdf>=6.20.1",
@@ -42,6 +42,7 @@ ignore = ["S101"]  # asserts are fine in tests
 # Student-facing sentences and SQL kept on one line each, so they read like the rules they encode.
 "app/services/classes.py" = ["E501"]
 "app/services/class_chat.py" = ["E501"]
+"app/services/teachers.py" = ["E501"]
 "app/ml/moderate.py" = ["E501"]
 
 [tool.mypy]

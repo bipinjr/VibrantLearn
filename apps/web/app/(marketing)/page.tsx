@@ -260,7 +260,7 @@ export default function LandingPage() {
           <div className="grid gap-3 border-t border-line pt-8 md:border-t-0 md:border-l md:pt-0 md:pl-10">
             <h3 className="text-xl font-bold">Teaching tonight?</h3>
             <p className="text-sm text-muted">Create a room and pick a time. Students join from VibrantLearn.</p>
-            <Link href="/teacher-signup" className="btn btn-secondary w-fit">
+            <Link href="/teach/signup" className="btn btn-secondary w-fit">
               Create a teacher account
             </Link>
           </div>

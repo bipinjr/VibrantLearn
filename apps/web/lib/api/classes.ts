@@ -44,10 +44,13 @@ export type TeacherProfile = {
   preferred_days: Day[];
   preferred_slots: Slot[];
   levels: Level[];
+  organisation: string;
 };
 export type Teacher = TeacherProfile & {
   user_id: string;
-  status: "pending" | "verified" | "suspended";
+  status: "pending" | "verified" | "rejected" | "suspended";
+  review_note: string | null;
+  has_document: boolean;
 };
 export type TeacherStats = {
   classes_done: number;
@@ -94,8 +97,14 @@ export const joinClass = (id: string) =>
 export const cancelClass = (id: string) =>
   api(`/classes/${encodeURIComponent(id)}/cancel`, { method: "POST" });
 export const myTeaching = () =>
-  api<{ teacher: Teacher | null; earnings: Earnings | null; stats: TeacherStats | null }>("/teachers/me");
-export const applyToTeach = (b: TeacherProfile) =>
+  api<{
+    teacher: Teacher | null;
+    earnings: Earnings | null;
+    stats: TeacherStats | null;
+    payout: { method: "upi" | "bank"; display: string } | null;
+    review_promise?: string;
+  }>("/teachers/me");
+export const applyToTeach = (b: TeacherProfile & { consent: true }) =>
   api<{ teacher: Teacher }>("/teachers/apply", {
     method: "POST",
     body: JSON.stringify(b),
