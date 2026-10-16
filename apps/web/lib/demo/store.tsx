@@ -2,7 +2,8 @@
 
 import { createContext, startTransition, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import * as persist from "@/lib/account/persist";
-import type { Demo, Lang, Message, Plan, StudyFile } from "./data";
+import { streamMessage } from "@/lib/api/stream";
+import type { Block, Demo, Lang, Message, Plan, Session, StudyFile } from "./data";
 import { respond, type Pending, type Reply } from "./respond";
 import { buildPlan } from "./scheduler";
 
@@ -118,7 +119,53 @@ export function DemoProvider({ seed, children, account }: { seed: Demo; children
         return { ...s, messages: { ...s.messages, [sessionId]: [...thread, userMsg] } };
       });
       markFresh(userMsg.id);
-      save(sessionId, () => persist.addMessage(sessionId, userMsg));
+
+      // Signed in: the server parses, plans, answers and stores (BUILD_PLAN B2/B3). The browser
+      // only shows what streams back. Queued behind the session's own create, so it exists first.
+      if (mode === "account") {
+        const question = text === "Try again" ? (failed.current[sessionId] ?? text) : text;
+        const msgId = uid();
+        let started = false;
+        const upsertReply = (fn: (m: Message | undefined) => Message) =>
+          setState((cur) => {
+            const thread = cur.messages[sessionId] ?? [];
+            const has = thread.some((m) => m.id === msgId);
+            const next = has ? thread.map((m) => (m.id === msgId ? fn(m) : m)) : [...thread, fn(undefined)];
+            return { ...cur, messages: { ...cur.messages, [sessionId]: next } };
+          });
+        setThinking({ sessionId, label: "Reading your request" });
+        save(sessionId, async () => {
+          await streamMessage(sessionId, { text: question, id: userMsg.id }, (e) => {
+            if (e.event === "status") setThinking({ sessionId, label: e.data.label });
+            else if (e.event === "plan") {
+              const plan = e.data as unknown as Plan;
+              setState((cur) => ({ ...cur, plans: [...cur.plans.filter((p) => p.sessionId !== sessionId), plan] }));
+            } else if (e.event === "session") {
+              const p = e.data as Partial<Session>;
+              setState((cur) => ({ ...cur, sessions: cur.sessions.map((x) => (x.id === sessionId ? { ...x, ...p, updated: new Date().toISOString() } : x)) }));
+            } else if (e.event === "block") {
+              const block = e.data as unknown as Block;
+              if (!started) {
+                started = true;
+                setThinking(null);
+                markFresh(msgId);
+              }
+              upsertReply((m) => ({ id: msgId, role: "assistant", at: new Date().toISOString(), ...m, blocks: [...(m?.blocks ?? []), block] }));
+            } else if (e.event === "done") {
+              delete failed.current[sessionId];
+              upsertReply((m) => ({ id: msgId, role: "assistant", at: new Date().toISOString(), blocks: [], ...m, servedFrom: e.data.servedFrom }));
+            } else if (e.event === "error") {
+              failed.current[sessionId] = question;
+              setThinking(null);
+              markFresh(msgId);
+              upsertReply(() => ({ id: msgId, role: "assistant", at: new Date().toISOString(), servedFrom: "ml", blocks: [{ type: "followup", text: e.data.message, chips: ["Try again"] }] }));
+            }
+          });
+          setThinking((t) => (t?.sessionId === sessionId ? null : t));
+          return {};
+        });
+        return;
+      }
 
       const s = stateRef.current;
       const session = s.sessions.find((x) => x.id === sessionId);
@@ -170,12 +217,6 @@ export function DemoProvider({ seed, children, account }: { seed: Demo; children
           markFresh(msgId);
           setThinking(null);
         });
-        if (plan) {
-          const p = plan;
-          save(sessionId, () => persist.savePlan(p, stateRef.current.profile));
-        }
-        save(sessionId, () => persist.addMessage(sessionId, msg));
-        save(sessionId, () => persist.patchSession(sessionId, final.sessionPatch ?? {}));
       };
 
       if (reply.aiNotes) {
@@ -225,7 +266,7 @@ export function DemoProvider({ seed, children, account }: { seed: Demo; children
           deliver({ servedFrom: "ml", pending: null, blocks: [{ type: "followup", text: "Couldn't reach the server. Check your connection, then try again.", chips: ["Try again"] }] });
         });
     },
-    [save],
+    [save, mode],
   );
 
   const startSession = useCallback(

@@ -98,7 +98,7 @@ Index: `(user_id, updated_at desc)` — the sidebar's query.
 | `intent` | text | what the parser decided |
 | `served_from` | text | `ml` · `cache` · `llm` — the token-saving metric |
 
-**Access:** owner reads; owner inserts **only into a session they own** (the policy includes an `exists` check against `study_sessions`). The client cannot set `user_id`.
+**Access:** owner reads. **Only the API writes** (`POST /api/v1/sessions/{id}/messages`): a client that could insert here could invent assistant replies or fake the `served_from` metric (migration `20261016120000`).
 
 ### 3.4 `files` and `file_chunks`
 
@@ -136,7 +136,7 @@ The timetable is one jsonb document on purpose: it is always read whole, always 
 
 `plan_checkpoints`: `plan_id`, `user_id`, `ord`, `title`, `due_at`, `done_at`, unique `(plan_id, ord)`.
 
-**Access:** owner reads plans, inserts into their own session, updates `plan` and `updated_at`, deletes. On checkpoints the client has a **column grant on `done_at` only** — a student may tick a step, never retitle one.
+**Access:** owner reads plans and updates `plan` and `updated_at` (tick, replan). **Only the API creates or replaces plans**, from the deterministic scheduler, so a tampered browser cannot store a plan the scheduler never produced. On checkpoints the client has a **column grant on `done_at` only** — a student may tick a step, never retitle one.
 
 ### 3.7 `generated_content`, `quiz_attempts`, `flashcard_reviews`
 
@@ -201,6 +201,7 @@ Current migrations:
 | `20261008173310_client_ids.sql` | Client-generated UUIDs for sessions and messages, so navigation is instant |
 | `20261015180000_lock_storage_uploads.sql` | Removed the client INSERT policy on storage; uploads are server-validated only |
 | `20261016100000_sessions_delete_via_api.sql` | Revoked client DELETE on `study_sessions`; the API deletes stored files, then the row |
+| `20261016120000_server_owns_messages_and_plans.sql` | Revoked client INSERT on `messages` and INSERT/DELETE on `study_plans`; the message endpoint writes them |
 
 ---
 

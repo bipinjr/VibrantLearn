@@ -1,4 +1,5 @@
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
+from contextlib import AbstractContextManager
 
 import psycopg
 from psycopg.rows import dict_row
@@ -17,3 +18,14 @@ def get_conn() -> Iterator[psycopg.Connection[dict[str, object]]]:
         url, row_factory=dict_row, prepare_threshold=None, connect_timeout=5
     ) as conn:
         yield conn
+
+
+def connect() -> AbstractContextManager[psycopg.Connection[dict[str, object]]]:
+    url = get_settings().database_url.get_secret_value()
+    return psycopg.connect(url, row_factory=dict_row, prepare_threshold=None, connect_timeout=5)
+
+
+def get_connect() -> Callable[[], AbstractContextManager[psycopg.Connection[dict[str, object]]]]:
+    """For streaming responses: the generator opens (and closes) its own connection, because a
+    per-request dependency may be torn down before a streamed body finishes."""
+    return connect

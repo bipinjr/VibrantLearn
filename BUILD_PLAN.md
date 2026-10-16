@@ -82,12 +82,12 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
   - `app/app/**` currently hydrates from the demo store. For a signed-in student, load with `lib/account/load.ts` in the Server Component and pass it down; keep the demo store only for demo mode.
   - **Verify:** sign in, hard-refresh `/app/s/<id>` — the thread renders in the HTML with JS disabled. No flash of empty state.
 
-- [ ] **B2. Stream assistant replies (SSE)**
+- [x] **B2. Stream assistant replies (SSE)**
   - `POST /api/v1/sessions/{id}/messages` returns `text/event-stream`: one event per block as it is produced. Client appends progressively, `aria-live="polite"`, caret only while streaming, no fake typing.
   - Persist the finished message server-side with `served_from`.
   - **Verify:** a reply renders progressively; killing the connection mid-stream leaves no half-written row.
 
-- [ ] **B3. One source of truth for intake**
+- [x] **B3. One source of truth for intake**
   - Signed-in requests must be parsed and scheduled **server-side**, so a tampered client cannot invent plans. The TypeScript parser stays for demo mode only.
   - Until Phase E lands the Python port, call the TypeScript parser from a Next Route Handler that verifies the JWT. Note the decision in `MEMORY.md`.
   - **Verify:** a crafted request from the browser console cannot store a plan for another user or skip validation.

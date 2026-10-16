@@ -97,10 +97,10 @@ Revoke all sessions → delete every storage object under `{user_id}/` → delet
 **`POST /sessions`** 🟡 *(client writes directly today)*
 `{ "id"?: uuid, "title"?: string }` → the created session. The client may supply the id so navigation is instant; `user_id` always comes from the token.
 
-**`POST /sessions/{id}/messages`** ⬜ — the main endpoint
-`{ "text": string (≤ 4000), "language"?: "en"|"kn"|"hi" }`
+**`POST /sessions/{id}/messages`** ✅ — the main endpoint
+`{ "text": string (≤ 4000), "language"?: "en"|"kn"|"hi", "id"?: uuid }` — `id` lets the browser's optimistic bubble and the stored row share an id.
 
-Returns **`text/event-stream`**, one event per block as it is produced:
+Returns **`text/event-stream`**. Events, in order: `status` (`{label}`, what the server is doing), `plan` (a new plan, whole), `session` (title/subject/deadline/mode changed), one `block` per reply block, then `done` (`{messageId, servedFrom}`). An unexpected failure ends the stream with `error` (`{code, message}`). Example:
 
 ```
 event: block
@@ -115,8 +115,8 @@ data: {"messageId":"…","servedFrom":"ml"}
 
 Block types: `text`, `followup`, `plan`, `notes`, `questions`, `quiz`, `flashcards`, `sources`.
 
-Pipeline: parse → entities → urgency → one follow-up if something essential is missing → cache → local answer → LLM only if needed. The finished message is persisted with `served_from`. A dropped connection must not leave a half-written row.
-Limit: 30 per 10 minutes.
+Pipeline (`app/services/messages.py`): parse (`app/ml/parse.py`) → intent model (`app/ml/intent.py`) → one follow-up if something essential is missing → local answer (scheduler, syllabus content) → shared cache (`internal.llm_cache`) → LLM only if needed. The student's message is stored first; the plan, the session change and the reply commit **together after the last block**, so a dropped connection keeps only the student's message. A pending follow-up (e.g. "how many hours?") is stored inside that followup block, server-side only, so the conversation survives a reload. Clients have no INSERT on `messages` or `study_plans` (migration `20261016120000`): only this endpoint writes them.
+Limit: 30 per 10 minutes. Ownership and the limit are checked before the stream starts, so those failures are ordinary JSON errors (`404`, `429`).
 
 **`DELETE /sessions/{id}`** ✅
 Limit 30/hour. Verify ownership (`404` if not yours) → delete storage objects under `{user_id}/{session_id}/` → verify none remain → delete the row (cascade clears messages, files, chunks, plans) → audit `session_deleted`. Returns `204`. Clients have no DELETE grant on `study_sessions`, so this is the only way to delete one.

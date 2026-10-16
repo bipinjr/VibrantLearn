@@ -2,7 +2,7 @@
 // One command local demo: install (first run), build (first run or --rebuild), start on :3000, open the browser.
 // Usage: node scripts/start-demo.mjs [--rebuild] [--dev] [--no-open]
 import { spawn, spawnSync } from "node:child_process";
-import { copyFileSync, existsSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -43,8 +43,25 @@ if (!dev && (args.has("--rebuild") || !existsSync(join(web, ".next", "BUILD_ID")
   pnpm(["build"]);
 }
 
+// Real accounts need the Python API (chat, plans, uploads). Start it next to the web app once
+// apps/api/.env holds real values; the demo account works without it.
+const apiDir = join(root, "apps", "api");
+const apiEnv = join(apiDir, ".env");
+let apiServer = null;
+if (existsSync(apiEnv) && !/YOUR-PROJECT-REF|YOUR-PASSWORD|\[YOUR/i.test(readFileSync(apiEnv, "utf8"))) {
+  if (spawnSync("uv", ["--version"], { shell: isWin }).status === 0) {
+    console.log("Starting the API on http://127.0.0.1:8000 ...");
+    apiServer = spawn("uv", ["run", "uvicorn", "app.main:app", "--port", "8000"], { cwd: apiDir, stdio: "inherit", shell: isWin });
+  } else {
+    console.log("The API needs uv (https://docs.astral.sh/uv/). Real accounts won't get replies until it runs; the demo account still works.");
+  }
+} else {
+  console.log("apps/api/.env isn't filled in yet, so only the demo account works. See NEXT_SESSION.md.");
+}
+
 console.log(`\nStarting VibrantLearn on ${URL}  (press Ctrl+C to stop)\n`);
 const server = spawn("npx", [...PNPM, dev ? "dev" : "start"], { cwd: web, stdio: "inherit", shell: isWin });
+process.on("exit", () => apiServer?.kill());
 
 if (!args.has("--no-open")) {
   const opener = isWin ? ["cmd", ["/c", "start", "", URL]] : process.platform === "darwin" ? ["open", [URL]] : ["xdg-open", [URL]];

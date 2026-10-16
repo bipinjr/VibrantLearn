@@ -38,6 +38,8 @@ ignore = ["S101"]  # asserts are fine in tests
 "app/ml/train.py" = ["E501", "RUF001"]
 # Seeded generator for synthetic training data; randomness here is not security.
 "data/build_intents.py" = ["S311", "E501"]
+# Column-aligned fake table rows (formatter is told to skip them).
+"tests/fake_db.py" = ["E501"]
 
 [tool.mypy]
 strict = true

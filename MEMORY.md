@@ -42,6 +42,10 @@ Living record for humans and AI agents. Read at the start of every session; upda
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-16 | **Server owns messages and plans.** Signed-in chat goes through `POST /api/v1/sessions/{id}/messages` (SSE); clients lost INSERT on `messages` and INSERT/DELETE on `study_plans`. Supersedes the 2026-10-08 interim client-writes decision for those two tables | BUILD_PLAN B3: a tampered client must not invent replies, `served_from` numbers or plans |
+| 2026-10-16 | Phase E (Python intake) done before B2/B3 | The streaming endpoint needs the Python parser/scheduler; building it in TS first would be throwaway |
+| 2026-10-16 | Intent: classifier first, rules only below confidence 0.15 | Holdout: classifier 0.75, rules 0.36; higher thresholds let the weaker rules override |
+| 2026-10-16 | AI calls moved into FastAPI (`app/llm/`): shared `internal.llm_cache`, `internal.usage_events` per call; the Next `/api/notes` route stays only for the demo | D1 groundwork; one cache across instances and students |
 | 2026-10-15 | **Security fixes applied after an external code review**: `safeNext` rejects control characters and re-checks the resolved path; the client INSERT policy on `storage.objects` is dropped (uploads go through server-issued signed URLs only); the username rate limit is keyed by user id instead of a spoofable `x-forwarded-for` | Three real holes found by review; see Security review log |
 | 2026-10-15 | **Crash-plan scheduler fills the exam-day morning with real syllabus topics** and only offers "Redo the questions you got wrong" after a quiz actually happened; 20 minutes are reserved so the closing mock test always fits | A student opening the app at 10:40 PM got a plan with zero topics |
 | 2026-10-15 | `BUILD_PLAN.md` (ordered task list for Claude Code) and `docs/setup/MANUAL_STEPS.md` (human-only steps) are the two documents that drive the rest of v0.4 | One place to resume from |
@@ -144,6 +148,8 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | B3: signed-in intake server-side (Python parser + intent model + scheduler); client INSERT on messages/study_plans revoked, RLS 37/37; demo keeps TS engine |
+| 2026-10-16 | Bipin A + Claude | B2: SSE POST /api/v1/sessions/{id}/messages: status/plan/session/block/done/error; plan+reply commit after last block; 15 API tests incl. disconnect + failure |
 | 2026-10-16 | Bipin A + Claude | E2/E5: TF-IDF word+char -> LogisticRegression, holdout accuracy 0.75 (rules alone 0.36); threshold swept to 0.15; artifact hash-checked before load; docs/ml-report.md generated |
 | 2026-10-16 | Bipin A + Claude | E1: data/intents.csv: 765 synthetic lines, 11 intents, en/Kanglish/Hinglish/script; + 75-line hand-written holdout |
 | 2026-10-16 | Bipin A + Claude | E4: Python scheduler port (app/ml/scheduler.py): 22 parity cases incl. 10:40 PM regression match TS step-for-step |

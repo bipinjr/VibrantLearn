@@ -88,9 +88,9 @@ select throws_ok($$update public.study_sessions set user_id = '00000000-0000-000
 select throws_ok($$insert into public.messages (session_id, role, content)
   values ('10000000-0000-0000-0000-00000000000b', 'user', 'sneaky')$$,
   '42501', null, 'A cannot add a message to B''s session');
-select lives_ok($$insert into public.messages (session_id, role, content)
-  values ('10000000-0000-0000-0000-00000000000a', 'user', 'my question')$$,
-  'A can add a message to own session');
+select throws_ok($$insert into public.messages (session_id, role, content)
+  values ('10000000-0000-0000-0000-00000000000a', 'user', 'my question')$$, '42501', null,
+  'clients cannot write messages, even into their own session (the API does)');
 select throws_ok($$insert into public.study_plans (session_id, subject, deadline_at, mode, language, style, plan, cache_key)
   values ('10000000-0000-0000-0000-00000000000b', 'x', now(), 'crash', 'en', 'short', '{}', 'k')$$,
   '42501', null, 'A cannot create a plan in B''s session');
