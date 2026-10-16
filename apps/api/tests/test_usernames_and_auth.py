@@ -49,7 +49,7 @@ def test_valid_token() -> None:
     [
         {"aud": "something-else"},
         {"iss": "https://evil.example/auth/v1"},
-        {"exp": int(time.time()) - 10},
+        {"exp": int(time.time()) - 60},  # past the 30 s clock leeway
         {"role": "anon"},
         {"is_anonymous": True},
     ],

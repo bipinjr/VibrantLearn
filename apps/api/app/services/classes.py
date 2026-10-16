@@ -34,7 +34,6 @@ WARNINGS_TO_SUSPEND = 3
 STRIKES_TO_REMOVE = 3  # hidden chat messages in one class before the bot removes you
 CLASS_GROSS_PAISE = 200_000  # Rs 2,000
 PLATFORM_FEE = 0.20
-JITSI = "https://meet.jit.si"
 
 Phase = Literal["upcoming", "teacher_early", "grace", "open", "ended", "cancelled", "done"]
 
@@ -251,7 +250,7 @@ def display_name(conn: Conn, user_id: str) -> str:
 def teacher(conn: Conn, user_id: str) -> dict[str, Any] | None:
     r = conn.execute(
         "select user_id, display_name, bio, subjects, status, qualification, experience_years, languages, "
-        "preferred_days, preferred_slots, levels, organisation, review_note, "
+        "preferred_days, preferred_slots, levels, organisation, institution_code, review_note, "
         "document_path is not null as has_document from public.teachers where user_id = %s",
         (user_id,),
     ).fetchone()
@@ -259,7 +258,7 @@ def teacher(conn: Conn, user_id: str) -> dict[str, Any] | None:
 
 
 PROFILE_FIELDS = (
-    "display_name", "bio", "subjects", "organisation", "qualification", "experience_years", "languages",
+    "display_name", "bio", "subjects", "organisation", "institution_code", "qualification", "experience_years", "languages",
     "preferred_days", "preferred_slots", "levels",
 )  # fmt: skip
 
@@ -415,7 +414,7 @@ def join(
     if room is None:
         raise ApiError(500, "internal", "This class has no room. Ask the teacher to post it again.")
     return {
-        "room_url": f"{JITSI}/{room['room']}",
+        "room_url": f"{get_settings().video_base_url.rstrip('/')}/{room['room']}",
         "room": room["room"],
         "role": role,
         "display_name": display_name,

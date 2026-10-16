@@ -66,6 +66,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
           <nav aria-label="Company" className="grid content-start gap-2 text-sm">
             <p className="font-semibold">VibrantLearn</p>
             <Link href="/privacy" className="text-muted no-underline hover:text-text">Privacy notice</Link>
+            <Link href="/terms" className="text-muted no-underline hover:text-text">Terms of use</Link>
             <Link href="/login" className="text-muted no-underline hover:text-text">Student sign in</Link>
             <Link href="/teach/login" className="text-muted no-underline hover:text-text">Teacher sign in</Link>
             <Link href="/teach/signup" className="text-muted no-underline hover:text-text">Teach on VibrantLearn</Link>

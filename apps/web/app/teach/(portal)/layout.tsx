@@ -19,6 +19,10 @@ export default async function TeacherLayout({ children }: LayoutProps<"/teach">)
   return (
     <UiLangProvider initial={isLang(saved) ? saved : "en"}>
       <div className="min-h-dvh">
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[70] focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">
+          Skip to content
+        </a>
+        
         <header className="flex items-center justify-between gap-4 border-b border-line px-4 py-3 sm:px-8">
           <Link href="/teach" className="flex items-center gap-3 no-underline" aria-label="Teacher portal home">
             <Wordmark height={22} href={null} />

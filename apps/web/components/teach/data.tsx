@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { ApiError } from "@/lib/api/client";
 import { listClasses, myTeaching, type Earnings, type LiveClass, type Teacher, type TeacherStats } from "@/lib/api/classes";
-import type { Payout } from "@/lib/api/teachers";
+import type { Payout, TeacherDoc } from "@/lib/api/teachers";
 
 export type Rules = {
   min_students: number;
@@ -21,6 +21,7 @@ type TeachData = {
   earnings: Earnings | null;
   stats: TeacherStats | null;
   payout: Payout | null;
+  documents: TeacherDoc[];
   rules: Rules;
   promise: string;
   rooms: LiveClass[];
@@ -41,6 +42,7 @@ export function TeachProvider({ children }: { children: ReactNode }) {
     earnings: null,
     stats: null,
     payout: null,
+    documents: [],
     rules: DEFAULT_RULES,
     promise: "Under review, usually within 2 days.",
     rooms: [],
@@ -57,6 +59,7 @@ export function TeachProvider({ children }: { children: ReactNode }) {
           earnings: r.earnings,
           stats: r.stats,
           payout: r.payout,
+          documents: r.documents ?? [],
           rules: (r as { rules?: Rules }).rules ?? DEFAULT_RULES,
           promise: r.review_promise ?? "Under review, usually within 2 days.",
           rooms,

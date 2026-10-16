@@ -12,6 +12,10 @@ export default async function ReviewLayout({ children }: LayoutProps<"/review">)
   if (!(await getUserId())) redirect("/login?next=/review");
   return (
     <UiLangProvider initial="en">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[70] focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">
+        Skip to content
+      </a>
+      
       <header className="flex items-center justify-between gap-4 border-b border-line px-4 py-3 sm:px-8">
         <span className="flex items-center gap-3">
           <Wordmark height={22} href={null} />

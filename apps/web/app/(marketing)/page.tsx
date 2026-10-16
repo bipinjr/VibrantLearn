@@ -84,7 +84,7 @@ export default function LandingPage() {
         </div>
         <ol className="mt-14 grid gap-12 md:grid-cols-3 md:gap-8">
           <li className="scroll-in grid content-start gap-4">
-            <p className="font-display text-5xl font-extrabold text-ember">1</p>
+            <p className="font-display text-5xl font-extrabold text-now">1</p>
             <h3 className="text-xl font-bold">Tell us the exam</h3>
             <p className="text-muted">Subject, deadline, how you like to study. Plain words are fine, even Kanglish.</p>
             <div className="rounded-[var(--radius-card)] border border-line bg-surface p-4">

@@ -39,6 +39,7 @@ def verify_token(token: str) -> User:
             audience="authenticated",
             issuer=s.jwt_issuer,
             options={"require": ["exp", "sub", "aud", "iss"]},
+            leeway=30,  # small clock differences between the browser, Supabase and us
         )
     except (jwt.PyJWTError, jwt.PyJWKClientError) as e:
         raise _unauthorized() from e

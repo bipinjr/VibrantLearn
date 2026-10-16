@@ -3,7 +3,11 @@ import { Wordmark } from "@/components/brand/Wordmark";
 
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+    <>
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[70] focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">
+        Skip to content
+      </a>
+      <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div className="flex flex-col px-4 py-6 sm:px-10">
         <Wordmark height={24} />
         <main id="main" className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
@@ -29,5 +33,6 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         </div>
       </aside>
     </div>
+    </>
   );
 }

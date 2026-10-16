@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Main, PageHeader } from "@/components/app/Page";
 import { ApiError } from "@/lib/api/client";
-import { reviewQueue, reviewTeacher, type ReviewItem } from "@/lib/api/teachers";
+import { DOC_KINDS, reviewQueue, reviewTeacher, type ReviewItem } from "@/lib/api/teachers";
 
 /** TEACHER.md T1: manual verification. Approve, or reject with a reason the teacher sees. */
 export default function ReviewPage() {
@@ -57,9 +57,20 @@ export default function ReviewPage() {
               <p className="mt-2 text-sm">{x.subjects.join(", ")}</p>
               {x.bio ? <p className="mt-2 text-sm text-muted">{x.bio}</p> : null}
               {x.status === "rejected" ? <p className="mt-2 text-sm text-danger">Rejected before: {x.review_note}</p> : null}
-              <p className="mt-3 text-sm">
-                {x.document_url ? <a href={x.document_url} target="_blank" rel="noopener noreferrer">Open document</a> : <span className="text-danger">No document uploaded yet</span>}
-              </p>
+              {x.institution_code ? <p className="mt-2 text-sm">Institution code: {x.institution_code}</p> : null}
+              {x.documents.length ? (
+                <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+                  {x.documents.map((d) => (
+                    <li key={d.kind}>
+                      <a href={d.url} target="_blank" rel="noopener noreferrer">
+                        {DOC_KINDS.find((k) => k.kind === d.kind)?.label ?? d.kind} (opens in a new tab)
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-danger">No certificates uploaded yet</p>
+              )}
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <input
                   aria-label={`Reason if rejecting ${x.display_name}`}
@@ -69,8 +80,8 @@ export default function ReviewPage() {
                   onChange={(e) => setNotes((n) => ({ ...n, [x.user_id]: e.target.value }))}
                   className="field min-w-0 flex-1"
                 />
-                <button type="button" className="btn btn-primary" disabled={busy === x.user_id || !x.document_url} onClick={() => decide(x.user_id, "verify")}>Approve</button>
-                <button type="button" className="btn btn-secondary" disabled={busy === x.user_id} onClick={() => decide(x.user_id, "reject")}>Reject</button>
+                <button type="button" className="btn btn-primary" disabled={busy === x.user_id || !x.documents.some((d) => d.kind === "degree")} onClick={() => decide(x.user_id, "verify")} aria-label={`Approve ${x.display_name}`}>Approve</button>
+                <button type="button" className="btn btn-secondary" disabled={busy === x.user_id} onClick={() => decide(x.user_id, "reject")} aria-label={`Reject ${x.display_name}`}>Reject</button>
               </div>
             </li>
           ))}

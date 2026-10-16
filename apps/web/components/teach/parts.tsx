@@ -18,7 +18,8 @@ import {
   type TeacherProfile,
   type TeacherStats,
 } from "@/lib/api/classes";
-import { DOC_TYPES, savePayout, teachSubjects, uploadDocument, type Payout } from "@/lib/api/teachers";
+import { DOC_KINDS, DOC_TYPES, savePayout, teachSubjects, uploadDocument, type DocKind, type Payout } from "@/lib/api/teachers";
+import { useTeach } from "./data";
 import { useUi } from "@/lib/i18n/context";
 
 export const DAYS: [Day, string][] = [["mon", "Mon"], ["tue", "Tue"], ["wed", "Wed"], ["thu", "Thu"], ["fri", "Fri"], ["sat", "Sat"], ["sun", "Sun"]];
@@ -65,6 +66,7 @@ export function Questionnaire({ teacher, onDone }: { teacher: Teacher | null; on
     preferred_slots: teacher?.preferred_slots ?? [],
     levels: teacher?.levels ?? ["all"],
     organisation: teacher?.organisation ?? "",
+    institution_code: teacher?.institution_code ?? "",
   });
   const [consent, setConsent] = useState(Boolean(teacher));
   const [subjectList, setSubjectList] = useState<string[] | null>(null);
@@ -107,6 +109,10 @@ export function Questionnaire({ teacher, onDone }: { teacher: Teacher | null; on
           <input id="organisation" maxLength={120} value={p.organisation} onChange={(e) => set("organisation", e.target.value)} className="field" placeholder="Seshadripuram College, Bengaluru" />
         </div>
         <div className="grid gap-1.5">
+          <label htmlFor="institution_code" className="text-sm font-medium">{t("College AISHE or school UDISE+ code (optional)")}</label>
+          <input id="institution_code" maxLength={20} pattern="[A-Za-z0-9-]{4,20}" value={p.institution_code} onChange={(e) => set("institution_code", e.target.value.trim())} className="field" placeholder="C-12345" />
+        </div>
+        <div className="grid gap-1.5">
           <label htmlFor="qualification" className="text-sm font-medium">{t("Highest qualification")}</label>
           <input id="qualification" maxLength={120} value={p.qualification} onChange={(e) => set("qualification", e.target.value)} className="field" placeholder="MCA, M.Sc Computer Science" />
         </div>
@@ -132,7 +138,7 @@ export function Questionnaire({ teacher, onDone }: { teacher: Teacher | null; on
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 size-4 accent-[var(--color-violet)]" />
         <span>
           {t("I agree to teach live only, never record students, never ask for contact details, and follow the class rules. I understand my document is checked by the VibrantLearn team.")}{" "}
-          <Link href="/privacy">{t("Privacy notice")}</Link>
+          <Link href="/terms" target="_blank">{t("Terms of use")}</Link>, <Link href="/privacy" target="_blank">{t("privacy notice")}</Link>
         </span>
       </label>
       {problem ? <p role="alert" className="text-sm text-danger">{problem}</p> : null}
@@ -231,25 +237,26 @@ export function EarningsCard({ earnings, onChange }: { earnings: Earnings; onCha
 }
 
 /** T1: the two things a reviewer needs besides the profile. Both are shown masked once saved. */
-export function Application({ teacher, payout, onDone }: { teacher: Teacher; payout: Payout | null; onDone: () => void }) {
+export function Application({ payout, onDone }: { teacher?: Teacher; payout: Payout | null; onDone: () => void }) {
   const { t } = useUi();
-  const [docBusy, setDocBusy] = useState(false);
+  const { documents } = useTeach();
+  const [docBusy, setDocBusy] = useState<DocKind | null>(null);
   const [docProblem, setDocProblem] = useState<string | null>(null);
   const [method, setMethod] = useState<"upi" | "bank">(payout?.method ?? "upi");
   const [payBusy, setPayBusy] = useState(false);
   const [payProblem, setPayProblem] = useState<string | null>(null);
 
-  async function pickDoc(file: File | undefined) {
+  async function pickDoc(kind: DocKind, file: File | undefined) {
     if (!file) return;
-    setDocBusy(true);
+    setDocBusy(kind);
     setDocProblem(null);
     try {
-      await uploadDocument(file);
+      await uploadDocument(file, kind);
       onDone();
     } catch (err) {
       setDocProblem(err instanceof Error ? err.message : t("Couldn't upload. Try again."));
     } finally {
-      setDocBusy(false);
+      setDocBusy(null);
     }
   }
 
@@ -279,17 +286,32 @@ export function Application({ teacher, payout, onDone }: { teacher: Teacher; pay
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <section aria-labelledby="doc-h" className="rounded-[var(--radius-card)] border border-line p-5">
-        <h3 id="doc-h" className="font-semibold">{teacher.has_document ? t("Document uploaded") : t("Certificate or college ID")}</h3>
+      <section aria-labelledby="doc-h" className="rounded-[var(--radius-card)] border border-line p-5 md:col-span-2">
+        <h3 id="doc-h" className="font-semibold">{t("Your certificates")}</h3>
         <p className="mt-1 text-sm text-muted">
-          {teacher.has_document
-            ? t("Only the VibrantLearn review team sees it. Upload again to replace it.")
-            : t("A teaching certificate, degree certificate or college staff ID. PDF, JPG or PNG, up to 5 MB.")}
+          {t("The degree certificate is required. The others are optional but help us approve you faster. PDF, JPG or PNG, up to 5 MB each. Only the VibrantLearn review team sees them.")}
         </p>
-        <label className="btn btn-secondary mt-4 w-fit cursor-pointer">
-          {docBusy ? t("Uploading…") : teacher.has_document ? t("Replace document") : t("Upload document")}
-          <input type="file" accept={Object.keys(DOC_TYPES).join(",")} className="sr-only" disabled={docBusy} onChange={(e) => pickDoc(e.target.files?.[0])} />
-        </label>
+        <ul className="mt-3 divide-y divide-line">
+          {DOC_KINDS.map((d) => {
+            const have = documents.find((x) => x.kind === d.kind);
+            return (
+              <li key={d.kind} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <span className="min-w-0">
+                  <span className="font-medium">{t(d.label)}</span>{" "}
+                  {d.required ? <span className="text-sm text-danger">{t("required")}</span> : <span className="text-sm text-muted">{t("optional")}</span>}
+                  <span className="block text-sm text-muted">
+                    {have ? t("Uploaded {date}.", { date: new Date(have.uploaded_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) }) : t(d.hint)}
+                  </span>
+                </span>
+                <label className="btn btn-secondary w-fit cursor-pointer focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--focus)]">
+                  {docBusy === d.kind ? t("Uploading…") : have ? t("Replace") : t("Upload")}
+                  <span className="sr-only"> {t(d.label)}</span>
+                  <input type="file" accept={Object.keys(DOC_TYPES).join(",")} className="sr-only" disabled={docBusy !== null} onChange={(e) => pickDoc(d.kind, e.target.files?.[0])} />
+                </label>
+              </li>
+            );
+          })}
+        </ul>
         {docProblem ? <p role="alert" className="mt-2 text-sm text-danger">{docProblem}</p> : null}
       </section>
 

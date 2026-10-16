@@ -115,7 +115,7 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
       {mode === "signup" ? (
         <p className="mt-4 text-sm text-muted">
           We store your email and study data only to make your plans. You choose what to share during setup.{" "}
-          <Link href="/privacy">Privacy notice</Link>
+          By creating an account you agree to the <Link href="/terms">terms of use</Link>. <Link href="/privacy">Privacy notice</Link>
         </p>
       ) : null}
 

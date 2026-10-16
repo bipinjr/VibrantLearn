@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # Class rules (ROADMAP v0.5). Lower them only for a local demo with a couple of accounts.
     class_min_students: int = 10
     class_min_lead_min: int = 30  # how far ahead a room must start; 0 allows "Start now"
+    # Jitsi server for live classes. meet.jit.si makes the host sign in with Google/GitHub
+    # (since Aug 2023); a community server like https://meet.ffmuc.net doesn't.
+    # Self-host for production.
+    video_base_url: str = "https://meet.jit.si"
     groq_api_key: SecretStr = SecretStr("")
     max_upload_mb: int = 50
 

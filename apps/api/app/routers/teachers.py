@@ -29,6 +29,7 @@ class DocIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     path: str = Field(max_length=200)
+    kind: Literal["degree", "staff_id", "net_set", "bed", "tet", "other"] = "degree"
 
 
 class PayoutIn(BaseModel):
@@ -63,7 +64,7 @@ def document_upload_url(
 
 @router.post("/teachers/document")
 def document_confirm(body: DocIn, user: CurrentUser, conn: Conn, storage: Store) -> dict[str, Any]:
-    return teachers.document_confirm(conn, storage, user.id, body.path)
+    return teachers.document_confirm(conn, storage, user.id, body.path, body.kind)
 
 
 @router.put("/teachers/payout")

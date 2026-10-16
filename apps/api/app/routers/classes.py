@@ -36,6 +36,7 @@ class ApplyIn(BaseModel):
         default=["all"], min_length=1, max_length=3
     )
     organisation: str = Field(default="", max_length=120)
+    institution_code: str = Field(default="", pattern=r"^([A-Za-z0-9-]{4,20})?$")
     consent: Literal[True]
 
 
@@ -59,6 +60,7 @@ def my_teacher_profile(user: CurrentUser, conn: Conn) -> dict[str, Any]:
         "earnings": classes.earnings(conn, user.id),
         "stats": classes.stats(conn, user.id),
         "payout": teachers.payout_masked(conn, user.id),
+        "documents": teachers.documents(conn, user.id),
         "review_promise": teachers.REVIEW_PROMISE,
         "rules": classes.rules(),
     }

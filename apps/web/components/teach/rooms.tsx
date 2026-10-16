@@ -290,7 +290,7 @@ export function RoomRow({ c }: { c: LiveClass }) {
       <div className="min-w-0">
         <p className="font-semibold">{c.topic}</p>
         <p className="text-sm text-muted">
-          {c.subject}, {c.duration_min} min. <span className={live ? "font-semibold text-ember" : ""}>{roomState(c, now)}</span>
+          {c.subject}, {c.duration_min} min. <span className={live ? "font-semibold text-now" : ""}>{roomState(c, now)}</span>
           {c.phase === "cancelled" && c.cancel_reason ? `. ${c.cancel_reason}` : ""}
         </p>
         {c.phase === "upcoming" || live ? <div className="mt-2"><Seats n={c.interested} need={rules.min_students} /></div> : null}
@@ -302,7 +302,7 @@ export function RoomRow({ c }: { c: LiveClass }) {
         ) : c.phase === "upcoming" ? (
           <>
             <CopyLink id={c.id} />
-            <button type="button" className="btn btn-secondary" onClick={cancel}>Cancel</button>
+            <button type="button" className="btn btn-secondary" onClick={cancel} aria-label={`Cancel room: ${c.topic}`}>Cancel room</button>
           </>
         ) : null}
       </div>

@@ -270,9 +270,7 @@ export function ClassRoom({ id, backHref }: { id: string; backHref: string }) {
                 "The video opens in a new tab. Keep this tab open for the class chat. Ends at {time}.",
                 { time: clock(room.ends_at) },
               )}
-              {room.role === "teacher"
-                ? ` ${t("Jitsi may ask you to sign in once with Google to start the room.")}`
-                : null}
+
             </p>
             {removed ? (
               <p className="font-semibold text-ember">

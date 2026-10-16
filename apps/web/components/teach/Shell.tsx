@@ -43,7 +43,7 @@ function Nav() {
 
 /** Until a teacher is approved, every page shows where they are in the process and what's left. */
 function Gate({ children }: { children: ReactNode }) {
-  const { loaded, problem, teacher, payout, promise, reload } = useTeach();
+  const { loaded, problem, teacher, payout, documents, promise, reload } = useTeach();
   if (!loaded) return <p role="status" className="p-8 text-muted">Loading…</p>;
   if (problem) return <p role="alert" className="m-6 max-w-xl rounded-[var(--radius-input)] bg-rose/10 px-4 py-3">{problem}</p>;
   if (!teacher) {
@@ -59,7 +59,7 @@ function Gate({ children }: { children: ReactNode }) {
     return <p className="m-8 max-w-xl">Your teaching account is suspended after 3 warnings. Write to us if you think this is wrong.</p>;
   }
   if (teacher.status !== "verified") {
-    const ready = teacher.has_document && payout;
+    const ready = documents.some((d) => d.kind === "degree") && payout;
     return (
       <div className="mx-auto grid max-w-4xl gap-6 px-4 py-10 sm:px-8">
         <div role="status" className={`rounded-[var(--radius-sheet)] p-6 ${teacher.status === "rejected" ? "bg-rose/10" : "bg-violet/10"}`}>
@@ -71,7 +71,7 @@ function Gate({ children }: { children: ReactNode }) {
               ? `${teacher.review_note ?? ""} Fix it below, then save your profile again to send it back.`
               : ready
                 ? "You'll be able to create rooms as soon as you're approved. We'll show it here."
-                : "Upload a document and add where we pay you. Then the team reviews your application."}
+                : "Upload your degree certificate and add where we pay you. Then the team reviews your application."}
           </p>
         </div>
         <Application teacher={teacher} payout={payout} onDone={reload} />

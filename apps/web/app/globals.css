@@ -12,6 +12,7 @@
   --color-link: var(--link);
   --color-done: var(--done);
   --color-danger: var(--danger);
+  --color-now: var(--now);
 }
 
 @theme {
@@ -60,6 +61,7 @@
   --link: var(--color-violet);
   --done: #0b7559; /* Leaf darkened for AA text: 5.1:1 on Mist */
   --danger: #be2f4c; /* Rose darkened for AA error text: 5.1:1 on Mist */
+  --now: #b43a12; /* Ember darkened for AA text on light: 5.3:1 on Mist (Ember itself is 2.9:1) */
   --focus: var(--color-violet);
 
   /* motion (FRONTEND.md §4.2) */
@@ -86,6 +88,7 @@
     --link: #8b6cf2;
     --done: #2fc79f;
     --danger: #f0738b;
+    --now: #ff6a3d;
     --focus: #8b6cf2;
   }
 }
@@ -100,6 +103,7 @@
   --link: #8b6cf2;
   --done: #2fc79f;
     --danger: #f0738b;
+  --now: #ff6a3d;
   --focus: #8b6cf2;
 }
 

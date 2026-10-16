@@ -53,7 +53,12 @@ def document_upload_url(conn: Conn, storage: Storage, user_id: str, ext: str) ->
     return {"upload_url": storage.signed_upload_url(path), "path": path}
 
 
-def document_confirm(conn: Conn, storage: Storage, user_id: str, path: str) -> dict[str, Any]:
+DOC_KINDS = ("degree", "staff_id", "net_set", "bed", "tet", "other")
+
+
+def document_confirm(
+    conn: Conn, storage: Storage, user_id: str, path: str, kind: str = "degree"
+) -> dict[str, Any]:
     ext = _doc_path_ok(user_id, path)
     data = storage.download(path, DOC_MAX_BYTES + 1)
     try:
@@ -64,15 +69,30 @@ def document_confirm(conn: Conn, storage: Storage, user_id: str, path: str) -> d
         storage.delete([path])
         raise
     old = conn.execute(
-        "select document_path from public.teachers where user_id = %s", (user_id,)
+        "select path from internal.teacher_documents where user_id = %s and kind = %s",
+        (user_id, kind),
     ).fetchone()
     conn.execute(
-        "update public.teachers set document_path = %s where user_id = %s", (path, user_id)
+        "insert into internal.teacher_documents (user_id, kind, path) values (%s, %s, %s) "
+        "on conflict (user_id, kind) do update set path = excluded.path, created_at = now()",
+        (user_id, kind, path),
     )
+    if kind == "degree":
+        conn.execute(
+            "update public.teachers set document_path = %s where user_id = %s", (path, user_id)
+        )
     conn.commit()
-    if old and old["document_path"] and old["document_path"] != path:
-        storage.delete([str(old["document_path"])])
-    return {"has_document": True}
+    if old and old["path"] != path:
+        storage.delete([str(old["path"])])
+    return {"documents": documents(conn, user_id)}
+
+
+def documents(conn: Conn, user_id: str) -> list[dict[str, str]]:
+    rows = conn.execute(
+        "select kind, created_at from internal.teacher_documents where user_id = %s order by kind",
+        (user_id,),
+    ).fetchall()
+    return [{"kind": str(r["kind"]), "uploaded_at": r["created_at"].isoformat()} for r in rows]
 
 
 def set_payout(conn: Conn, user_id: str, d: dict[str, Any]) -> dict[str, str]:
@@ -129,12 +149,16 @@ def queue(conn: Conn, storage: Storage, user_id: str) -> list[dict[str, Any]]:
     _reviewer(conn, user_id)
     rows = conn.execute(
         "select t.user_id, t.display_name, t.organisation, t.qualification, t.experience_years, t.subjects, t.bio, "
-        "t.status, t.document_path, t.submitted_at, t.review_note, u.email "
+        "t.status, t.document_path, t.submitted_at, t.review_note, t.institution_code, u.email "
         "from public.teachers t join auth.users u on u.id = t.user_id "
         "where t.status in ('pending', 'rejected') order by t.submitted_at nulls last limit 100"
     ).fetchall()
     out = []
     for r in rows:
+        docs = conn.execute(
+            "select kind, path from internal.teacher_documents where user_id = %s order by kind",
+            (r["user_id"],),
+        ).fetchall()
         doc = r["document_path"]
         out.append(
             {
@@ -154,6 +178,16 @@ def queue(conn: Conn, storage: Storage, user_id: str) -> list[dict[str, Any]]:
                 )
                 if doc
                 else None,
+                "institution_code": r["institution_code"],
+                "documents": [
+                    {
+                        "kind": str(d["kind"]),
+                        "url": storage.signed_download_url(
+                            str(d["path"]), 600, f"{d['kind']}.{str(d['path']).rsplit('.', 1)[1]}"
+                        ),
+                    }
+                    for d in docs
+                ],
             }
         )
     return out

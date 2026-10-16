@@ -45,6 +45,7 @@ export type TeacherProfile = {
   preferred_slots: Slot[];
   levels: Level[];
   organisation: string;
+  institution_code: string;
 };
 export type Teacher = TeacherProfile & {
   user_id: string;
@@ -103,6 +104,7 @@ export const myTeaching = () =>
     stats: TeacherStats | null;
     payout: { method: "upi" | "bank"; display: string } | null;
     review_promise?: string;
+    documents?: { kind: "degree" | "staff_id" | "net_set" | "bed" | "tet" | "other"; uploaded_at: string }[];
   }>("/teachers/me");
 export const applyToTeach = (b: TeacherProfile & { consent: true }) =>
   api<{ teacher: Teacher }>("/teachers/apply", {
@@ -142,6 +144,9 @@ export function jitsiSrc(room: Room): string {
   ];
   const cfg = [
     "config.prejoinPageEnabled=false",
+    "config.prejoinConfig.enabled=false",
+    // Our room names are random 32-character codes, so the "unsafe name" banner is wrong here.
+    "config.enableInsecureRoomNameWarning=false",
     "config.disableDeepLinking=true",
     "config.readOnlyName=true",
     `config.toolbarButtons=${encodeURIComponent(JSON.stringify(buttons))}`,
