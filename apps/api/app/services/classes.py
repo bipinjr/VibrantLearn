@@ -46,6 +46,7 @@ class Klass:
     duration_min: int
     status: str
     teacher_joined_at: datetime | None = None
+    max_students: int = 40
 
     @property
     def ends_at(self) -> datetime:
@@ -128,10 +129,10 @@ def seat_decision(
         )
     if user_id in seated:
         return True, ""  # rejoining after a dropped connection keeps the seat
-    if len(seated) >= MAX_STUDENTS:
-        return False, f"This class is full ({MAX_STUDENTS} students)."
+    if len(seated) >= c.max_students:
+        return False, f"This class is full ({c.max_students} students)."
     if p == "grace":
-        reserved = [u for u in queue if u not in seated][: MAX_STUDENTS - len(seated)]
+        reserved = [u for u in queue if u not in seated][: c.max_students - len(seated)]
         if user_id not in reserved:
             return (
                 False,
@@ -152,7 +153,9 @@ def payout(students: int) -> dict[str, int]:
 
 # ---- data ----------------------------------------------------------------------------------------
 
-_CLASS_COLS = "c.id, c.teacher_id, c.starts_at, c.duration_min, c.status, c.teacher_joined_at"
+_CLASS_COLS = (
+    "c.id, c.teacher_id, c.starts_at, c.duration_min, c.status, c.teacher_joined_at, c.max_students"
+)
 
 
 def _klass(r: dict[str, Any]) -> Klass:
@@ -163,6 +166,7 @@ def _klass(r: dict[str, Any]) -> Klass:
         int(r["duration_min"]),
         str(r["status"]),
         r["teacher_joined_at"],
+        int(r.get("max_students") or MAX_STUDENTS),
     )
 
 
@@ -205,12 +209,22 @@ def settle(conn: Conn, c: Klass, now: datetime) -> Klass:
             (c.id, c.teacher_id, p["gross_paise"], p["fee_paise"], p["net_paise"], p["students"]),
         )
     conn.commit()
-    return Klass(c.id, c.teacher_id, c.starts_at, c.duration_min, d.status, c.teacher_joined_at)
+    return Klass(
+        c.id,
+        c.teacher_id,
+        c.starts_at,
+        c.duration_min,
+        d.status,
+        c.teacher_joined_at,
+        c.max_students,
+    )
 
 
 def warnings(conn: Conn, user_id: str) -> int:
     n = conn.execute(
-        "select count(*) as n from internal.moderation_warnings where user_id = %s", (user_id,)
+        "select count(*) as n from internal.moderation_warnings w where w.user_id = %s and not exists "
+        "(select 1 from internal.appeals a where a.warning_id = w.id and a.status = 'removed')",
+        (user_id,),
     ).fetchone()
     return int(n["n"]) if n else 0
 
@@ -286,9 +300,24 @@ def apply(conn: Conn, user_id: str, profile: dict[str, Any]) -> dict[str, Any]:
     return t
 
 
+def topics_for(conn: Conn, subject: str) -> list[dict[str, Any]]:
+    """Syllabus topics of a subject (newest syllabus version), for picking 1-4 per class."""
+    rows = conn.execute(
+        "select t.id, t.unit, t.unit_title, t.topic from public.syllabus_topics t "
+        "join public.syllabi s on s.id = t.syllabus_id where s.subject = %s "
+        "and s.version = (select max(version) from public.syllabi where subject = %s) order by t.unit, t.ord",
+        (subject, subject),
+    ).fetchall()
+    return [
+        {"id": str(r["id"]), "unit": r["unit"], "unit_title": r["unit_title"], "topic": r["topic"]}
+        for r in rows
+    ]
+
+
 def create(
     conn: Conn, user_id: str, subject: str, topic: str, level: str, starts_at: datetime, duration_min: int,
-    now: datetime | None = None,
+    now: datetime | None = None, topic_ids: list[str] | None = None, seat_cap: int = MAX_STUDENTS,
+    repeat_of: str | None = None,
 ) -> str:  # fmt: skip
     now = now or datetime.now(UTC)
     t = teacher(conn, user_id)
@@ -311,10 +340,16 @@ def create(
             if lead
             else "Schedule the room within the next 30 days.",
         )
+    ids = list(dict.fromkeys(topic_ids or []))[:4]
+    if ids:
+        valid = {t["id"] for t in topics_for(conn, subject)}
+        if not set(ids) <= valid:
+            raise ApiError(422, "invalid_input", "Pick topics from this subject's syllabus.")
+    cap = max(10, min(MAX_STUDENTS, seat_cap))
     row = conn.execute(
-        "insert into public.classes (teacher_id, subject, topic, level, starts_at, duration_min) "
-        "values (%s, %s, %s, %s, %s, %s) returning id",
-        (user_id, subject, topic, level, starts_at, duration_min),
+        "insert into public.classes (teacher_id, subject, topic, level, starts_at, duration_min, topic_ids, max_students, repeat_of) "
+        "values (%s, %s, %s, %s, %s, %s, %s, %s, %s) returning id",
+        (user_id, subject, topic, level, starts_at, duration_min, ids, cap, repeat_of),
     ).fetchone()
     assert row is not None
     conn.execute(
@@ -431,6 +466,14 @@ def listing(conn: Conn, user_id: str, now: datetime | None = None) -> list[dict[
         "where c.starts_at > %s and c.starts_at < %s order by c.starts_at limit 100",
         (now - timedelta(hours=3), now + timedelta(days=30)),
     ).fetchall()
+    # "For you": classes in a subject the student has an upcoming exam in (their own plans only).
+    mine = {
+        str(x["subject"])
+        for x in conn.execute(
+            "select distinct subject from public.study_plans where user_id = %s and deadline_at > %s",
+            (user_id, now),
+        ).fetchall()
+    }
     my_ratings = {
         str(x["class_id"]): int(x["stars"])
         for x in conn.execute(
@@ -462,7 +505,9 @@ def listing(conn: Conn, user_id: str, now: datetime | None = None) -> list[dict[
                 "cancel_reason": reason if c.status == "cancelled" else None,
                 "interested": len(queue),
                 "min_students": min_students(),
-                "max_students": MAX_STUDENTS,
+                "max_students": c.max_students,
+                "teacher_id": c.teacher_id,
+                "for_you": r["subject"] in mine,
                 "mine_interested": user_id in queue,
                 "position": queue.index(user_id) + 1 if user_id in queue else None,
                 "seated": user_id in seated,
@@ -575,3 +620,157 @@ def rate(
     )
     conn.commit()
     return {"stars": stars}
+
+
+def _own(conn: Conn, user_id: str, class_id: str) -> Klass:
+    c = _get(conn, class_id)
+    if c.teacher_id != user_id:
+        raise ApiError(404, "not_found", "That class doesn't exist.")
+    return c
+
+
+def reschedule(
+    conn: Conn, user_id: str, class_id: str, starts_at: datetime, now: datetime | None = None
+) -> None:
+    """TEACHER.md T4: too few students an hour before? Move it; interested students stay interested."""
+    now = now or datetime.now(UTC)
+    c = _own(conn, user_id, class_id)
+    if c.status != "scheduled" or now >= c.starts_at:
+        raise ApiError(409, "too_late", "A class can only be moved before it starts.")
+    lead = get_settings().class_min_lead_min
+    if (
+        not now + timedelta(minutes=lead) - timedelta(seconds=90)
+        <= starts_at
+        <= now + timedelta(days=30)
+    ):
+        raise ApiError(422, "invalid_input", "Pick a time within the next 30 days.")
+    conn.execute("update public.classes set starts_at = %s where id = %s", (starts_at, class_id))
+    conn.commit()
+
+
+def repeat(
+    conn: Conn, user_id: str, class_id: str, days: int = 7, now: datetime | None = None
+) -> str:
+    """TEACHER.md T6: one tap, the same class again next week at the same time."""
+    now = now or datetime.now(UTC)
+    c = _own(conn, user_id, class_id)
+    r = conn.execute(
+        "select subject, topic, level, topic_ids, max_students from public.classes where id = %s",
+        (class_id,),
+    ).fetchone()
+    assert r is not None
+    start = c.starts_at + timedelta(days=days)
+    while start < now + timedelta(minutes=get_settings().class_min_lead_min):
+        start += timedelta(days=7)
+    return create(
+        conn, user_id, r["subject"], r["topic"], r["level"], start, c.duration_min, now,
+        [str(x) for x in r["topic_ids"]], int(r["max_students"]), class_id,
+    )  # fmt: skip
+
+
+def people(
+    conn: Conn, user_id: str, class_id: str, now: datetime | None = None
+) -> list[dict[str, Any]]:
+    """TEACHER.md T5: who is in the class. Usernames only, and only once the class has started."""
+    now = now or datetime.now(UTC)
+    c = _own(conn, user_id, class_id)
+    if now < c.starts_at:
+        return []
+    rows = conn.execute(
+        "select a.user_id, a.joined_at, p.username::text as username, "
+        "(select count(*) from internal.class_messages m where m.class_id = a.class_id and m.user_id = a.user_id "
+        " and m.hidden_reason is not null) as strikes "
+        "from public.class_attendance a left join public.profiles p on p.id = a.user_id "
+        "where a.class_id = %s and a.role = 'student' order by a.joined_at",
+        (class_id,),
+    ).fetchall()
+    return [
+        {
+            "user_id": str(r["user_id"]),
+            "username": r["username"] or "student",
+            "joined_at": r["joined_at"].isoformat(),
+            "removed": int(r["strikes"]) >= STRIKES_TO_REMOVE,
+        }
+        for r in rows
+    ]
+
+
+AGGREGATE_MIN = 5  # TEACHER.md: never show a group smaller than 5 students; it identifies people
+
+
+def summary(conn: Conn, user_id: str, class_id: str, now: datetime | None = None) -> dict[str, Any]:
+    """TEACHER.md T6: what happened, straight after the class. Class-level aggregates only."""
+    now = now or datetime.now(UTC)
+    c = settle(conn, _own(conn, user_id, class_id), now)
+    r = conn.execute(
+        "select c.subject, c.topic, "
+        "(select count(*) from public.class_signups s where s.class_id = c.id) as interested, "
+        "(select count(*) from public.class_attendance a where a.class_id = c.id and a.role = 'student') as attended, "
+        "(select round(avg(g.stars)::numeric, 1) from internal.class_ratings g where g.class_id = c.id) as rating, "
+        "(select count(*) from internal.class_ratings g where g.class_id = c.id) as ratings, "
+        "(select row_to_json(p) from (select gross_paise, fee_paise, net_paise, status from internal.teacher_payouts "
+        "  where class_id = c.id) p) as payout "
+        "from public.classes c where c.id = %s",
+        (class_id,),
+    ).fetchone()
+    assert r is not None
+    # Quiz feedback: how the students who attended did on this subject's quizzes in the last 14 days.
+    q = conn.execute(
+        "select g.topic, count(distinct q.user_id) as students, "
+        "count(distinct q.user_id) filter (where q.score::numeric / nullif(q.total, 0) < 0.6) as struggled "
+        "from public.quiz_attempts q join public.generated_content g on g.id = q.content_id "
+        "join public.study_sessions s on s.id = g.session_id "
+        "where q.user_id in (select a.user_id from public.class_attendance a where a.class_id = %s and a.role = 'student') "
+        "and s.subject = %s and q.created_at > %s group by g.topic "
+        "having count(distinct q.user_id) >= %s order by struggled desc limit 5",
+        (class_id, r["subject"], now - timedelta(days=14), AGGREGATE_MIN),
+    ).fetchall()
+    return {
+        "phase": phase(c, now),
+        "interested": int(r["interested"]),
+        "attended": int(r["attended"]),
+        "rating": float(r["rating"]) if r["rating"] is not None else None,
+        "ratings": int(r["ratings"]),
+        "payout": r["payout"],
+        "quiz_feedback": [
+            {"topic": x["topic"], "students": int(x["students"]), "struggled": int(x["struggled"])}
+            for x in q
+        ],
+    }
+
+
+def public_profile(conn: Conn, teacher_id: str) -> dict[str, Any]:
+    """TEACHER.md T8: exactly what students see. Verified teachers only."""
+    r = conn.execute(
+        "select t.display_name, t.subjects, t.bio, t.organisation, t.qualification, t.experience_years, "
+        "t.languages, t.verified_at, "
+        "(select count(*) from public.classes c where c.teacher_id = t.user_id and c.status = 'done') as taught, "
+        "(select count(*) from public.class_attendance a join public.classes c on c.id = a.class_id "
+        "  where c.teacher_id = t.user_id and c.status = 'done' and a.role = 'student') as attended, "
+        "(select count(*) from public.class_signups s join public.classes c on c.id = s.class_id "
+        "  where c.teacher_id = t.user_id and c.status = 'done') as interested, "
+        "(select round(avg(g.stars)::numeric, 1) from internal.class_ratings g join public.classes c on c.id = g.class_id "
+        "  where c.teacher_id = t.user_id) as rating, "
+        "(select count(*) from internal.class_ratings g join public.classes c on c.id = g.class_id "
+        "  where c.teacher_id = t.user_id) as ratings "
+        "from public.teachers t where t.user_id = %s and t.status = 'verified'",
+        (teacher_id,),
+    ).fetchone()
+    if not r:
+        raise ApiError(404, "not_found", "That teacher isn't on VibrantLearn.")
+    interested = int(r["interested"])
+    return {
+        "display_name": r["display_name"],
+        "subjects": r["subjects"],
+        "bio": r["bio"],
+        "organisation": r["organisation"],
+        "qualification": r["qualification"],
+        "experience_years": r["experience_years"],
+        "languages": r["languages"],
+        "verified": True,
+        "verified_since": r["verified_at"].isoformat() if r["verified_at"] else None,
+        "classes_taught": int(r["taught"]),
+        "attendance_rate": round(int(r["attended"]) / interested * 100) if interested else None,
+        "rating": float(r["rating"]) if r["rating"] is not None else None,
+        "ratings": int(r["ratings"]),
+    }

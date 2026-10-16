@@ -94,13 +94,15 @@ def _out(r: dict[str, Any], user_id: str) -> dict[str, Any]:
         "bot": r["user_id"] is None,
         "mine": str(r["user_id"]) == user_id,
         "hidden": f"Only you can see this. The bot hid it: {LABEL[reason]}." if reason else None,
+        "question": bool(r.get("is_question")),
+        "answered": r.get("answered_at") is not None,
     }
 
 
 def read(conn: Conn, user_id: str, class_id: str, after: int) -> dict[str, Any]:
     _member(conn, user_id, class_id)
     rows = conn.execute(
-        "select id, user_id, author, body, hidden_reason, created_at from internal.class_messages "
+        "select id, user_id, author, body, hidden_reason, created_at, is_question, answered_at from internal.class_messages "
         "where class_id = %s and id > %s and (hidden_reason is null or user_id = %s) "
         "order by id limit 200",
         (class_id, after, user_id),
@@ -115,7 +117,13 @@ def read(conn: Conn, user_id: str, class_id: str, after: int) -> dict[str, Any]:
 
 
 def send(
-    conn: Conn, llm: Llm, user_id: str, class_id: str, body: str, now: datetime | None = None
+    conn: Conn,
+    llm: Llm,
+    user_id: str,
+    class_id: str,
+    body: str,
+    now: datetime | None = None,
+    is_question: bool = False,
 ) -> dict[str, Any]:
     now = now or datetime.now(UTC)
     c, role = _member(conn, user_id, class_id)
@@ -133,9 +141,16 @@ def send(
         v = _ask_llm(conn, llm, user_id, body)
     name = classes.display_name(conn, user_id)
     row = conn.execute(
-        "insert into internal.class_messages (class_id, user_id, author, body, hidden_reason) "
-        "values (%s, %s, %s, %s, %s) returning id, user_id, author, body, hidden_reason, created_at",
-        (class_id, user_id, name, body, v.category if v.hide else None),
+        "insert into internal.class_messages (class_id, user_id, author, body, hidden_reason, is_question) "
+        "values (%s, %s, %s, %s, %s, %s) returning id, user_id, author, body, hidden_reason, created_at, is_question, answered_at",
+        (
+            class_id,
+            user_id,
+            name,
+            body,
+            v.category if v.hide else None,
+            is_question and role == "student",
+        ),
     ).fetchone()
     assert row is not None
     if v.hide and v.category:
@@ -153,3 +168,16 @@ def send(
         "strikes_to_remove": STRIKES_TO_REMOVE,
         "removed": strikes >= STRIKES_TO_REMOVE,
     }
+
+
+def answered(conn: Conn, user_id: str, class_id: str, message_id: int) -> None:
+    """TEACHER.md T5: the teacher ticks a question off the queue."""
+    _, role = _member(conn, user_id, class_id)
+    if role != "teacher":
+        raise ApiError(403, "forbidden", "Only the teacher can mark questions answered.")
+    conn.execute(
+        "update internal.class_messages set answered_at = coalesce(answered_at, now()) "
+        "where id = %s and class_id = %s and is_question",
+        (message_id, class_id),
+    )
+    conn.commit()

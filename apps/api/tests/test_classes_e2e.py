@@ -52,6 +52,7 @@ def env(monkeypatch: pytest.MonkeyPatch) -> Iterator[tuple[TestClient, Judge]]:
     monkeypatch.setattr(
         get_settings(), "teacher_auto_verify", False
     )  # a local demo .env may turn it on
+    monkeypatch.setattr(get_settings(), "db_pool", False)  # a test server may allow one connection
     if os.environ.get("E2E_DB") != "1":
         pytest.skip("writes real rows: run with E2E_DB=1 against a test database")
     try:
@@ -190,7 +191,7 @@ def test_live_class_and_moderation_bot(env: tuple[TestClient, Judge]) -> None:
     # doors: teacher 5 min early yes, student no
     move(cid, 5)
     room = api.post(f"/api/v1/classes/{cid}/join", headers=teacher).json()
-    assert room["role"] == "teacher" and room["room_url"].startswith("https://meet.jit.si/vl-")
+    assert room["role"] == "teacher" and room["room_url"].startswith(get_settings().video_base_url.rstrip("/") + "/vl-")
     r = api.post(f"/api/v1/classes/{cid}/join", headers=students[0][1])
     assert r.status_code == 409 and "Doors open" in r.json()["error"]["message"]
 

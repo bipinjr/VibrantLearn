@@ -158,7 +158,8 @@ def _save_plan(conn: Conn, user_id: str, session_id: str, plan: dict[str, Any], 
             plan["mode"],
             max(0.5, round(float(plan["hours"]), 1)),
             lang,
-            Jsonb({"steps": plan["steps"]}),
+            # weak: the topics the student flagged; only ever read back as a 5+ student aggregate
+            Jsonb({"steps": plan["steps"], "weak": list(plan.get("weak") or [])[:8]}),
             f"{plan['subject']}|{plan['mode']}|{plan['deadline'][:13]}",
         ),
     )

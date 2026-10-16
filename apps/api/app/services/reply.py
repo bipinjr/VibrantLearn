@@ -252,6 +252,7 @@ def plan_reply(p: dict[str, Any], ctx: Ctx) -> Reply:
             "mode": mode,
             "hours": hours,
             "steps": steps,
+            "weak": list(p.get("weak") or ()),
         },
         session_patch={
             "title": f"{short(p['subject'])} {kind}",

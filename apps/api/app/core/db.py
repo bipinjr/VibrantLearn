@@ -33,11 +33,17 @@ def get_conn() -> Iterator[psycopg.Connection[dict[str, object]]]:
     """One connection per request, borrowed from the pool and given back at the end (rolled back if
     the request left a transaction open). The API connects as a privileged role, so every query
     must filter by the acting user's id."""
-    with _pool().connection() as conn:
+    with connect() as conn:
         yield conn
 
 
 def connect() -> AbstractContextManager[psycopg.Connection[dict[str, object]]]:
+    s = get_settings()
+    if not s.db_pool:
+        url = s.database_url.get_secret_value()
+        return psycopg.connect(
+            url, row_factory=dict_row, prepare_threshold=None, connect_timeout=10
+        )
     return _pool().connection()
 
 

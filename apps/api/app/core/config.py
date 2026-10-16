@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     # Local demos only: new teachers are verified at once instead of waiting for manual review.
     # Never true in production (SECURITY.md: teachers are checked before they reach students).
     teacher_auto_verify: bool = False
+    db_pool: bool = True  # tests against a single-connection Postgres turn the pool off
     # Class rules (ROADMAP v0.5). Lower them only for a local demo with a couple of accounts.
     class_min_students: int = 10
     class_min_lead_min: int = 30  # how far ahead a room must start; 0 allows "Start now"

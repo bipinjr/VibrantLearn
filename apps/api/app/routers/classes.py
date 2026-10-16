@@ -48,6 +48,8 @@ class ClassIn(BaseModel):
     level: Literal["beginner", "exam_prep", "all"] = "all"
     starts_at: AwareDatetime
     duration_min: int = Field(ge=30, le=120)
+    topic_ids: list[UUID] = Field(default=[], max_length=4)
+    seat_cap: int = Field(default=40, ge=10, le=40)
 
 
 @router.get("/teachers/me")
@@ -103,7 +105,15 @@ def create_class(body: ClassIn, user: CurrentUser, conn: Conn) -> dict[str, Any]
     ratelimit.hit(conn, user.id, "class_create", 10, 86400, "That's a lot of classes for one day.")
     return {
         "id": classes.create(
-            conn, user.id, body.subject, body.topic, body.level, body.starts_at, body.duration_min
+            conn,
+            user.id,
+            body.subject,
+            body.topic,
+            body.level,
+            body.starts_at,
+            body.duration_min,
+            topic_ids=[str(x) for x in body.topic_ids],
+            seat_cap=body.seat_cap,
         )
     }
 
@@ -136,6 +146,7 @@ class ChatIn(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     body: str = Field(min_length=1, max_length=500)
+    is_question: bool = False
 
 
 @router.get("/classes/{class_id}/chat")
@@ -156,4 +167,6 @@ def send_chat(
     ratelimit.hit(
         conn, user.id, "class_chat", 20, 60, "You're sending messages too fast. Wait a moment."
     )
-    return class_chat.send(conn, llm, user.id, str(class_id), body.body)
+    return class_chat.send(
+        conn, llm, user.id, str(class_id), body.body, is_question=body.is_question
+    )

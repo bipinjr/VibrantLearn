@@ -1,0 +1,30 @@
+/* One orchestrated moment on load: the plan draws itself along the dial, then the hand sweeps to now. */
+.arc {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.hand {
+  transform: rotate(var(--sweep));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .arc {
+    stroke-dashoffset: 1;
+    animation: draw 900ms var(--ease-out) forwards;
+  }
+  .hand {
+    transform: rotate(0deg);
+    animation: sweep 1400ms var(--ease-out) 700ms forwards;
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes sweep {
+  to {
+    transform: rotate(var(--sweep));
+  }
+}
