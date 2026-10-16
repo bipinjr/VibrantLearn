@@ -1,14 +1,18 @@
 "use client";
 
 import { Download, Monitor, Moon, RotateCcw, Sun } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { Main, PageHeader, PageTransition } from "@/components/app/Page";
 import type { Lang } from "@/lib/demo/data";
+import { api, ApiError } from "@/lib/api/client";
 import { useDemo } from "@/lib/demo/store";
 import { useUi } from "@/lib/i18n/context";
 import { FORMAT_LABELS, type Format } from "@/app/onboarding/preview-copy";
 
 type Theme = "system" | "light" | "dark";
+type Bucket = { used: number; limit: number; resets_at: string | null };
+type Limits = { messages: Bucket; plans: Bucket; content: Bucket; uploads: { used: number; limit: number; bytes_used: number; bytes_limit: number } };
 
 function Section({ title, sub, children, i }: { title: string; sub?: string; children: ReactNode; i: number }) {
   return (
@@ -49,6 +53,7 @@ function Meter({ label, used, limit, unit = "" }: { label: string; used: number;
 
 export default function SettingsPage() {
   const { mode, state, updateProfile, reset } = useDemo();
+  const router = useRouter();
   const { t, lang: uiLang, setLang: setUiLang } = useUi();
   const p = state.profile;
   const [theme, setTheme] = useState<Theme>("system");
@@ -75,16 +80,54 @@ export default function SettingsPage() {
     }
   }
 
-  function exportData() {
-    const { pending: _p, seen: _s, ...data } = state;
-    void _p;
-    void _s;
-    const blob = new Blob([JSON.stringify({ exported_at: new Date().toISOString(), ...data }, null, 2)], { type: "application/json" });
+  // Signed in: real allowances from the server (F2). Demo: the sample numbers.
+  const [limits, setLimits] = useState<Limits | null>(null);
+  const [busy, setBusy] = useState<"export" | "delete" | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
+  useEffect(() => {
+    if (mode !== "account") return;
+    api<{ limits: Limits }>("/me").then((r) => setLimits(r.limits)).catch(() => undefined);
+  }, [mode]);
+
+  async function exportData() {
+    let data: unknown;
+    if (mode === "account") {
+      setBusy("export");
+      try {
+        data = await api<unknown>("/me/export");
+      } catch (e) {
+        setProblem(e instanceof ApiError ? e.message : "Couldn't export just now. Try again.");
+        return;
+      } finally {
+        setBusy(null);
+      }
+    } else {
+      const { pending: _p, seen: _s, ...rest } = state;
+      void _p;
+      void _s;
+      data = { exported_at: new Date().toISOString(), ...rest };
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `vibrantlearn-export-${p.username}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
+  }
+
+  async function deleteAccount() {
+    setBusy("delete");
+    setProblem(null);
+    try {
+      await api("/me", { method: "DELETE", body: JSON.stringify({ confirm }) });
+      // The login is gone; clear the cookies and leave.
+      await fetch("/auth/signout", { method: "POST" }).catch(() => undefined);
+      router.replace("/");
+      router.refresh();
+    } catch (e) {
+      setProblem(e instanceof ApiError ? e.message : "Couldn't delete your account just now. Try again.");
+      setBusy(null);
+    }
   }
 
   return (
@@ -199,16 +242,22 @@ export default function SettingsPage() {
           </Section>
 
           <Section i={4} title={t("Usage")} sub={t("Limits keep the free AI quota fair for everyone.")}>
-            <Meter label={t("Messages in the last 10 minutes")} used={state.usage.messages.used} limit={state.usage.messages.limit} />
-            <Meter label={t("Plans this hour")} used={state.usage.plans.used} limit={state.usage.plans.limit} />
-            <Meter label={t("Uploads today")} used={state.files.length} limit={state.usage.uploads.limit} />
-            <Meter label={t("Upload size today")} used={Math.round(state.files.reduce((a, f) => a + f.sizeBytes, 0) / 1024 / 1024)} limit={300} unit=" MB" />
+            <Meter label={t("Messages in the last 10 minutes")} used={limits?.messages.used ?? state.usage.messages.used} limit={limits?.messages.limit ?? state.usage.messages.limit} />
+            <Meter label={t("Plans this hour")} used={limits?.plans.used ?? state.usage.plans.used} limit={limits?.plans.limit ?? state.usage.plans.limit} />
+            {limits ? <Meter label={t("AI answers this hour")} used={limits.content.used} limit={limits.content.limit} /> : null}
+            <Meter label={t("Uploads today")} used={limits?.uploads.used ?? state.files.length} limit={limits?.uploads.limit ?? state.usage.uploads.limit} />
+            <Meter
+              label={t("Upload size today")}
+              used={Math.round((limits?.uploads.bytes_used ?? state.files.reduce((a, f) => a + f.sizeBytes, 0)) / 1024 / 1024)}
+              limit={300}
+              unit=" MB"
+            />
           </Section>
 
           <Section i={5} title={t("Your data")} sub={t(mode === "demo" ? "Download everything, or start the demo fresh." : "Download everything you've saved.")}>
             <div className="flex flex-wrap gap-2">
-              <button type="button" className="btn btn-secondary" onClick={exportData}>
-                <Download size={16} strokeWidth={2} aria-hidden="true" /> {t("Export my data")}
+              <button type="button" className="btn btn-secondary" onClick={exportData} disabled={busy !== null}>
+                <Download size={16} strokeWidth={2} aria-hidden="true" /> {busy === "export" ? t("Preparing…") : t("Export my data")}
               </button>
               {mode === "demo" ? (
                 <button type="button" className="btn btn-secondary" onClick={reset}>
@@ -216,6 +265,11 @@ export default function SettingsPage() {
                 </button>
               ) : null}
             </div>
+            {problem ? (
+              <p role="alert" className="rounded-[var(--radius-input)] bg-rose/10 px-3 py-2 text-sm">
+                {problem}
+              </p>
+            ) : null}
           </Section>
 
           <Section i={6} title={t("Delete account")} sub={t("Removes your profile, sessions, plans and every uploaded file. This can't be undone.")}>
@@ -224,10 +278,16 @@ export default function SettingsPage() {
                 {t("Type {name} to confirm", { name: p.username })}
               </label>
               <input id="confirm" className="field" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" />
-              <button type="button" className="btn mt-1 bg-rose text-white" disabled title={t(mode === "demo" ? "Not available in the demo account" : "Coming soon")}>
-                {t("Delete my account")}
+              <button
+                type="button"
+                className="btn mt-1 bg-rose text-white"
+                disabled={mode === "demo" || busy !== null || confirm.trim().toLowerCase() !== p.username.toLowerCase()}
+                title={mode === "demo" ? t("Not available in the demo account") : undefined}
+                onClick={deleteAccount}
+              >
+                {busy === "delete" ? t("Deleting…") : t("Delete my account")}
               </button>
-              <p className="text-xs text-muted">{t(mode === "demo" ? "Turned off for the demo account." : "Account deletion is coming soon.")}</p>
+              {mode === "demo" ? <p className="text-xs text-muted">{t("Turned off for the demo account.")}</p> : null}
             </div>
           </Section>
         </div>

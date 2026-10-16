@@ -175,7 +175,7 @@ Frontend rules: no `dangerouslySetInnerHTML` with user or model content; markdow
 ## 13. Logging, audit and privacy
 
 - Structured JSON logs. **Never log:** tokens, cookies, passwords, file contents, chat text, full emails, raw IPs.
-- `internal.audit_log` records: sign-in, sign-up, failed auth bursts, upload rejected, rate limit hit, session deleted, data export, account deleted.
+- `internal.audit_log` records: upload rejected, rate limit hit, session deleted, data export, account deleted (user id or salted IP hash only; never content, tokens or raw IPs). Sign-in, sign-up and failed-auth bursts are recorded by Supabase Auth itself in `auth.audit_log_entries`; we do not duplicate them from the browser, where they could be spoofed.
 - Retention: audit log 180 days, usage events 90 days, LLM cache 30 days (configurable).
 - Privacy notice at sign-up states what we store and why; consent checkbox. Export and delete available in Settings (DPDP Act 2023 basics: notice, consent, purpose limitation, erasure).
 - Do not train any model on user files or chats. The intent model trains only on `data/intents.csv`, which contains no user data.

@@ -47,7 +47,7 @@ def check(
     over = int(str(row["count"])) > limit
     if over:
         # Subject is a user id or a salted IP hash, never a raw IP.
-        user = subject if not subject.startswith("ip:") else None
+        user = None if subject.startswith("ip:") else subject.removeprefix("user:")
         audit.record(
             conn, "rate_limited", user, ip_hash=None if user else subject, meta={"bucket": bucket}
         )

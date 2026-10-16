@@ -154,6 +154,9 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | F4: audit_log: upload rejected, rate limit hit, session deleted, export, account deleted; sign-in/failed auth via Supabase auth.audit_log_entries (documented) |
+| 2026-10-16 | Bipin A + Claude | F3: DELETE /api/v1/me: typed username, files deleted + verified, auth user deleted (cascade = 0 rows in 11 tables, SQL test on live DB), audited; GET /me/export; Settings wired; 5 tests |
+| 2026-10-16 | Bipin A + Claude | F2: GET /api/v1/me returns real allowances from internal.rate_limits + today's files; Settings shows them (incl. AI answers/hour) for signed-in students |
 | 2026-10-16 | Bipin A + Claude | F1: limits keyed by user id in internal.rate_limits: messages 30/10min, plans 10/h, AI content 40/h (in-stream: syllabus fallback + reset time, never raises), uploads 20/day + 300 MB/day; 429 + Retry-After + 'try again at 9:40 PM'; every refusal audited |
 | 2026-10-16 | Bipin A + Claude | D3: quiz key in internal.quiz_keys (RLS 38/38); POST /quiz/{id}/answers grades server-side, first answer counts; Quiz UI server mode; 9 tests |
 | 2026-10-16 | Bipin A + Claude | D2: AI questions/PYQ-style/quiz/flashcards: write -> examiner -> translate, pydantic-validated, one retry, cached, syllabus fallback; tests |

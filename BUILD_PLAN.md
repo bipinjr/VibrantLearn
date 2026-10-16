@@ -143,9 +143,9 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
 ### Phase F — limits, privacy, account (PRD F10, F11, M8)
 
 - [x] **F1. Rate limits on everything** — messages 30/10 min, plans 10/h, content 40/h, uploads 20/day and 300 MB/day, all in `internal.rate_limits`, keyed by user id. Friendly UI with the reset time. `429` with `Retry-After`.
-- [ ] **F2. Usage meter** — Settings reads real counts from `internal.usage_events`.
-- [ ] **F3. Account deletion** — `DELETE /api/v1/me`: revoke sessions, delete all storage objects, delete the auth user (cascade clears the rest), sign out. Typed confirmation in the UI.
-- [ ] **F4. Audit log** — write `internal.audit_log` for sign-in, failed-auth bursts, upload rejected, rate limit hit, session deleted, export, account deleted. Never log file contents, chat text, tokens or raw IPs.
+- [x] **F2. Usage meter** — Settings reads real counts from `internal.usage_events`.
+- [x] **F3. Account deletion** — `DELETE /api/v1/me`: revoke sessions, delete all storage objects, delete the auth user (cascade clears the rest), sign out. Typed confirmation in the UI.
+- [x] **F4. Audit log** — write `internal.audit_log` for sign-in, failed-auth bursts, upload rejected, rate limit hit, session deleted, export, account deleted. Never log file contents, chat text, tokens or raw IPs.
 - [ ] **F5. Forgot-password flow** — request, email, reset, with the same rate limits and the same no-enumeration message.
   - **Verify:** a deleted account leaves zero rows and zero storage objects (test).
 

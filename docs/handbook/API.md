@@ -62,7 +62,7 @@ Read with: [SECURITY.md](SECURITY.md) (auth and limits) · [DATABASE.md](DATABAS
 
 ### Account
 
-**`GET /me`** ⬜
+**`GET /me`** ✅
 Returns the profile plus remaining allowances.
 ```json
 { "profile": { "username": "bipin.jr", "course": "BCA", "semester": 3,
@@ -84,11 +84,11 @@ Partial profile update. Any subset of `username`, `consent`, `full_name`, `unive
 `{ "available": true, "reason": null }` or `{ "available": false, "reason": "That name is taken." }`.
 Limit: 30/min per user. Never reveals *whose* name it is.
 
-**`GET /me/export`** ⬜
+**`GET /me/export`** ✅
 The student's whole record as JSON: profile, sessions, messages, plans, generated content, quiz attempts, file metadata (not file bytes). DPDP erasure/portability basics.
 
-**`DELETE /me`** ⬜
-Revoke all sessions → delete every storage object under `{user_id}/` → delete the auth user (cascade clears the rest) → sign out. Irreversible; the UI requires a typed confirmation. Writes `account_deleted` to `internal.audit_log`.
+**`DELETE /me`** ✅
+Body `{ "confirm": "<username>" }` (case-insensitive). Delete every storage object under `{user_id}/` → verify none remain (else `502`, account kept) → delete the auth user, which ends every session and cascades to every row (proved by `supabase/tests/account_delete.test.sql`: zero rows in 11 tables) → `account_deleted` in `internal.audit_log`. Irreversible. Limit 5/hour.
 
 ---
 

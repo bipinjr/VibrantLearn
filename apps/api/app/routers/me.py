@@ -1,14 +1,16 @@
 from typing import Annotated, Literal
 
 import psycopg
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core import ratelimit
 from app.core.auth import CurrentUser
+from app.core.auth_admin import AuthAdmin, get_auth_admin
 from app.core.db import get_conn
 from app.core.errors import ApiError
-from app.services import usernames
+from app.core.storage import Storage, get_storage
+from app.services import account, usernames
 
 router = APIRouter()
 Conn = Annotated[psycopg.Connection[dict[str, object]], Depends(get_conn)]
@@ -112,3 +114,39 @@ def update_me(body: ProfilePatch, user: CurrentUser, conn: Conn) -> dict[str, ob
     except psycopg.errors.UniqueViolation as e:
         raise ApiError(409, "username_taken", "That name is taken. Try another.") from e
     return {"profile": row}
+
+
+@router.get("/me")
+def get_me(user: CurrentUser, conn: Conn) -> dict[str, object]:
+    """Profile plus the student's real remaining allowances (the Settings usage meter)."""
+    profile = conn.execute(
+        "select username::text, full_name, university, course, semester, scheme, language, style, "
+        "formats, onboarded_at is not null as onboarded from public.profiles where id = %s",
+        (user.id,),
+    ).fetchone()
+    return {"profile": profile, "limits": account.usage(conn, user.id)}
+
+
+@router.get("/me/export")
+def export_me(user: CurrentUser, conn: Conn) -> dict[str, object]:
+    ratelimit.hit(conn, user.id, "export", 5, 3600, "Exports are limited to 5 an hour.")
+    return account.export(conn, user.id)
+
+
+class DeleteMe(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    confirm: str = Field(min_length=1, max_length=30)  # the student's username, typed
+
+
+@router.delete("/me", status_code=204)
+def delete_me(
+    body: DeleteMe,
+    user: CurrentUser,
+    conn: Conn,
+    storage: Annotated[Storage, Depends(get_storage)],
+    admin: Annotated[AuthAdmin, Depends(get_auth_admin)],
+) -> Response:
+    ratelimit.hit(conn, user.id, "delete_account", 5, 3600, "Too many attempts. Wait a bit.")
+    account.delete_account(conn, storage, admin, user.id, body.confirm)
+    return Response(status_code=204)

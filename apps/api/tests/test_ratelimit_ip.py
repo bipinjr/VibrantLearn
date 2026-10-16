@@ -52,3 +52,14 @@ def test_trusted_proxy_without_header_falls_back_to_socket(trusted: None) -> Non
 def test_raw_ip_never_in_hash() -> None:
     h = ratelimit.ip_hash(_req(None))
     assert h.startswith("ip:") and "203.0.113.7" not in h
+
+
+def test_refusals_are_audited_with_a_clean_user_id() -> None:
+    """Buckets keyed 'user:<uuid>' must audit the bare uuid (the column is uuid-typed)."""
+    from tests.fakes import FakeConn
+
+    conn = FakeConn()
+    uid = "0c8f6c2e-1111-4222-8333-944455556666"
+    conn.hits[(f"user:{uid}", "username_check")] = 30
+    assert ratelimit.check(conn, f"user:{uid}", "username_check", 30, 60) is not None  # type: ignore[arg-type]
+    assert conn.audit[-1] == ("rate_limited", uid)

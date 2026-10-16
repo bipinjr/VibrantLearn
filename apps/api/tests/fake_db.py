@@ -308,4 +308,14 @@ class FakeDb:
             row = next(a for a in st["attempts"] if a["id"] == p[2] and a["user_id"] == p[3])
             row["answers"], row["score"] = dict(_v(p[0])), p[1]
             return _Result([])
+        if q.startswith("select count, window_start + make_interval"):
+            n = st["rate"].get((p["s"], p["b"]))
+            return _Result([{"count": n, "resets_at": self.now}] if n else [])
+        if q.startswith("select username::text"):
+            pr = st["profiles"].get(p[0])
+            return _Result([{"username": pr.get("username", "user"), **pr}] if pr else [])
+        if m := re.match(r"select .+ from public\.(\w+) where user_id = %s", q):
+            rows = st["sessions"] if m.group(1) == "study_sessions" else st.get(m.group(1), [])
+            vals = rows.values() if isinstance(rows, dict) else rows
+            return _Result([dict(r) for r in vals if r.get("user_id") == p[0]])
         raise AssertionError(f"FakeDb: unexpected SQL: {q[:90]}")
