@@ -94,7 +94,7 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
 
 ### Phase C — uploads and file search (PRD F7, F8, M6)
 
-- [ ] **C1. Signed upload URLs**
+- [x] **C1. Signed upload URLs**
   - `POST /api/v1/sessions/{id}/files/upload-url`: validate declared name, extension allowlist, mime, size ≤ `MAX_UPLOAD_MB`, per-user daily count and byte quota; create the `files` row with status `uploaded`; return a one-time signed upload URL.
   - Storage path: `{user_id}/{session_id}/{file_id}/{safe_name}` where `safe_name` is a slug plus the extension. Reject path separators, control characters, names over 120 chars.
   - **Verify:** 49 MB PDF succeeds; 51 MB is refused with the split message; a second session cannot write into the first session's folder.

@@ -148,6 +148,7 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | C1: POST /api/v1/sessions/{id}/files/upload-url: allowlist, 120-char/no-path names, safe slug, 50 MB cap (413), 20 files/300 MB per IST day (429), server-chosen content type, audit on rejection; 14 tests |
 | 2026-10-16 | Bipin A + Claude | B1: session page loads its thread on the server (newest 500, in order) so a refresh paints it at once; layout no longer loads every message (old oldest-first limit(2000) silently dropped a heavy user's newest messages); files loaded; SSR test; E2E 17/17 |
 | 2026-10-16 | Bipin A + Claude | B3: signed-in intake server-side (Python parser + intent model + scheduler); client INSERT on messages/study_plans revoked, RLS 37/37; demo keeps TS engine |
 | 2026-10-16 | Bipin A + Claude | B2: SSE POST /api/v1/sessions/{id}/messages: status/plan/session/block/done/error; plan+reply commit after last block; 15 API tests incl. disconnect + failure |

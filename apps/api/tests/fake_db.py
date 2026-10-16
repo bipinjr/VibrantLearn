@@ -5,6 +5,7 @@ Statements are matched by a normalised prefix; an unknown statement fails the te
 """
 
 import copy
+from datetime import UTC, datetime
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -39,8 +40,10 @@ class FakeDb:
             "usage": [],
             "llm_cache": {},
             "rate": {},
+            "audit": [],
         }
         self.syllabus = syllabus
+        self.now = datetime.now(UTC)
         self._saved = copy.deepcopy(self.state)
         self.commits = 0
 
@@ -159,5 +162,21 @@ class FakeDb:
             return _Result([{"response": hit}] if hit is not None else [])
         if q.startswith("insert into internal.llm_cache"):
             st["llm_cache"][p[0]] = _v(p[4])
+            return _Result([])
+        if q.startswith(
+            "select count(*) as n, coalesce(sum(size_bytes), 0) as bytes from public.files"
+        ):
+            mine = [f for f in st["files"] if f["user_id"] == p[0] and f["created_at"] >= p[1]]
+            return _Result([{"n": len(mine), "bytes": sum(f["size_bytes"] for f in mine)}])
+        if q.startswith("insert into public.files"):
+            st["files"].append(
+                {
+                    "id": p[0], "session_id": p[1], "user_id": p[2], "storage_path": p[3], "original_name": p[4],
+                    "name": p[5], "mime": p[6], "size_bytes": p[7], "status": "uploaded", "created_at": self.now,
+                }
+            )  # fmt: skip
+            return _Result([])
+        if q.startswith("insert into internal.audit_log"):
+            st["audit"].append({"action": p[1], "user_id": p[0], "meta": _v(p[3])})
             return _Result([])
         raise AssertionError(f"FakeDb: unexpected SQL: {q[:90]}")

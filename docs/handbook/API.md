@@ -125,7 +125,7 @@ Limit 30/hour. Verify ownership (`404` if not yours) → delete storage objects 
 
 ### Files
 
-**`POST /sessions/{id}/files/upload-url`** ⬜
+**`POST /sessions/{id}/files/upload-url`** ✅
 `{ "name": string, "mime": string, "size_bytes": int }`
 
 Validates extension allowlist, mime, `size_bytes ≤ MAX_UPLOAD_MB`, daily count and byte quota. Creates the `files` row with status `uploaded`. Returns a one-time signed upload URL:
@@ -135,7 +135,7 @@ Validates extension allowlist, mime, `size_bytes ≤ MAX_UPLOAD_MB`, daily count
   "path": "{user_id}/{session_id}/{file_id}/unit3-inheritance.pdf" }
 ```
 
-Over the size cap → `413` with the split-the-file message. The browser PUTs the bytes directly to Storage; they never pass through a function (Vercel caps a request body at 4.5 MB).
+Over the size cap → `413` with the split-the-file message. Unsupported extension → `415 unsupported_type`. Name over 120 characters, with `/`, `\` or control characters → `422`. Daily quota (20 files / 300 MB, resetting at midnight IST) → `429` with `Retry-After`. The response also carries `content_type`: the server picks it from the extension (text and code are stored as `text/plain`) and the browser must PUT with it. Signed upload URLs from Supabase last two hours (`expires_in: 7200`). The browser PUTs the bytes directly to Storage; they never pass through a function (Vercel caps a request body at 4.5 MB).
 
 **`POST /files/{id}/process`** ⬜
 Downloads the object and verifies it before trusting anything: real size, **magic bytes** against the declared type, SHA-256, dedupe on `(session_id, sha256)`. Then extracts text with hardened parsers (`defusedxml`; zip-bomb and page caps), chunks it, and writes `file_chunks`.
