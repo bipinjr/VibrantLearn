@@ -122,12 +122,12 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
   - Move the per-process `Map` caches (`app/api/notes/route.ts`) to `internal.llm_cache`, keyed by `(prompt_version, model, kind, source hash)`. Log every call to `internal.usage_events` with `served_from`, tokens and latency.
   - **Verify:** the same topic requested from two browser sessions makes one Groq call; the dashboard percentage is computed from real rows, not a constant.
 
-- [ ] **D2. AI-written questions, quizzes and flashcards**
+- [x] **D2. AI-written questions, quizzes and flashcards**
   - Same three-step shape as notes (write → examiner check → translate), zod-validated, one repair retry, then a graceful fallback to the syllabus-derived version.
   - Important questions in BCU style (2/5/10 marks). PYQ-style questions generated **in the style of** past papers — never scraped or reproduced.
   - **Verify:** schema failures fall back without an error screen; output never contains markdown.
 
-- [ ] **D3. Quiz scoring server-side**
+- [x] **D3. Quiz scoring server-side**
   - Answers are graded by the API and stored in `quiz_attempts`; the client never decides the score.
   - **Verify:** a tampered request cannot record a perfect score.
 
@@ -187,7 +187,7 @@ cd apps/api && uv run ruff check . && uv run ruff format --check . && uv run myp
 
 # database (against the linked cloud project)
 npx supabase db push --linked
-npx supabase test db --linked                      # expect 37/37
+npx supabase test db --linked                      # expect 38/38
 npx supabase db advisors --linked --fail-on error  # expect clean
 
 # end to end

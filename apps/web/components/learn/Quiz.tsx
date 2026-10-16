@@ -1,12 +1,22 @@
 import { Check, RotateCcw, X } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import type { QuizQuestion } from "@/lib/demo/data";
+import { api, ApiError } from "@/lib/api/client";
 import { useT } from "@/lib/i18n/context";
 import { ProgressRing } from "./ProgressRing";
 import styles from "./quiz.module.css";
 
-export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRevise?: (topics: string[]) => void }) {
+type Graded = { answer: number; why: string } | { error: string };
+type ServerGrade = { answer: number; why: string };
+
+/**
+ * Demo quizzes grade locally. A signed-in quiz (contentId) has no answer key in the browser: each
+ * answer goes to the server, which grades it and keeps the first answer per question (D3).
+ */
+export function Quiz({ questions, contentId, onRevise }: { questions: QuizQuestion[]; contentId?: string; onRevise?: (topics: string[]) => void }) {
   const t = useT();
+  const [graded, setGraded] = useState<Record<number, Graded>>({});
+  const restart = useRef(true); // the first answer of each run starts a fresh attempt on the server
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [origin, setOrigin] = useState({ x: "50%", y: "50%" });
@@ -23,7 +33,20 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
     } else setOrigin({ x: "24px", y: "50%" });
     setPicked(idx);
     setAnswers((a) => [...a, idx]);
+    const qi = i;
+    if (!contentId) {
+      setGraded((g) => ({ ...g, [qi]: { answer: questions[qi].answer ?? 0, why: questions[qi].why ?? "" } }));
+      return;
+    }
+    const first = restart.current;
+    restart.current = false;
+    api<ServerGrade>(`/quiz/${encodeURIComponent(contentId)}/answers`, { method: "POST", body: JSON.stringify({ q: qi, choice: idx, restart: first }) })
+      .then((r) => setGraded((g) => ({ ...g, [qi]: { answer: r.answer, why: r.why } })))
+      .catch((e: unknown) => setGraded((g) => ({ ...g, [qi]: { error: e instanceof ApiError ? e.message : "Couldn't check that answer. Try again." } })));
   }
+
+  const result = graded[i];
+  const key = result && "answer" in result ? result.answer : undefined;
 
   function next() {
     setPicked(null);
@@ -45,8 +68,12 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
   });
 
   if (finished) {
-    const score = answers.filter((a, k) => a === questions[k].answer).length;
-    const wrongTopics = [...new Set(questions.filter((qq, k) => answers[k] !== qq.answer).map((qq) => qq.topic))];
+    const right = (k: number) => {
+      const g = graded[k];
+      return g !== undefined && "answer" in g && answers[k] === g.answer;
+    };
+    const score = answers.filter((_, k) => right(k)).length;
+    const wrongTopics = [...new Set(questions.filter((_, k) => !right(k)).map((qq) => qq.topic))];
     return (
       <div className="pop-in grid gap-5 sm:grid-cols-[auto_1fr] sm:items-center">
         <ProgressRing value={score / questions.length} size={88} stroke={8} label={t("Scored {s} of {n}", { s: score, n: questions.length })} />
@@ -70,7 +97,7 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
             </div>
           ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
-            <button type="button" className="btn btn-secondary min-h-10 text-sm" onClick={() => { setAnswers([]); setI(0); setPicked(null); setFinished(false); }}>
+            <button type="button" className="btn btn-secondary min-h-10 text-sm" onClick={() => { setAnswers([]); setGraded({}); restart.current = true; setI(0); setPicked(null); setFinished(false); }}>
               <RotateCcw size={15} strokeWidth={2} aria-hidden="true" /> {t("Try again")}
             </button>
             {wrongTopics.length && onRevise ? (
@@ -99,7 +126,7 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
       </p>
       <ul className="grid gap-2" role="list">
         {q.options.map((o, idx) => {
-          const state = picked === null ? "idle" : idx === q.answer ? "right" : idx === picked ? "wrong" : "dim";
+          const state = picked === null || key === undefined ? "idle" : idx === key ? "right" : idx === picked ? "wrong" : "dim";
           return (
             <li key={`${i}-${o}`} className="rise" style={{ "--i": idx } as CSSProperties}>
               <button
@@ -123,8 +150,16 @@ export function Quiz({ questions, onRevise }: { questions: QuizQuestion[]; onRev
       <div className="reveal" data-open={picked !== null}>
         <div>
           <p id={`why-${i}`} role="status" className="rounded-[var(--radius-input)] bg-bg px-4 py-3 text-sm">
-            <strong>{t(picked === q.answer ? "Correct." : "Not quite.")} </strong>
-            {q.why}
+            {result && "error" in result ? (
+              result.error
+            ) : key === undefined ? (
+              t("Checking…")
+            ) : (
+              <>
+                <strong>{t(picked === key ? "Correct." : "Not quite.")} </strong>
+                {result && "why" in result ? result.why : ""}
+              </>
+            )}
           </p>
           <div className="mt-3 flex justify-end">
             {i < questions.length - 1 ? (

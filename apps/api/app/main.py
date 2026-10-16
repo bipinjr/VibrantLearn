@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Response
 
 from app.core import errors
 from app.core.config import get_settings
-from app.routers import files, health, me, messages, sessions, waitlist
+from app.routers import files, health, me, messages, quiz, sessions, waitlist
 
 
 class _JsonFormatter(logging.Formatter):
@@ -64,6 +64,7 @@ for r in (
     health.router,
     me.router,
     messages.router,
+    quiz.router,
     sessions.router,
     waitlist.router,
 ):

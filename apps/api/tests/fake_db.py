@@ -6,6 +6,7 @@ Statements are matched by a normalised prefix; an unknown statement fails the te
 
 import copy
 import re
+import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -42,6 +43,9 @@ class FakeDb:
             "rate": {},
             "audit": [],
             "chunks": [],
+            "content": {},
+            "quiz_keys": {},
+            "attempts": [],
         }
         self.syllabus = syllabus
         self.now = datetime.now(UTC)
@@ -270,5 +274,38 @@ class FakeDb:
         if q.startswith("delete from public.files where id = %s and user_id = %s"):
             st["files"] = [f for f in st["files"] if not (f["id"] == p[0] and f["user_id"] == p[1])]
             st["chunks"] = [c for c in st["chunks"] if c["file_id"] != p[0]]
+            return _Result([])
+        if q.startswith("insert into public.generated_content"):
+            cid = str(uuid.uuid4())
+            st["content"][cid] = {
+                "user_id": p[0],
+                "session_id": p[1],
+                "topic": p[2],
+                "payload": _v(p[4]),
+            }
+            return _Result([{"id": cid}])
+        if q.startswith("insert into internal.quiz_keys"):
+            st["quiz_keys"][p[0]] = {"answers": p[1], "why": p[2], "topics": p[3]}
+            return _Result([])
+        if q.startswith("select k.answers, k.why, k.topics from internal.quiz_keys"):
+            k, c = st["quiz_keys"].get(p[0]), st["content"].get(p[0])
+            return _Result([k] if k and c and c["user_id"] == p[1] else [])
+        if q.startswith("select id, answers from public.quiz_attempts"):
+            rows = [a for a in st["attempts"] if a["content_id"] == p[0] and a["user_id"] == p[1]]
+            return _Result([rows[-1]] if rows else [])
+        if q.startswith("insert into public.quiz_attempts"):
+            row = {
+                "id": f"att-{len(st['attempts']) + 1}",
+                "user_id": p[0],
+                "content_id": p[1],
+                "answers": {},
+                "score": 0,
+                "total": p[2],
+            }
+            st["attempts"].append(row)
+            return _Result([{"id": row["id"], "answers": {}}])
+        if q.startswith("update public.quiz_attempts set answers"):
+            row = next(a for a in st["attempts"] if a["id"] == p[2] and a["user_id"] == p[3])
+            row["answers"], row["score"] = dict(_v(p[0])), p[1]
             return _Result([])
         raise AssertionError(f"FakeDb: unexpected SQL: {q[:90]}")

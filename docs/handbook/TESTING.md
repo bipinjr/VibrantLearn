@@ -11,7 +11,7 @@ A test exists to stop a specific bad thing reaching a student the night before t
 | Unit (web) | Vitest | ~135 | Parser, scheduler, formatters, username rules, redirect guard |
 | Component | Vitest + Testing Library | small | Quiz behaviour, keyboard interaction |
 | Unit / integration (API) | pytest | 33 + 5 needing a database | Auth, validation, rate limits, profile, waitlist |
-| Database | pgTAP | 37 | **Row Level Security** — the claim the whole product rests on |
+| Database | pgTAP | 38 | **Row Level Security** — the claim the whole product rests on |
 | End to end | Playwright (`apps/web/e2e/smoke.py`) | 18 steps | The demo script works start to finish |
 | Manual | a human | checklist | Language quality, how it feels, exam-night realism |
 
@@ -95,7 +95,7 @@ cd apps/api && uv run ruff check . && uv run mypy app && uv run pytest -q
 
 # database — after any migration
 npx supabase db push --linked
-npx supabase test db --linked                      # expect 37/37
+npx supabase test db --linked                      # expect 38/38
 npx supabase db advisors --linked --fail-on error  # expect clean
 
 # end to end — before any release

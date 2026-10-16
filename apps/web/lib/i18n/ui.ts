@@ -286,6 +286,7 @@ const DICT: Record<string, [string, string]> = {
   "Correct.": ["ಸರಿ.", "सही।"],
   "Not quite.": ["ಸ್ವಲ್ಪ ತಪ್ಪಾಯಿತು.", "पूरा सही नहीं।"],
   "Next question": ["ಮುಂದಿನ ಪ್ರಶ್ನೆ", "अगला प्रश्न"],
+  "Checking…": ["ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ…", "जाँच हो रही है…"],
   "See my score": ["ನನ್ನ ಅಂಕ ನೋಡಿ", "मेरा स्कोर देखें"],
 
   // flashcards

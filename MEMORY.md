@@ -154,6 +154,8 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | D3: quiz key in internal.quiz_keys (RLS 38/38); POST /quiz/{id}/answers grades server-side, first answer counts; Quiz UI server mode; 9 tests |
+| 2026-10-16 | Bipin A + Claude | D2: AI questions/PYQ-style/quiz/flashcards: write -> examiner -> translate, pydantic-validated, one retry, cached, syllabus fallback; tests |
 | 2026-10-16 | Bipin A + Claude | D1: AI calls in FastAPI share internal.llm_cache (prompt version|model|kind|source hash) and log every call to internal.usage_events; same topic twice = one Groq call (test); dashboard % from real served_from rows; Next AI routes now demo-only |
 | 2026-10-16 | Bipin A + Claude | C4: answers from own notes: @mention/fuzzy file match, FTS scoped to user+session, TF-IDF top 5, <document> delimiters + ignore-instructions rule, source chips, honest not-found with no AI call, cached; 7 tests incl. cross-user + injection |
 | 2026-10-16 | Bipin A + Claude | C2: POST /api/v1/files/{id}/process: real size, magic bytes, SHA-256, dedupe, zip-bomb guard, defusedxml, PDF caps; rejects delete object + audit; extraction + chunking (C3 server half) done; 15 hostile-fixture tests |

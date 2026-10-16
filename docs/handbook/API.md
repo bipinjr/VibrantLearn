@@ -183,9 +183,9 @@ Generation is three steps for accuracy: write in English → a strict examiner c
 ```
 Limit: 40/hour. Unknown topic → `404 unknown_topic`.
 
-**`POST /quiz/{content_id}/attempts`** ⬜
-`{ "answers": [{ "q": 0, "choice": 2 }] }` → `{ "score": 4, "total": 5, "wrong_topics": ["Interfaces"] }`.
-**Scored on the server.** The client never decides the score.
+**`POST /quiz/{content_id}/answers`** ✅
+`{ "q": 0, "choice": 2, "restart"?: bool }` → `{ "correct", "answer", "why", "counted", "score", "answered", "total", "done", "wrongTopics" }`.
+**Graded on the server, one answer at a time.** A signed-in quiz reaches the browser without its key (the key is in `internal.quiz_keys`, never client-readable). The **first** answer to each question is the one recorded in `quiz_attempts`; answering again can't change it, so learning the key from feedback can't buy a perfect score. `restart: true` begins a new attempt ("Try again"). Limit 300/hour.
 
 ---
 

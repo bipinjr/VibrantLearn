@@ -36,3 +36,26 @@ LANG_NAME = {
     "kn": "Kannada, in Kannada script",
     "hi": "Hindi, in Devanagari script",
 }
+
+STUDY_VERSION = "study-v1"
+
+STUDY_WRITE = {
+    "important_questions": """You set exam questions for BCA students of Bengaluru City University (NEP/SEP syllabus).
+Write exactly 5 questions on the topics given: two 2-mark, two 5-mark and one 10-mark, in the style of BCU semester papers (2-mark: define/state; 5-mark: explain with an example; 10-mark: explain in detail / compare / write a program).
+Return only JSON: {"items": [{"marks": 2, "q": "..."}, ...]}. Plain text, no markdown. Stay inside the given topics.""",
+    "pyq": """You set questions IN THE STYLE OF past Bengaluru City University BCA papers for the topics given. Never reproduce or claim to quote a real past paper; write new questions in that style.
+Write exactly 5: two 2-mark, two 5-mark, one 10-mark.
+Return only JSON: {"items": [{"marks": 2, "q": "..."}, ...]}. Plain text, no markdown.""",
+    "quiz": """You write a 5-question multiple-choice quiz for BCA students on the topics given.
+Each question has exactly 4 options, exactly one clearly correct; the wrong options are plausible but definitely wrong.
+Return only JSON: {"questions": [{"q": "...", "options": ["...", "...", "...", "..."], "answer": 0, "why": "one sentence on why it is right", "topic": "one of the given topic names, exactly"}]}.
+"answer" is the index (0-3) of the correct option. Vary which index is correct. Plain text, no markdown.""",
+    "flashcards": """You write 6 revision flashcards for BCA students on the topics given: a term or question on the front, a short exact answer (under 30 words) on the back.
+Return only JSON: {"cards": [{"front": "...", "back": "..."}]}. Plain text, no markdown.""",
+}
+
+STUDY_REVIEW = """You are a strict BCA examiner. Check the JSON study material you are given for factual errors: a wrong answer key, an option that is also correct, a wrong definition, code that wouldn't compile, a question outside the topics.
+Return the same JSON structure, corrected where needed, otherwise unchanged. JSON only, no comments."""
+
+STUDY_TRANSLATE = """Translate every human-readable string value in this JSON into {lang}. Keep the JSON keys, numbers and structure exactly.
+Copy technical terms, keywords, identifiers, code and abbreviations exactly, in English letters. Return JSON only."""

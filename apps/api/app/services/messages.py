@@ -15,7 +15,7 @@ import uuid
 from collections.abc import Callable, Iterator
 from contextlib import AbstractContextManager
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import psycopg
 from psycopg.types.json import Jsonb
@@ -24,7 +24,7 @@ from app.llm import cache
 from app.llm.client import Llm, LlmError, Message
 from app.ml import intent as intent_model
 from app.ml.parse import Lang, parse_request
-from app.services import content, retrieval, syllabus
+from app.services import content, retrieval, study, syllabus
 from app.services.reply import Ctx, Reply, respond, topic_note
 
 Conn = psycopg.Connection[dict[str, Any]]
@@ -100,6 +100,16 @@ def _history(conn: Conn, user_id: str, session_id: str) -> list[Message]:
         if text:
             out.append(Message("user" if r["role"] == "user" else "assistant", text[:2000]))
     return out
+
+
+def _study_block(b: dict[str, Any], kind: str, payload: dict[str, Any]) -> dict[str, Any]:
+    if kind in ("important_questions", "pyq") and b["type"] == "questions":
+        return {**b, "items": payload["items"]}
+    if kind == "quiz" and b["type"] == "quiz":
+        return {**b, "questions": payload["questions"]}
+    if kind == "flashcards" and b["type"] == "flashcards":
+        return {**b, "cards": payload["cards"]}
+    return b
 
 
 def _from_files(
@@ -185,6 +195,21 @@ def _run(
             except LlmError:
                 payload, served = topic_note(t), "ml"  # syllabus summary, quietly
             blocks = [{**b, "text": payload} if b["type"] == "notes" else b for b in blocks]
+        elif reply.ai_study is not None:
+            kind, subject, topics = reply.ai_study
+            try:
+                payload, served = study.generate(
+                    conn,
+                    llm,
+                    user_id,
+                    cast("study.Kind", kind),
+                    subject,
+                    topics,
+                    reply.lang or ctx.language,
+                )
+                blocks = [_study_block(b, kind, payload) for b in blocks]
+            except LlmError:
+                served = "ml"  # keep the syllabus-built version, quietly
         elif reply.intent in ("ask_about_file", "summarize_file") and reply.open is not None:
             blocks, served = _from_files(conn, llm, user_id, session_id, text, reply, ctx)
         elif reply.open is not None:
@@ -202,6 +227,14 @@ def _run(
                 served = "ml"
                 if e.code != "not_configured" or not blocks:
                     blocks = [{"type": "followup", "text": e.message, "chips": ["Try again"]}]
+
+        # Quizzes are graded on the server (D3): store the key, send questions only.
+        blocks = [
+            {"type": "quiz", "topic": b["topic"], **study.store_quiz(
+                conn, user_id, session_id, b["topic"], reply.lang or ctx.language, b["questions"])}
+            if b["type"] == "quiz" else b
+            for b in blocks
+        ]  # fmt: skip
 
         if reply.pending:
             blocks = [dict(b) for b in blocks]

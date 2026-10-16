@@ -1,7 +1,7 @@
 -- RLS + grants: user A must never see or change user B's data; anon sees nothing private.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(37);
+select plan(38);
 
 -- ---- fixtures (as postgres) -----------------------------------------------------------------
 insert into auth.users (id, email) values
@@ -109,6 +109,7 @@ select throws_ok($$insert into public.study_sessions (title, user_id)
   'A cannot create a session owned by B');
 select throws_ok($$select * from public.waitlist$$, '42501', null, 'waitlist is not client-readable');
 select throws_ok($$select * from internal.rate_limits$$, '42501', null, 'internal schema is closed');
+select throws_ok($$select * from internal.quiz_keys$$, '42501', null, 'quiz answer keys are never client-readable');
 -- Hosted Supabase blocks all direct SQL deletes on storage (Storage API only).
 select throws_ok($$delete from storage.objects where name like '00000000-0000-0000-0000-00000000000b/%'$$,
   '42501', null, 'stored files can only be deleted through the Storage API');

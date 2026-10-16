@@ -222,7 +222,7 @@ export function BlockView({ block, animate, onSend }: { block: Block; animate: b
     case "quiz":
       return (
         <Card icon={<Sparkles size={16} strokeWidth={1.75} />} title={t("Quiz: {topic}", { topic: block.topic })}>
-          <Quiz questions={block.questions} onRevise={(topics) => onSend(`explain ${topics[0]}`)} />
+          <Quiz questions={block.questions} contentId={block.contentId} onRevise={(topics) => onSend(`explain ${topics[0]}`)} />
         </Card>
       );
     case "flashcards":

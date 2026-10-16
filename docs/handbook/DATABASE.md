@@ -142,7 +142,7 @@ The timetable is one jsonb document on purpose: it is always read whole, always 
 
 `generated_content`: `user_id`, optional `session_id` / `plan_id` / `file_id`, `topic`, `kind` (`notes` · `important_questions` · `pyq` · `quiz` · `flashcards`), `language`, `payload jsonb`, `cache_key`.
 
-`quiz_attempts`: `answers jsonb`, `score`, `total`, with `score <= total`. Written by the API so the client cannot grade itself.
+`quiz_attempts`: `answers jsonb` (`{question: first choice}`), `score`, `total`, with `score <= total`. Written by the API so the client cannot grade itself. The answer key is in `internal.quiz_keys`, because `generated_content` is owner-readable.
 
 `flashcard_reviews`: `card_idx`, `box` 1–5 (Leitner), `next_due_at`, unique `(user_id, content_id, card_idx)`. Owner CRUD, and the insert policy also checks the content belongs to them.
 
@@ -201,13 +201,14 @@ Current migrations:
 | `20261008173310_client_ids.sql` | Client-generated UUIDs for sessions and messages, so navigation is instant |
 | `20261015180000_lock_storage_uploads.sql` | Removed the client INSERT policy on storage; uploads are server-validated only |
 | `20261016100000_sessions_delete_via_api.sql` | Revoked client DELETE on `study_sessions`; the API deletes stored files, then the row |
+| `20261016150000_quiz_keys.sql` | `internal.quiz_keys`: quiz answer keys the API grades against, never client-readable |
 | `20261016120000_server_owns_messages_and_plans.sql` | Revoked client INSERT on `messages` and INSERT/DELETE on `study_plans`; the message endpoint writes them |
 
 ---
 
 ## 5. Testing the access model
 
-`supabase/tests/rls.test.sql` — **37 pgTAP assertions**, run with `supabase test db --linked`.
+`supabase/tests/rls.test.sql` — **38 pgTAP assertions**, run with `supabase test db --linked`.
 
 It creates two users, A and B, with a full set of rows each, then asserts:
 

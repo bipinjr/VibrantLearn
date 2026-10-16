@@ -52,6 +52,9 @@ class Reply:
     open: str | None = None  # ask the AI this, in `lang`
     lang: Lang | None = None
     ai_notes: Topic | None = None  # ask the AI for notes on this topic
+    # ask the AI for questions/quiz/flashcards: (kind, subject, topics); the blocks hold the
+    # syllabus-built version to keep if the AI is off or fails
+    ai_study: tuple[str, str, list[Topic]] | None = None
     intent: str = "out_of_scope"
 
 
@@ -455,8 +458,14 @@ def respond(text: str, ctx: Ctx, intent: str | None = None) -> Reply:
             )
         focus = find_topic(ctx, subject, parsed.topic_hint) if parsed.topic_hint else None
         title = focus.topic if focus else f"{short(subject)}: most likely questions"
+        ranked = priority(ctx.topics_for(subject))
+        pick = (
+            ([focus] + [t for t in ranked if t.topic != focus.topic])[:3] if focus else ranked[:3]
+        )
         return Reply(
             intent=it,
+            lang=lang,
+            ai_study=("pyq" if it == "pyq_style" else "important_questions", subject, pick),
             blocks=[
                 {"type": "questions", "topic": title, "items": questions_for(ctx, subject, focus)}
             ],
@@ -471,13 +480,18 @@ def respond(text: str, ctx: Ctx, intent: str | None = None) -> Reply:
                 intent=it,
                 blocks=[_followup(ask, [chip.format(short(x)) for x in ctx.subjects[:4]])],
             )
+        top = priority(ctx.topics_for(subj))
         if quiz:
             return Reply(
                 intent=it,
+                lang=lang,
+                ai_study=("quiz", subj, top[:5]),
                 blocks=[{"type": "quiz", "topic": short(subj), "questions": quiz_for(ctx, subj)}],
             )
         return Reply(
             intent=it,
+            lang=lang,
+            ai_study=("flashcards", subj, top[:6]),
             blocks=[
                 {
                     "type": "flashcards",

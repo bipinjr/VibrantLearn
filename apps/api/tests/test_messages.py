@@ -12,7 +12,14 @@ from fastapi.testclient import TestClient
 
 from app.core.db import get_conn, get_connect
 from app.llm.client import LlmError, Message, Result, get_llm
-from app.llm.prompts import NOTES_REVIEW, NOTES_WRITE, TRANSLATE
+from app.llm.prompts import (
+    NOTES_REVIEW,
+    NOTES_WRITE,
+    STUDY_REVIEW,
+    STUDY_TRANSLATE,
+    STUDY_WRITE,
+    TRANSLATE,
+)
 from app.main import app
 from app.services import messages, syllabus
 from tests.conftest import make_token
@@ -23,6 +30,26 @@ A, B = str(uuid.uuid4()), str(uuid.uuid4())
 SA, SB = str(uuid.uuid4()), str(uuid.uuid4())
 NOTE_EN = "Normalization organises tables so each fact is stored once. " * 4
 NOW = datetime.fromisoformat("2026-10-08T15:00:00+00:00")  # Thu 8:30 PM IST
+
+
+QUIZ_Q = {
+    "options": ["this", "super", "extends", "final"],
+    "answer": 1,
+    "why": "super calls the parent version.",
+    "topic": "Method overriding and dynamic dispatch",
+}
+STUDY_JSON = {
+    "quiz": json.dumps({"questions": [{"q": f"AI question {i}?", **QUIZ_Q} for i in range(5)]}),
+    "important_questions": json.dumps(
+        {"items": [{"marks": m, "q": f"AI {m}-mark question"} for m in (2, 2, 5, 5, 10)]}
+    ),
+    "pyq": json.dumps(
+        {"items": [{"marks": m, "q": f"Past-paper style {m}"} for m in (2, 2, 5, 5, 10)]}
+    ),
+    "flashcards": json.dumps(
+        {"cards": [{"front": f"Term {i}", "back": f"Meaning {i}"} for i in range(6)]}
+    ),
+}
 
 
 class FakeLlm:
@@ -36,9 +63,21 @@ class FakeLlm:
             "write" if system == NOTES_WRITE else "review" if system == NOTES_REVIEW
             else "translate" if system == TRANSLATE else "chat"
         )  # fmt: skip
+        study = next((k for k, v in STUDY_WRITE.items() if v == system), None)
+        if study or system in (STUDY_REVIEW,) or system.startswith(STUDY_TRANSLATE[:40]):
+            kind = (
+                f"study:{study}"
+                if study
+                else "study:review"
+                if system == STUDY_REVIEW
+                else "study:translate"
+            )
         self.calls.append(kind)
         if self.fail:
             raise self.fail
+        if kind.startswith("study:"):
+            text = STUDY_JSON[study] if study else msgs[1].content.split("Material to check:\n")[-1]
+            return Result(text=text, model=kw["model"], tokens_in=1, tokens_out=1, latency_ms=1)
         text = {
             "write": NOTE_EN,
             "review": NOTE_EN,
@@ -205,10 +244,36 @@ def test_open_question_when_ai_is_busy_offers_a_retry(client: TestClient) -> Non
     assert block["type"] == "followup" and block["chips"] == ["Try again"]
 
 
-def test_quiz_needs_no_ai_call(client: TestClient, llm: FakeLlm) -> None:
-    block = next(d for e, d in send(client, "quiz me on inheritance") if e == "block")
-    assert block["type"] == "quiz" and len(block["questions"]) == 5
-    assert llm.calls == []
+def test_ai_quiz_reaches_the_browser_without_its_answer_key(
+    client: TestClient, db: FakeDb, llm: FakeLlm
+) -> None:
+    ev = send(client, "quiz me on inheritance")
+    block = next(d for e, d in ev if e == "block")
+    assert block["type"] == "quiz" and block["contentId"]
+    assert block["questions"][0]["q"] == "AI question 0?"
+    assert all(set(q) == {"q", "options", "topic"} for q in block["questions"])  # no answer, no why
+    assert (
+        db.state["quiz_keys"][block["contentId"]]["answers"] == [1] * 5
+    )  # the key stays server-side
+    assert llm.calls == ["study:quiz", "study:review"]  # English, so no translation step
+
+
+def test_quiz_falls_back_to_the_syllabus_version_when_ai_is_down(
+    client: TestClient, db: FakeDb
+) -> None:
+    app.dependency_overrides[get_llm] = lambda: FakeLlm(LlmError(429, "llm_busy", "busy"))
+    block = next(d for e, d in send(client, "quiz me on dbms") if e == "block")
+    assert block["type"] == "quiz" and len(block["questions"]) == 5 and block["contentId"]
+    assert "answer" not in block["questions"][0]
+
+
+def test_ai_questions_and_flashcards(client: TestClient) -> None:
+    q = next(d for e, d in send(client, "important questions for java") if e == "block")
+    assert [i["marks"] for i in q["items"]] == [2, 2, 5, 5, 10] and q["items"][0][
+        "q"
+    ] == "AI 2-mark question"
+    f = next(d for e, d in send(client, "flashcards for java") if e == "block")
+    assert f["cards"][0] == {"front": "Term 0", "back": "Meaning 0"}
 
 
 # ---- no half-written rows ------------------------------------------------------------------------

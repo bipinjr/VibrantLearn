@@ -29,14 +29,15 @@ export type StudyFile = {
   error?: string;
   added: string;
 };
-export type QuizQuestion = { q: string; options: string[]; answer: number; why: string; topic: string };
+// answer/why are absent for a signed-in quiz: the server keeps the key and grades each answer.
+export type QuizQuestion = { q: string; options: string[]; answer?: number; why?: string; topic: string };
 export type Flashcard = { front: string; back: string };
 export type Block =
   | { type: "followup"; text: string; chips: string[]; picked?: string }
   | { type: "plan"; planId: string }
   | { type: "notes"; topic: string; text: Record<Lang, string>; sources?: string[]; lang?: Lang }
   | { type: "questions"; topic: string; items: { marks: 2 | 5 | 10; q: string }[] }
-  | { type: "quiz"; topic: string; questions: QuizQuestion[] }
+  | { type: "quiz"; topic: string; questions: QuizQuestion[]; contentId?: string }
   | { type: "flashcards"; topic: string; cards: Flashcard[] }
   | { type: "text"; text: string; sources?: string[] };
 export type Message = {
