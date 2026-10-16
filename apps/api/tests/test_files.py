@@ -41,14 +41,14 @@ def test_49_mb_pdf_gets_a_one_time_url_into_its_own_folder(
     env: tuple[TestClient, FakeDb, FakeStorage],
 ) -> None:
     client, db, storage = env
-    r = ask(client, "Unit 3 – Inheritance (final).pdf", 49 * MB)
+    r = ask(client, "Unit 3 – Inheritance (final).pdf", 49 * MB)  # noqa: RUF001 - a real en dash, on purpose
     assert r.status_code == 201
     body = r.json()
     assert body["path"] == f"{A}/{SA}/{body['file_id']}/unit-3-inheritance-final.pdf"
     assert body["content_type"] == "application/pdf"
     assert storage.signed == [body["path"]]
     row = db.state["files"][0]
-    assert row["status"] == "uploaded" and row["name"] == "Unit 3 – Inheritance (final).pdf"
+    assert row["status"] == "uploaded" and row["name"] == "Unit 3 – Inheritance (final).pdf"  # noqa: RUF001 - a real en dash, on purpose
 
 
 def test_51_mb_is_refused_with_the_split_it_message(

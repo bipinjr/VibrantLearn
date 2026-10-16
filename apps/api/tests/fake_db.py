@@ -5,10 +5,10 @@ Statements are matched by a normalised prefix; an unknown statement fails the te
 """
 
 import copy
-from datetime import UTC, datetime
 import re
 from collections.abc import Iterator
 from contextlib import contextmanager
+from datetime import UTC, datetime
 from typing import Any
 
 from psycopg.types.json import Jsonb
