@@ -203,8 +203,8 @@ These live in `apps/web/app/api/` only while the FastAPI service is unhosted. Th
 
 | Route | Who may call | Notes |
 |---|---|---|
-| `POST /api/notes` ✅ | signed-in (verified JWT) or local demo | Syllabus topic → notes in en/kn/hi. Caches per process (a shared DB cache is the upgrade) |
-| `POST /api/demo/chat` ✅ | same | Open questions. 20/min, 20 s timeout, one 429 retry |
+| `POST /api/notes` ✅ | local demo only (signed-in students use `/api/v1` messages) | Syllabus topic → notes in en/kn/hi. Caches per process (a shared DB cache is the upgrade) |
+| `POST /api/demo/chat` ✅ | local demo only | Open questions. 20/min, 20 s timeout, one 429 retry |
 
 Both use `lib/server/groq.ts`: the key is server-only, errors are logged as status and code only — never the key or the prompt.
 

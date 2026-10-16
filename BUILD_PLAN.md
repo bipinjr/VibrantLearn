@@ -118,7 +118,7 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
 
 ### Phase D — AI content and caching (PRD F9, M7)
 
-- [ ] **D1. Shared cache and usage logging**
+- [x] **D1. Shared cache and usage logging**
   - Move the per-process `Map` caches (`app/api/notes/route.ts`) to `internal.llm_cache`, keyed by `(prompt_version, model, kind, source hash)`. Log every call to `internal.usage_events` with `served_from`, tokens and latency.
   - **Verify:** the same topic requested from two browser sessions makes one Groq call; the dashboard percentage is computed from real rows, not a constant.
 

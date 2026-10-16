@@ -154,6 +154,7 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | D1: AI calls in FastAPI share internal.llm_cache (prompt version|model|kind|source hash) and log every call to internal.usage_events; same topic twice = one Groq call (test); dashboard % from real served_from rows; Next AI routes now demo-only |
 | 2026-10-16 | Bipin A + Claude | C4: answers from own notes: @mention/fuzzy file match, FTS scoped to user+session, TF-IDF top 5, <document> delimiters + ignore-instructions rule, source chips, honest not-found with no AI call, cached; 7 tests incl. cross-user + injection |
 | 2026-10-16 | Bipin A + Claude | C2: POST /api/v1/files/{id}/process: real size, magic bytes, SHA-256, dedupe, zip-bomb guard, defusedxml, PDF caps; rejects delete object + audit; extraction + chunking (C3 server half) done; 15 hostile-fixture tests |
 | 2026-10-16 | Bipin A + Claude | C1: POST /api/v1/sessions/{id}/files/upload-url: allowlist, 120-char/no-path names, safe slug, 50 MB cap (413), 20 files/300 MB per IST day (429), server-chosen content type, audit on rejection; 14 tests |
