@@ -74,3 +74,34 @@ export async function signInWithGoogle(form: FormData): Promise<void> {
   if (error || !data.url) redirect("/login?error=google");
   redirect(data.url);
 }
+
+const emailOnly = z.object({ email: z.email("Enter an email like name@example.com.").max(254) });
+
+/** Step 1 of a password reset. Same answer whether or not the email has an account. */
+export async function requestReset(_: AuthState, form: FormData): Promise<AuthState> {
+  const parsed = emailOnly.safeParse({ email: form.get("email") });
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${SITE}/auth/callback?next=/reset-password`,
+  });
+  if (error?.status === 429) return { error: "Too many reset emails. Wait a few minutes and try again." };
+  // No enumeration: success, unknown email and most errors all look the same.
+  return { sentTo: parsed.data.email };
+}
+
+/** Step 2: the email link signed the student in (auth/callback); now set the new password. */
+export async function setNewPassword(_: AuthState, form: FormData): Promise<AuthState> {
+  const parsed = newAccount.shape.password.safeParse(form.get("password"));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims?.sub) return { error: "This reset link has expired. Ask for a new one." };
+  const { error } = await supabase.auth.updateUser({ password: parsed.data });
+  if (error) {
+    if (error.code === "weak_password") return { error: "That password is too common or weak. Try a longer one with letters and numbers." };
+    if (error.code === "same_password") return { error: "Use a password you haven't used here before." };
+    return { error: "Couldn't change the password. Ask for a new reset link and try again." };
+  }
+  redirect("/app");
+}

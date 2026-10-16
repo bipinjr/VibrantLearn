@@ -40,7 +40,7 @@ The project is `vibrantlearn-dev`. Supabase's built-in email only delivers to me
 3. Set the sender name to `VibrantLearn`.
 4. Send yourself a test sign-up.
 
-**Redirect URLs** (needed for Google sign-in and email links): Supabase → **Authentication** → **URL Configuration** → add `http://localhost:3000/auth/callback`, your Vercel preview pattern, and the production domain. Nothing else.
+**Redirect URLs** (needed for Google sign-in, email confirmation and password-reset links; without them a reset link lands on onboarding instead of "Choose a new password"): Supabase → **Authentication** → **URL Configuration** → add `http://localhost:3000/auth/callback`, your Vercel preview pattern, and the production domain. Nothing else.
 
 **Region:** the project sits in **Tokyo**. Every query from Bengaluru pays roughly 100–150 ms extra. Before launch, create a new project in **Mumbai (ap-south-1)** and move: `npx supabase db dump --linked -f dump.sql`, then link the new project and push. Do it while the data is still disposable.
 

@@ -64,9 +64,16 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
           <input id="email" name="email" type="email" autoComplete="email" required maxLength={254} className="field" />
         </div>
         <div className="grid gap-1.5">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
+          <span className="flex items-baseline justify-between">
+            <label htmlFor="password" className="text-sm font-medium">
+              Password
+            </label>
+            {mode === "signin" ? (
+              <Link href="/forgot-password" className="text-sm">
+                Forgot your password?
+              </Link>
+            ) : null}
+          </span>
           <input
             id="password"
             name="password"

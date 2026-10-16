@@ -154,6 +154,7 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | F5: forgot password: /forgot-password (same answer for any email, Supabase rate limits, 429 message) -> email link -> /auth/callback -> /reset-password (sign-up password rules, needs the link's session); 3 tests |
 | 2026-10-16 | Bipin A + Claude | F4: audit_log: upload rejected, rate limit hit, session deleted, export, account deleted; sign-in/failed auth via Supabase auth.audit_log_entries (documented) |
 | 2026-10-16 | Bipin A + Claude | F3: DELETE /api/v1/me: typed username, files deleted + verified, auth user deleted (cascade = 0 rows in 11 tables, SQL test on live DB), audited; GET /me/export; Settings wired; 5 tests |
 | 2026-10-16 | Bipin A + Claude | F2: GET /api/v1/me returns real allowances from internal.rate_limits + today's files; Settings shows them (incl. AI answers/hour) for signed-in students |

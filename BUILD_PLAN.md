@@ -146,7 +146,7 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
 - [x] **F2. Usage meter** — Settings reads real counts from `internal.usage_events`.
 - [x] **F3. Account deletion** — `DELETE /api/v1/me`: revoke sessions, delete all storage objects, delete the auth user (cascade clears the rest), sign out. Typed confirmation in the UI.
 - [x] **F4. Audit log** — write `internal.audit_log` for sign-in, failed-auth bursts, upload rejected, rate limit hit, session deleted, export, account deleted. Never log file contents, chat text, tokens or raw IPs.
-- [ ] **F5. Forgot-password flow** — request, email, reset, with the same rate limits and the same no-enumeration message.
+- [x] **F5. Forgot-password flow** — request, email, reset, with the same rate limits and the same no-enumeration message.
   - **Verify:** a deleted account leaves zero rows and zero storage objects (test).
 
 ### Phase G — polish, performance, deploy (M9, M0)
