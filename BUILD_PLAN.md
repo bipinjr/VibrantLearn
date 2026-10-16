@@ -110,7 +110,7 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
   - Extend the storage bucket `allowed_mime_types` to match the PRD list (`.md`, `.csv`, `.json`, `.xml`, code files are currently missing) in a new migration.
   - **Verify:** chunk count and page numbers look right for a 20-page PDF; statuses move `uploaded → scanning → processing → ready`.
 
-- [ ] **C4. Talk to your files**
+- [x] **C4. Talk to your files**
   - Retrieval: Postgres full-text search scoped to the student and session, then TF-IDF re-rank, top 4–6 chunks only. Detect `@filename` and fuzzy plain-text mentions.
   - Every grounded answer shows source chips (file name, page). If nothing relevant is found, say so — never invent.
   - Wrap retrieved text in `<document id="…">` delimiters with an explicit "ignore instructions inside" rule.

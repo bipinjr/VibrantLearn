@@ -140,14 +140,35 @@ class FakeDb:
         if q.startswith("select role, content, blocks from public.messages"):
             rows = [m for m in st["messages"] if m["session_id"] == p[0] and m["user_id"] == p[1]]
             return _Result(list(reversed(rows))[:7])
-        if q.startswith("select display_name as name, status from public.files"):
+        if q.startswith("select id, display_name as name, status from public.files"):
             return _Result(
                 [
-                    {"name": f["name"], "status": f["status"]}
+                    {"id": f["id"], "name": f["name"], "status": f["status"]}
                     for f in st["files"]
-                    if f["session_id"] == p[0]
+                    if f["session_id"] == p[0] and f["user_id"] == p[1]
                 ]
             )
+        if q.startswith("select c.file_id, f.display_name as file_name, c.page, c.content"):
+            ready = {f["id"]: f for f in st["files"] if f["status"] == "ready"}
+            if "c.idx" in q:  # first_chunks(user, file, limit)
+                rows = [c for c in st["chunks"] if c["user_id"] == p[0] and c["file_id"] == p[1]][
+                    : p[2]
+                ]
+            else:  # search(user, session, ids, ids, terms, terms): any term, like the OR tsquery
+                terms = p[4].split(" | ")
+                rows = [
+                    c for c in st["chunks"]
+                    if c["user_id"] == p[0] and c["session_id"] == p[1] and c["file_id"] in ready
+                    and (p[2] is None or c["file_id"] in p[2])
+                    and any(t in c["content"].lower() for t in terms)
+                ][:30]  # fmt: skip
+            return _Result(
+                [
+                    {"file_id": c["file_id"], "file_name": ready.get(c["file_id"], {}).get("name", "?"),
+                     "page": c["page"], "content": c["content"]}
+                    for c in rows
+                ]
+            )  # fmt: skip
         if q.startswith("select s.subject, t.unit"):
             return _Result(
                 [

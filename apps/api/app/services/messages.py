@@ -24,7 +24,7 @@ from app.llm import cache
 from app.llm.client import Llm, LlmError, Message
 from app.ml import intent as intent_model
 from app.ml.parse import Lang, parse_request
-from app.services import content, syllabus
+from app.services import content, retrieval, syllabus
 from app.services.reply import Ctx, Reply, respond, topic_note
 
 Conn = psycopg.Connection[dict[str, Any]]
@@ -68,7 +68,7 @@ def _context(
         None,
     )
     files = conn.execute(
-        "select display_name as name, status from public.files "
+        "select id, display_name as name, status from public.files "
         "where session_id = %s and user_id = %s",
         (session_id, user_id),
     ).fetchall()
@@ -100,6 +100,30 @@ def _history(conn: Conn, user_id: str, session_id: str) -> list[Message]:
         if text:
             out.append(Message("user" if r["role"] == "user" else "assistant", text[:2000]))
     return out
+
+
+def _from_files(
+    conn: Conn, llm: Llm, user_id: str, session_id: str, text: str, reply: Reply, ctx: Ctx
+) -> tuple[list[dict[str, Any]], str]:
+    """Answer from the student's own notes, with sources; say so when the notes don't have it."""
+    ready = [dict(f, id=str(f["id"])) for f in ctx.files if f.get("status") == "ready"]
+    named = retrieval.mentioned_files(text, ready)
+    summary = reply.intent == "summarize_file"
+    if summary:
+        target = (named or ready)[:1]
+        chunks = retrieval.first_chunks(conn, user_id, target[0]["id"]) if target else []
+    else:
+        chunks = retrieval.search(conn, user_id, session_id, text, [f["id"] for f in named] or None)
+    if not chunks:
+        msg = "I couldn't find that in your notes. Try other words, or name the file with @."
+        return [{"type": "text", "text": msg}], "ml"
+    try:
+        answer, served = retrieval.answer(
+            conn, llm, user_id, chunks, text, reply.lang or ctx.language, summary
+        )
+    except LlmError as e:
+        return [{"type": "followup", "text": e.message, "chips": ["Try again"]}], "ml"
+    return [{"type": "text", "text": answer, "sources": retrieval.sources(chunks)}], served
 
 
 def _save_plan(conn: Conn, user_id: str, session_id: str, plan: dict[str, Any], lang: Lang) -> str:
@@ -161,6 +185,8 @@ def _run(
             except LlmError:
                 payload, served = topic_note(t), "ml"  # syllabus summary, quietly
             blocks = [{**b, "text": payload} if b["type"] == "notes" else b for b in blocks]
+        elif reply.intent in ("ask_about_file", "summarize_file") and reply.open is not None:
+            blocks, served = _from_files(conn, llm, user_id, session_id, text, reply, ctx)
         elif reply.open is not None:
             try:
                 answer = content.answer_open(

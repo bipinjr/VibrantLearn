@@ -1,6 +1,7 @@
 """E2: the intent model loads safely, refuses a tampered file, and gets the basics right."""
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -13,7 +14,11 @@ NOW = _dt("2026-10-08T15:00:00Z")
 
 
 @pytest.fixture(autouse=True)
-def fresh_model() -> None:
+def fresh_model() -> Iterator[None]:
+    # Clear before AND after: a test that hides the artifact must not leave a cached None behind
+    # for the rest of the suite.
+    intent._model.cache_clear()
+    yield
     intent._model.cache_clear()
 
 
