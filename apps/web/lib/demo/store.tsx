@@ -2,6 +2,7 @@
 
 import { createContext, startTransition, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import * as persist from "@/lib/account/persist";
+import { uploadFile } from "@/lib/account/upload";
 import { streamMessage } from "@/lib/api/stream";
 import type { Block, Demo, Lang, Message, Plan, Session, StudyFile } from "./data";
 import { respond, type Pending, type Reply } from "./respond";
@@ -330,7 +331,24 @@ export function DemoProvider({ seed, children, account }: { seed: Demo; children
       });
     }
     setState((s) => ({ ...s, files: [...added, ...s.files] }));
-    // ponytail: upload pipeline is simulated until the server side (signed URLs, extraction) lands in M6.
+    if (mode === "account") {
+      // Real pipeline (C3): signed URL -> PUT to Storage -> server verifies and indexes.
+      added.forEach((f, i) => {
+        if (f.status !== "uploading") return;
+        let id = f.id; // becomes the server's file id once the API has made the row
+        uploadFile(sessionId, files.filter((x) => ALLOWED.test(x.name))[i], ({ serverId, ...p }) => {
+          const prev = id;
+          if (serverId) id = serverId;
+          setState((s) => {
+            const next = s.files.map((x) => (x.id === prev ? { ...x, ...p, id } : x));
+            // A duplicate upload resolves to the file already in the session: keep one row.
+            return { ...s, files: next.filter((x, k) => next.findIndex((y) => y.id === x.id) === k) };
+          });
+        });
+      });
+      return errors;
+    }
+    // Demo mode: the same statuses, simulated, so the demo needs no server.
     for (const f of added.filter((x) => x.status === "uploading")) {
       const patch = (p: Partial<StudyFile>) => setState((s) => ({ ...s, files: s.files.map((x) => (x.id === f.id ? { ...x, ...p } : x)) }));
       let pct = 0;
@@ -346,7 +364,7 @@ export function DemoProvider({ seed, children, account }: { seed: Demo; children
       }, 220);
     }
     return errors;
-  }, []);
+  }, [mode]);
 
   const deleteSession = useCallback(
     (sessionId: string) => {
