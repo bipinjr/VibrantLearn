@@ -58,7 +58,7 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
 - [x] **A0. Verify the 15 Oct fixes** *(already applied, confirm only)*
   - `apps/web/lib/safe-next.ts` rejects control characters and re-checks the resolved path.
   - `apps/web/lib/demo/scheduler.ts` fills the exam-day morning with real syllabus topics.
-  - `supabase/migrations/20261015180000_lock_storage_uploads.sql` drops the client INSERT policy on storage.
+  - `supabase/migrations/20261015183919_lock_storage_uploads.sql` drops the client INSERT policy on storage.
   - `apps/api/app/routers/me.py` keys the username limit by user id.
   - **Verify:** `cd apps/web && pnpm test` (safe-next 16, scheduler 6) · `npx supabase db push --linked` then `npx supabase test db --linked` → **37/37**.
 

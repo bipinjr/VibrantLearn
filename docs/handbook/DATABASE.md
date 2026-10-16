@@ -85,7 +85,7 @@ Every table has `id uuid primary key default gen_random_uuid()` (except where no
 
 Index: `(user_id, updated_at desc)` — the sidebar's query.
 
-**Access:** owner creates, reads, renames. **Delete goes through the API** (`DELETE /api/v1/sessions/{id}`), which removes the session's storage objects first; clients have no DELETE grant (migration `20261016100000`).
+**Access:** owner creates, reads, renames. **Delete goes through the API** (`DELETE /api/v1/sessions/{id}`), which removes the session's storage objects first; clients have no DELETE grant (migration `20261015184712`).
 
 ### 3.3 `messages` — the thread
 
@@ -98,7 +98,7 @@ Index: `(user_id, updated_at desc)` — the sidebar's query.
 | `intent` | text | what the parser decided |
 | `served_from` | text | `ml` · `cache` · `llm` — the token-saving metric |
 
-**Access:** owner reads. **Only the API writes** (`POST /api/v1/sessions/{id}/messages`): a client that could insert here could invent assistant replies or fake the `served_from` metric (migration `20261016120000`).
+**Access:** owner reads. **Only the API writes** (`POST /api/v1/sessions/{id}/messages`): a client that could insert here could invent assistant replies or fake the `served_from` metric (migration `20261016100620`).
 
 ### 3.4 `files` and `file_chunks`
 
@@ -173,7 +173,7 @@ Path: `{user_id}/{session_id}/{file_id}/{safe_name}`.
 | UPDATE | nobody — a changed file is a new upload |
 | DELETE | owner |
 
-### Live classes (v0.5, migration `20261016170000_live_classes`)
+### Live classes (v0.5, migration `20261016144755_live_classes`)
 
 | Table | Client access | Notes |
 |---|---|---|
@@ -212,13 +212,13 @@ Current migrations:
 
 | File | What it did |
 |---|---|
-| `20261008143209_init_schema.sql` | All tables, RLS, grants, storage bucket and policies |
-| `20261008172845_client_owned_writes.sql` | Let signed-in students write their own profile, messages and plans directly while the API is unhosted; added the reserved-username CHECK |
-| `20261008173310_client_ids.sql` | Client-generated UUIDs for sessions and messages, so navigation is instant |
-| `20261015180000_lock_storage_uploads.sql` | Removed the client INSERT policy on storage; uploads are server-validated only |
-| `20261016100000_sessions_delete_via_api.sql` | Revoked client DELETE on `study_sessions`; the API deletes stored files, then the row |
-| `20261016150000_quiz_keys.sql` | `internal.quiz_keys`: quiz answer keys the API grades against, never client-readable |
-| `20261016120000_server_owns_messages_and_plans.sql` | Revoked client INSERT on `messages` and INSERT/DELETE on `study_plans`; the message endpoint writes them |
+| `20261008172741_init_schema.sql` | All tables, RLS, grants, storage bucket and policies |
+| `20261008172912_client_owned_writes.sql` | Let signed-in students write their own profile, messages and plans directly while the API is unhosted; added the reserved-username CHECK |
+| `20261008173329_client_ids.sql` | Client-generated UUIDs for sessions and messages, so navigation is instant |
+| `20261015183919_lock_storage_uploads.sql` | Removed the client INSERT policy on storage; uploads are server-validated only |
+| `20261015184712_sessions_delete_via_api.sql` | Revoked client DELETE on `study_sessions`; the API deletes stored files, then the row |
+| `20261016142157_quiz_keys.sql` | `internal.quiz_keys`: quiz answer keys the API grades against, never client-readable |
+| `20261016100620_server_owns_messages_and_plans.sql` | Revoked client INSERT on `messages` and INSERT/DELETE on `study_plans`; the message endpoint writes them |
 
 ---
 

@@ -141,7 +141,7 @@ _None yet._
 |---|---|---|---|
 | 1 | `safeNext` allowed `/<tab>/evil.com`: browsers strip control characters before resolving, so it became `//evil.com` and redirected off-site after sign-in | High | Fixed, 16 tests |
 | 2 | Crash plans scheduled no syllabus topics when the student started late at night; the exam-day morning only ever held fixed revision items | High (product) | Fixed, 2 regression tests |
-| 3 | `own_folder_insert` on `storage.objects` let a signed-in client upload any file straight to the bucket, bypassing extension/size/magic-byte checks and the `files` row | Medium | Fixed, migration `20261015180000_lock_storage_uploads.sql` + pgTAP test 37 |
+| 3 | `own_folder_insert` on `storage.objects` let a signed-in client upload any file straight to the bucket, bypassing extension/size/magic-byte checks and the `files` row | Medium | Fixed, migration `20261015183919_lock_storage_uploads.sql` + pgTAP test 37 |
 | 4 | Username rate limit keyed on the first `x-forwarded-for` entry, which the client controls; behind the Next rewrite it could also collapse to one shared bucket | Medium | Keyed by user id; proxy handling tracked as BUILD_PLAN A1 |
 | 5 | `savePlan` uses `.upsert()` while the client holds only `update (plan, updated_at)` grants — would fail `42501` on an existing plan id | Low (latent) | Tracked as BUILD_PLAN A2 |
 | 6 | Session delete removes the row but not storage objects; will orphan files once uploads are real | Low (latent) | Tracked as BUILD_PLAN A3 |
