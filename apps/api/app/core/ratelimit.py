@@ -5,10 +5,12 @@ User-id buckets are the real limit: an IP is easy to rotate and shared by whole 
 """
 
 import hashlib
+from datetime import UTC, datetime, timedelta
 
 import psycopg
 from fastapi import Request
 
+from app.core import audit
 from app.core.config import get_settings
 from app.core.errors import ApiError
 
@@ -22,6 +24,37 @@ returning count,
 """
 
 
+IST = timedelta(minutes=330)
+
+
+def reset_phrase(retry_s: int, now: datetime | None = None) -> str:
+    """'You can try again at 9:40 PM.' in the student's clock (Asia/Kolkata)."""
+    at = (now or datetime.now(UTC)) + timedelta(seconds=retry_s) + IST
+    return f"You can try again at {at.strftime('%I:%M %p').lstrip('0')}."
+
+
+def check(
+    conn: psycopg.Connection[dict[str, object]],
+    subject: str,
+    bucket: str,
+    limit: int,
+    window_s: int,
+) -> int | None:
+    """Counts one use. None if allowed, else seconds until the window resets. Never raises, so it
+    is safe inside a streamed reply; every refusal is audit-logged."""
+    row = conn.execute(_HIT, {"s": subject, "b": bucket, "w": window_s}).fetchone()
+    assert row is not None
+    over = int(str(row["count"])) > limit
+    if over:
+        # Subject is a user id or a salted IP hash, never a raw IP.
+        user = subject if not subject.startswith("ip:") else None
+        audit.record(
+            conn, "rate_limited", user, ip_hash=None if user else subject, meta={"bucket": bucket}
+        )
+    conn.commit()
+    return max(1, int(str(row["retry"]))) if over else None
+
+
 def hit(
     conn: psycopg.Connection[dict[str, object]],
     subject: str,
@@ -30,11 +63,15 @@ def hit(
     window_s: int,
     message: str,
 ) -> None:
-    row = conn.execute(_HIT, {"s": subject, "b": bucket, "w": window_s}).fetchone()
-    conn.commit()
-    assert row is not None
-    if int(str(row["count"])) > limit:
-        raise ApiError(429, "rate_limited", message, headers={"Retry-After": str(row["retry"])})
+    """For ordinary endpoints: 429 with Retry-After and the reset time in plain words."""
+    retry = check(conn, subject, bucket, limit, window_s)
+    if retry is not None:
+        raise ApiError(
+            429,
+            "rate_limited",
+            f"{message} {reset_phrase(retry)}",
+            headers={"Retry-After": str(retry)},
+        )
 
 
 def client_ip(request: Request) -> str:

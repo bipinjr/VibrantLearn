@@ -318,3 +318,36 @@ def test_an_unexpected_failure_is_reported_and_nothing_is_kept(db: FakeDb) -> No
     assert events[-1].startswith("event: error")
     assert "internal" in events[-1] and "boom" not in events[-1]
     assert assistant(db) == []
+
+
+# ---- limits inside the stream (F1) ------------------------------------------------------------
+
+
+def test_over_the_ai_limit_shows_the_syllabus_version_and_when_it_resets(
+    client: TestClient, db: FakeDb, llm: FakeLlm
+) -> None:
+    db.state["rate"][(A, "content")] = 40
+    ev = send(client, "explain normalization")
+    blocks = [d for e, d in ev if e == "block"]
+    assert blocks[0]["type"] == "notes" and "Unit" in blocks[0]["text"]["en"]  # syllabus note
+    assert "You can try again at" in blocks[-1]["text"]
+    assert llm.calls == [] and ev[-1][1]["servedFrom"] == "ml"
+    assert db.state["audit"][-1]["action"] == "rate_limited"
+
+
+def test_over_the_plan_limit_saves_no_plan(client: TestClient, db: FakeDb) -> None:
+    db.state["rate"][(A, "plans")] = 10
+    ev = send(client, "java exam in 2 hrs")
+    assert "plan" not in [e for e, _ in ev]
+    assert db.state["plans"] == []
+    assert "You've made 10 plans this hour" in next(d for e, d in ev if e == "block")["text"]
+
+
+def test_endpoint_limits_say_when_they_reset(client: TestClient, db: FakeDb) -> None:
+    db.state["rate"][(A, "messages")] = 30
+    r = client.post(
+        f"/api/v1/sessions/{SA}/messages",
+        json={"text": "hi"},
+        headers={"Authorization": f"Bearer {make_token(A)}"},
+    )
+    assert r.status_code == 429 and "You can try again at" in r.json()["error"]["message"]

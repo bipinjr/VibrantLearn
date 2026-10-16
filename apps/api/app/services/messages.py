@@ -20,6 +20,7 @@ from typing import Any, cast
 import psycopg
 from psycopg.types.json import Jsonb
 
+from app.core import ratelimit
 from app.llm import cache
 from app.llm.client import Llm, LlmError, Message
 from app.ml import intent as intent_model
@@ -29,6 +30,8 @@ from app.services.reply import Ctx, Reply, respond, topic_note
 
 Conn = psycopg.Connection[dict[str, Any]]
 log = logging.getLogger("api")
+CONTENT_PER_HOUR = 40  # AI-written answers (SECURITY.md §11)
+PLANS_PER_HOUR = 10
 Connect = Callable[[], AbstractContextManager[Conn]]
 
 
@@ -188,6 +191,28 @@ def _run(
 
         blocks = reply.blocks
         served: str = reply.served_from
+
+        # Limits inside the stream never raise (SECURITY.md §11): over the limit, the student gets
+        # the syllabus-built version (or a plain note) and the time it resets.
+        needs_ai = reply.ai_notes or reply.ai_study or reply.open is not None
+        if needs_ai and (
+            retry := ratelimit.check(conn, user_id, "content", CONTENT_PER_HOUR, 3600)
+        ):
+            reset = ratelimit.reset_phrase(retry)
+            note = f"You've used this hour's {CONTENT_PER_HOUR} AI answers. {reset}"
+            if reply.open is not None or not blocks:  # nothing local to show instead
+                blocks = [{"type": "followup", "text": note, "chips": ["Try again"]}]
+            else:
+                blocks = [
+                    *blocks,
+                    {"type": "text", "text": f"{note} Meanwhile, here's the syllabus version."},
+                ]
+            reply.ai_notes, reply.ai_study, reply.open, served = None, None, None, "ml"
+        if reply.plan and (retry := ratelimit.check(conn, user_id, "plans", PLANS_PER_HOUR, 3600)):
+            note = f"You've made {PLANS_PER_HOUR} plans this hour. {ratelimit.reset_phrase(retry)}"
+            blocks = [{"type": "text", "text": note}]
+            reply.plan, reply.session_patch, reply.pending = None, {}, None
+
         if reply.ai_notes is not None:
             t = reply.ai_notes
             try:

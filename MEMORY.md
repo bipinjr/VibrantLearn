@@ -154,6 +154,7 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | F1: limits keyed by user id in internal.rate_limits: messages 30/10min, plans 10/h, AI content 40/h (in-stream: syllabus fallback + reset time, never raises), uploads 20/day + 300 MB/day; 429 + Retry-After + 'try again at 9:40 PM'; every refusal audited |
 | 2026-10-16 | Bipin A + Claude | D3: quiz key in internal.quiz_keys (RLS 38/38); POST /quiz/{id}/answers grades server-side, first answer counts; Quiz UI server mode; 9 tests |
 | 2026-10-16 | Bipin A + Claude | D2: AI questions/PYQ-style/quiz/flashcards: write -> examiner -> translate, pydantic-validated, one retry, cached, syllabus fallback; tests |
 | 2026-10-16 | Bipin A + Claude | D1: AI calls in FastAPI share internal.llm_cache (prompt version|model|kind|source hash) and log every call to internal.usage_events; same topic twice = one Groq call (test); dashboard % from real served_from rows; Next AI routes now demo-only |
