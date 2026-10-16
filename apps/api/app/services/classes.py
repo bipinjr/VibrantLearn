@@ -30,6 +30,7 @@ TEACHER_EARLY = timedelta(minutes=10)
 GRACE = timedelta(minutes=2)
 NO_SHOW_AFTER = timedelta(minutes=10)
 WARNINGS_TO_SUSPEND = 3
+STRIKES_TO_REMOVE = 3  # hidden chat messages in one class before the bot removes you
 CLASS_GROSS_PAISE = 200_000  # Rs 2,000
 PLATFORM_FEE = 0.20
 JITSI = "https://meet.jit.si"
@@ -175,19 +176,7 @@ def settle(conn: Conn, c: Klass, now: datetime) -> Klass:
         (d.status, d.reason, c.id),
     )
     if d.warn_teacher:
-        conn.execute(
-            "insert into internal.moderation_warnings (user_id, class_id, reason) values (%s, %s, %s)",
-            (c.teacher_id, c.id, "Didn't join their own class."),
-        )
-        n = conn.execute(
-            "select count(*) as n from internal.moderation_warnings where user_id = %s",
-            (c.teacher_id,),
-        ).fetchone()
-        if n and int(n["n"]) >= WARNINGS_TO_SUSPEND:
-            conn.execute(
-                "update public.teachers set status = 'suspended' where user_id = %s",
-                (c.teacher_id,),
-            )
+        warn(conn, c.teacher_id, c.id, "Didn't join their own class.")
     if d.pay_teacher:
         p = payout(len(seated))
         conn.execute(
@@ -197,6 +186,45 @@ def settle(conn: Conn, c: Klass, now: datetime) -> Klass:
         )
     conn.commit()
     return Klass(c.id, c.teacher_id, c.starts_at, c.duration_min, d.status, c.teacher_joined_at)
+
+
+def warnings(conn: Conn, user_id: str) -> int:
+    n = conn.execute(
+        "select count(*) as n from internal.moderation_warnings where user_id = %s", (user_id,)
+    ).fetchone()
+    return int(n["n"]) if n else 0
+
+
+def warn(conn: Conn, user_id: str, class_id: str, reason: str) -> None:
+    """One account-level warning. A teacher with 3 is suspended; a student with 3 can't join
+    classes. The caller commits."""
+    conn.execute(
+        "insert into internal.moderation_warnings (user_id, class_id, reason) values (%s, %s, %s)",
+        (user_id, class_id, reason),
+    )
+    if warnings(conn, user_id) >= WARNINGS_TO_SUSPEND:
+        conn.execute(
+            "update public.teachers set status = 'suspended' where user_id = %s", (user_id,)
+        )
+
+
+def removed_from_chat(conn: Conn, user_id: str, class_id: str) -> bool:
+    n = conn.execute(
+        "select count(*) as n from internal.class_messages "
+        "where class_id = %s and user_id = %s and hidden_reason is not null",
+        (class_id, user_id),
+    ).fetchone()
+    return bool(n) and int(n["n"]) >= STRIKES_TO_REMOVE  # type: ignore[index]
+
+
+def display_name(conn: Conn, user_id: str) -> str:
+    t = teacher(conn, user_id)
+    if t:
+        return str(t["display_name"])
+    p = conn.execute(
+        "select username::text as username from public.profiles where id = %s", (user_id,)
+    ).fetchone()
+    return str((p or {}).get("username") or "Student")
 
 
 def teacher(conn: Conn, user_id: str) -> dict[str, Any] | None:
@@ -308,6 +336,12 @@ def join(
             "cancelled",
             f"This class was cancelled. {(r or {}).get('cancel_reason') or ''}".strip(),
         )
+    if removed_from_chat(conn, user_id, class_id):
+        raise ApiError(
+            403,
+            "removed",
+            "The moderation bot removed you from this class for breaking the chat rules.",
+        )
     if c.teacher_id == user_id:
         if not c.starts_at - TEACHER_EARLY <= now < c.ends_at:
             raise ApiError(409, "not_open", "You can open the room 10 minutes before the start.")
@@ -317,6 +351,8 @@ def join(
             (class_id,),
         )
     else:
+        if warnings(conn, user_id) >= WARNINGS_TO_SUSPEND:
+            raise ApiError(403, "blocked", "Your account can't join live classes after 3 warnings.")
         queue, seated = _counts(conn, class_id)
         ok, why = seat_decision(c, user_id, now, queue, seated)
         if not ok:
@@ -385,9 +421,6 @@ def earnings(conn: Conn, user_id: str) -> dict[str, Any]:
         "where p.teacher_id = %s order by c.starts_at desc",
         (user_id,),
     ).fetchall()
-    warns = conn.execute(
-        "select count(*) as n from internal.moderation_warnings where user_id = %s", (user_id,)
-    ).fetchone()
     pending = sum(int(r["net_paise"]) for r in rows if r["status"] == "to_be_paid")
     return {
         "classes": [
@@ -395,6 +428,6 @@ def earnings(conn: Conn, user_id: str) -> dict[str, Any]:
         ],
         "to_be_paid_paise": pending,
         "paid_paise": sum(int(r["net_paise"]) for r in rows if r["status"] == "paid"),
-        "warnings": int(warns["n"]) if warns else 0,
+        "warnings": warnings(conn, user_id),
         "warnings_to_suspend": WARNINGS_TO_SUSPEND,
     }

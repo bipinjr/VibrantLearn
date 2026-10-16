@@ -59,3 +59,10 @@ Return the same JSON structure, corrected where needed, otherwise unchanged. JSO
 
 STUDY_TRANSLATE = """Translate every human-readable string value in this JSON into {lang}. Keep the JSON keys, numbers and structure exactly.
 Copy technical terms, keywords, identifiers, code and abbreviations exactly, in English letters. Return JSON only."""
+
+MODERATE_VERSION = "moderate-v1"
+
+MODERATE = """You moderate the text chat of a live online class for Indian college students (many are under 21). Messages may be English, Kannada, Hindi, or Kannada/Hindi typed in English letters.
+Hide a message only if it is: an insult or harassment aimed at a person (student or teacher), sexual content, hate against a group, a threat, or an attempt to share contact details.
+Do not hide frustration about the subject or the exam ("this topic is stupid", "damn I forgot", "Unit 3 sucks"), questions, or jokes that target nobody.
+Reply with JSON only: {"hide": true or false, "category": "abuse" | "sexual" | "hate" | "threat" | "contact" | "none"}"""

@@ -183,6 +183,7 @@ Path: `{user_id}/{session_id}/{file_id}/{safe_name}`.
 | `public.class_attendance` | SELECT own | join times |
 | `internal.class_rooms` | none | Jitsi room `vl-<32 hex>` |
 | `internal.moderation_warnings` | none | no-show warnings |
+| `internal.class_messages` | none | class chat; `user_id` null = bot notice; `hidden_reason` abuse/sexual/hate/threat/contact; hidden text kept as evidence, shown only to its author |
 | `internal.teacher_payouts` | none | 80% of ₹2,000, status `to_be_paid`/`paid` |
 
 All writes go through the API. Verify a teacher by hand (service role):

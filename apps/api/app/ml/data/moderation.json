@@ -1,0 +1,264 @@
+{
+  "_comment": "Live-class chat filter (app/ml/moderate.py). stems match at a word start (fuck -> fucking); words match whole words only; phrases are whole-word sequences; script terms (Kannada/Devanagari) match anywhere. soft = maybe rude, the LLM decides. Lowercase, Latin terms only letters.",
+  "abuse": {
+    "stems": [
+      "fuck",
+      "motherf",
+      "bitch",
+      "bastard",
+      "asshole",
+      "cunt",
+      "chutiy",
+      "chutia",
+      "madarch",
+      "maderch",
+      "madarj",
+      "behench",
+      "bhench",
+      "bhanch",
+      "benchod",
+      "bhosd",
+      "bhosad",
+      "bosdi",
+      "harami",
+      "haraamkhor",
+      "kamine",
+      "lavde",
+      "lawde",
+      "laude",
+      "lowde",
+      "loude",
+      "gaandu",
+      "gandu",
+      "bolimag",
+      "bevarsi",
+      "bewarsi",
+      "sooley",
+      "dickhead",
+      "wanker",
+      "jhaant",
+      "jhatu"
+    ],
+    "words": [
+      "lund",
+      "lauda",
+      "loda",
+      "lodu",
+      "gaand",
+      "kamina",
+      "kameena",
+      "sule",
+      "soole",
+      "suley",
+      "tullu",
+      "tunne",
+      "thika",
+      "bsdk",
+      "bkl",
+      "mkc",
+      "tmkc",
+      "bhadwa",
+      "bhadwe",
+      "saala kutta",
+      "kutte",
+      "kutta",
+      "suar"
+    ],
+    "phrases": [
+      "nin amman",
+      "ninn amman",
+      "ninamman",
+      "ninnamman",
+      "nim amman",
+      "ninn akkan",
+      "nin akkan",
+      "boli maga",
+      "boli magane",
+      "soole maga",
+      "sule maga",
+      "teri maa",
+      "teri ma ki",
+      "son of a bitch"
+    ],
+    "script": [
+      "ಸೂಳೆ",
+      "ಬೋಳಿಮಗ",
+      "ಬೋಳಿ ಮಗ",
+      "ತುಲ್ಲು",
+      "ತುಣ್ಣೆ",
+      "ಗಾಂಡು",
+      "ಬೇವರ್ಸಿ",
+      "ನಿನ್ ಅಮ್ಮನ್",
+      "ನಿನ್ನಮ್ಮನ್",
+      "चूतिया",
+      "चुतिया",
+      "मादरचोद",
+      "बहनचोद",
+      "भेनचोद",
+      "भोसड़ी",
+      "भोसडी",
+      "हरामी",
+      "हरामखोर",
+      "गांडू",
+      "गांड",
+      "लौड़ा",
+      "लौडा",
+      "लंड",
+      "कमीना",
+      "कमीने",
+      "भड़वा"
+    ]
+  },
+  "sexual": {
+    "stems": [
+      "porn",
+      "nude",
+      "sexy",
+      "horny",
+      "boobs",
+      "pussy",
+      "blowjob",
+      "handjob",
+      "masturb",
+      "xxx"
+    ],
+    "words": [
+      "dick",
+      "cock",
+      "tits",
+      "boob",
+      "sex chat",
+      "sexting",
+      "nangi",
+      "nanga"
+    ],
+    "phrases": [
+      "send nudes",
+      "send pics",
+      "show your body",
+      "sex video"
+    ],
+    "script": [
+      "सेक्स",
+      "नंगी",
+      "ನಗ್ನ"
+    ]
+  },
+  "hate": {
+    "stems": [
+      "nigg",
+      "faggot",
+      "retard",
+      "chinki",
+      "chamar",
+      "bhangi",
+      "katua"
+    ],
+    "words": [
+      "fag",
+      "paki",
+      "kafir",
+      "dalla"
+    ],
+    "phrases": [
+      "go back to pakistan",
+      "low caste",
+      "lower caste"
+    ],
+    "script": [
+      "चमार",
+      "भंगी",
+      "कटुआ"
+    ]
+  },
+  "threat": {
+    "stems": [
+      "rapist"
+    ],
+    "words": [
+      "rape",
+      "raped"
+    ],
+    "phrases": [
+      "kill you",
+      "kill u",
+      "i will kill",
+      "ill kill",
+      "i ll kill",
+      "going to kill",
+      "gonna kill",
+      "will beat you",
+      "beat you up",
+      "find your house",
+      "find where you live",
+      "throw acid",
+      "acid attack",
+      "maar dalunga",
+      "maar dunga",
+      "maar daalunga",
+      "jaan se maar",
+      "saaysthini",
+      "sayisthini",
+      "kolthini",
+      "kollthini",
+      "hodithini",
+      "hodeetini"
+    ],
+    "script": [
+      "मार डालूंगा",
+      "मार दूंगा",
+      "जान से मार",
+      "ಸಾಯಿಸ್ತೀನಿ",
+      "ಕೊಲ್ತೀನಿ",
+      "ಹೊಡೀತೀನಿ"
+    ]
+  },
+  "soft": {
+    "stems": [
+      "idiot",
+      "stupid",
+      "moron",
+      "shit",
+      "bloody",
+      "useless",
+      "pagal",
+      "bakwas",
+      "huchch"
+    ],
+    "words": [
+      "dumb",
+      "loser",
+      "ugly",
+      "crap",
+      "gadha",
+      "gadhe",
+      "ullu",
+      "kothi",
+      "katte",
+      "huccha",
+      "nonsense",
+      "stfu",
+      "wtf",
+      "damn",
+      "suck",
+      "sucks"
+    ],
+    "phrases": [
+      "shut up",
+      "get lost",
+      "go die",
+      "nobody asked",
+      "you are mad",
+      "teacher is mad"
+    ],
+    "script": [
+      "पागल",
+      "बकवास",
+      "गधा",
+      "उल्लू",
+      "ಹುಚ್ಚ",
+      "ಕತ್ತೆ",
+      "ಕೋತಿ"
+    ]
+  }
+}

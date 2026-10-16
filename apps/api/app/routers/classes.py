@@ -2,13 +2,14 @@ from typing import Annotated, Any, Literal
 from uuid import UUID
 
 import psycopg
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Query, Response
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.core import ratelimit
 from app.core.auth import CurrentUser
 from app.core.db import get_conn
-from app.services import classes
+from app.llm.client import Llm, get_llm
+from app.services import class_chat, classes
 
 router = APIRouter()
 Conn = Annotated[psycopg.Connection[dict[str, object]], Depends(get_conn)]
@@ -80,9 +81,31 @@ def unmark_interested(class_id: UUID, user: CurrentUser, conn: Conn) -> dict[str
 @router.post("/classes/{class_id}/join")
 def join_class(class_id: UUID, user: CurrentUser, conn: Conn) -> dict[str, Any]:
     ratelimit.hit(conn, user.id, "class_join", 30, 3600, "Too many attempts. Wait a bit.")
-    prof = conn.execute(
-        "select username::text as username from public.profiles where id = %s", (user.id,)
-    ).fetchone()
-    t = classes.teacher(conn, user.id)
-    name = (t or {}).get("display_name") or (prof or {}).get("username") or "Student"
-    return classes.join(conn, user.id, str(class_id), str(name))
+    return classes.join(conn, user.id, str(class_id), classes.display_name(conn, user.id))
+
+
+class ChatIn(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    body: str = Field(min_length=1, max_length=500)
+
+
+@router.get("/classes/{class_id}/chat")
+def read_chat(
+    class_id: UUID, user: CurrentUser, conn: Conn, after: Annotated[int, Query(ge=0)] = 0
+) -> dict[str, Any]:
+    return class_chat.read(conn, user.id, str(class_id), after)
+
+
+@router.post("/classes/{class_id}/chat")
+def send_chat(
+    class_id: UUID,
+    body: ChatIn,
+    user: CurrentUser,
+    conn: Conn,
+    llm: Annotated[Llm, Depends(get_llm)],
+) -> dict[str, Any]:
+    ratelimit.hit(
+        conn, user.id, "class_chat", 20, 60, "You're sending messages too fast. Wait a moment."
+    )
+    return class_chat.send(conn, llm, user.id, str(class_id), body.body)

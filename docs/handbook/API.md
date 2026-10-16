@@ -209,9 +209,11 @@ All rules are decided here; clients only read the public class tables under RLS.
 | `POST /classes` | verified teachers only. `{ subject, topic, level, starts_at (tz-aware), duration_min 30–120 }` → `201 { id }` | 10/day |
 | `POST /classes/{id}/cancel` | teacher, before start → `204` | |
 | `PUT` / `DELETE /classes/{id}/interest` | mark / unmark interested → `{ interested, mine, position }` | 60/hour |
-| `POST /classes/{id}/join` | seat decision, then `{ room_url, role, display_name, ends_at }` | 30/hour |
+| `POST /classes/{id}/join` | seat decision, then `{ room_url, role, display_name, ends_at }`. Refused if the bot removed you, or a student has 3 account warnings | 30/hour |
+| `GET /classes/{id}/chat?after=<id>` | class chat since a message id (people who joined only): visible messages + my hidden ones, `{ strikes, removed }` | |
+| `POST /classes/{id}/chat` | `{ body ≤500 }`. The moderation bot checks it first (local filter, LLM only for "maybe rude", fail open). Hidden → author sees why, bot posts a public notice; 3 hidden = removed from the class + 1 account warning | 20/min |
 
-Join rules: teacher from 10 min before; interested students first; others after a 2-minute grace; 40 seats. Under 10 interested at start → class auto-cancels. Teacher absent 10 min after start → cancelled + warning (3 warnings = suspended). The Jitsi room name lives in `internal.class_rooms` and is only returned by `/join`.
+Join rules: teacher from 10 min before; interested students first; others after a 2-minute grace; 40 seats. Under 10 interested at start → class auto-cancels. Teacher absent 10 min after start → cancelled + warning (3 warnings = suspended). The Jitsi room name lives in `internal.class_rooms` and is only returned by `/join`. Video opens in its own tab (meet.jit.si ends embedded calls after 5 minutes), with Jitsi chat hidden and names locked, so all text goes through the moderated chat.
 
 ---
 
