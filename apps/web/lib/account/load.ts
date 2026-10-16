@@ -1,5 +1,5 @@
 import "server-only";
-import type { Demo, Message, Plan, Session } from "@/lib/demo/data";
+import type { Demo, Message, Plan, Session, StudyFile } from "@/lib/demo/data";
 import { createClient } from "@/lib/supabase/server";
 
 type Row = Record<string, unknown>;
@@ -18,10 +18,13 @@ export async function loadAccount(userId: string): Promise<Demo | null> {
     .maybeSingle();
   if (!p?.username) return null;
 
-  const [sessionsRes, messagesRes, plansRes] = await Promise.all([
+  // Threads are NOT loaded here: each session page loads its own (loadThread), so the layout
+  // stays small however much a student has chatted.
+  const [sessionsRes, servedRes, plansRes, filesRes] = await Promise.all([
     supabase.from("study_sessions").select("id, title, subject, deadline_at, mode, updated_at").order("updated_at", { ascending: false }).limit(100),
-    supabase.from("messages").select("id, session_id, role, content, blocks, served_from, created_at").order("created_at").limit(2000),
+    supabase.from("messages").select("served_from").eq("role", "assistant").order("created_at", { ascending: false }).limit(500),
     supabase.from("study_plans").select("id, session_id, subject, deadline_at, mode, hours_available, plan").order("created_at"),
+    supabase.from("files").select("id, session_id, display_name, size_bytes, pages, status, error, created_at").order("created_at", { ascending: false }).limit(500),
   ]);
 
   const sessions: Session[] = ((sessionsRes.data ?? []) as Row[]).map((s) => ({
@@ -33,18 +36,6 @@ export async function loadAccount(userId: string): Promise<Demo | null> {
     updated: str(s.updated_at),
   }));
 
-  const messages: Record<string, Message[]> = Object.fromEntries(sessions.map((s) => [s.id, [] as Message[]]));
-  for (const m of (messagesRes.data ?? []) as Row[]) {
-    const sid = str(m.session_id);
-    (messages[sid] ??= []).push({
-      id: str(m.id),
-      role: m.role === "assistant" ? "assistant" : "user",
-      content: str(m.content) || undefined,
-      blocks: Array.isArray(m.blocks) && m.blocks.length ? (m.blocks as Message["blocks"]) : undefined,
-      servedFrom: (m.served_from as Message["servedFrom"]) ?? undefined,
-      at: str(m.created_at),
-    });
-  }
 
   const plans: Plan[] = ((plansRes.data ?? []) as Row[]).map((r) => {
     const body = (r.plan ?? {}) as { steps?: Plan["steps"] };
@@ -59,7 +50,17 @@ export async function loadAccount(userId: string): Promise<Demo | null> {
     };
   });
 
-  const replies = Object.values(messages).flat().filter((m) => m.role === "assistant");
+  const served = ((servedRes.data ?? []) as Row[]).map((r) => r.served_from);
+  const files: StudyFile[] = ((filesRes.data ?? []) as Row[]).map((f) => ({
+    id: str(f.id),
+    sessionId: str(f.session_id),
+    name: str(f.display_name),
+    sizeBytes: Number(f.size_bytes ?? 0),
+    pages: typeof f.pages === "number" ? f.pages : undefined,
+    status: (["uploaded", "scanning"].includes(str(f.status)) ? "scanning" : str(f.status, "failed")) as StudyFile["status"],
+    error: str(f.error) || undefined,
+    added: str(f.created_at),
+  }));
   return {
     now: new Date().toISOString(),
     profile: {
@@ -75,14 +76,33 @@ export async function loadAccount(userId: string): Promise<Demo | null> {
     },
     sessions,
     plans,
-    files: [],
-    messages,
+    files,
+    messages: {},
     usage: {
       messages: { used: 0, limit: 30, window: "10 minutes" },
       plans: { used: 0, limit: 10, window: "hour" },
       uploads: { used: 0, limit: 20, window: "day" },
       storageMb: { used: 0, limit: 300, window: "day" },
-      servedLocally: replies.length ? replies.filter((m) => m.servedFrom !== "llm").length / replies.length : 0,
+      servedLocally: served.length ? served.filter((s) => s !== "llm").length / served.length : 0,
     },
   };
+}
+
+/** One session's thread for its page's first paint: the newest 500 messages, oldest first. */
+export async function loadThread(sessionId: string): Promise<Message[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("messages")
+    .select("id, role, content, blocks, served_from, created_at")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: false })
+    .limit(500);
+  return ((data ?? []) as Row[]).reverse().map((m) => ({
+    id: str(m.id),
+    role: m.role === "assistant" ? "assistant" : "user",
+    content: str(m.content) || undefined,
+    blocks: Array.isArray(m.blocks) && m.blocks.length ? (m.blocks as Message["blocks"]) : undefined,
+    servedFrom: (m.served_from as Message["servedFrom"]) ?? undefined,
+    at: str(m.created_at),
+  }));
 }

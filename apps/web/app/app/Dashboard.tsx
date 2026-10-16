@@ -55,7 +55,7 @@ function Countdown({ to }: { to: string }) {
 
 export function Dashboard() {
   const router = useRouter();
-  const { state, now, toggleStep, startSession } = useDemo();
+  const { mode, state, now, toggleStep, startSession } = useDemo();
   const { t, lang } = useUi();
   const nowIso = now.toISOString();
 
@@ -72,8 +72,12 @@ export function Dashboard() {
     .filter((s) => !s.done && s.kind === "block" && new Date(s.start).getTime() < weekEnd)
     .reduce((a, s) => a + (s.minutes ?? 0), 0);
 
+  // Signed in, threads load per session, so the share comes from the loader's count.
   const replies = Object.values(state.messages).flat().filter((m) => m.role === "assistant");
-  const localPct = replies.length ? Math.round((replies.filter((m) => m.servedFrom !== "llm").length / replies.length) * 100) : 0;
+  const localPct =
+    mode === "account"
+      ? Math.round(state.usage.servedLocally * 100)
+      : replies.length ? Math.round((replies.filter((m) => m.servedFrom !== "llm").length / replies.length) * 100) : 0;
 
   const quick = QUICK[lang](state.profile.course === "BCA" ? "Java" : "Maths");
 

@@ -9,7 +9,7 @@ import { Composer } from "@/components/app/Composer";
 import { PageTransition } from "@/components/app/Page";
 import { BlockView, ServedBadge } from "@/components/learn/Blocks";
 import { ProgressRing } from "@/components/learn/ProgressRing";
-import type { StudyFile } from "@/lib/demo/data";
+import type { Message, StudyFile } from "@/lib/demo/data";
 import { useDemo } from "@/lib/demo/store";
 import { useUi } from "@/lib/i18n/context";
 import { MODE_LABEL } from "@/lib/i18n/ui";
@@ -33,15 +33,19 @@ export function FileStatus({ f }: { f: StudyFile }) {
   );
 }
 
-export function SessionView({ id }: { id: string }) {
+export function SessionView({ id, initial }: { id: string; initial?: Message[] }) {
   const router = useRouter();
-  const { state, now, thinking, fresh, send, addFiles, deleteSession } = useDemo();
+  const { state, now, thinking, fresh, send, addFiles, deleteSession, hydrateThread } = useDemo();
   const { t, lang } = useUi();
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [confirming, setConfirming] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const session = state.sessions.find((s) => s.id === id);
-  const messages = state.messages[id] ?? [];
+  // The server's copy paints first; the store takes it over before the student can type.
+  const messages = state.messages[id] ?? initial ?? [];
+  useEffect(() => {
+    if (initial) hydrateThread(id, initial);
+  }, [id, initial, hydrateThread]);
   const files = state.files.filter((f) => f.sessionId === id);
   const plan = state.plans.find((p) => p.sessionId === id);
   const busy = thinking?.sessionId === id;

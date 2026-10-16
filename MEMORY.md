@@ -148,6 +148,7 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | B1: session page loads its thread on the server (newest 500, in order) so a refresh paints it at once; layout no longer loads every message (old oldest-first limit(2000) silently dropped a heavy user's newest messages); files loaded; SSR test; E2E 17/17 |
 | 2026-10-16 | Bipin A + Claude | B3: signed-in intake server-side (Python parser + intent model + scheduler); client INSERT on messages/study_plans revoked, RLS 37/37; demo keeps TS engine |
 | 2026-10-16 | Bipin A + Claude | B2: SSE POST /api/v1/sessions/{id}/messages: status/plan/session/block/done/error; plan+reply commit after last block; 15 API tests incl. disconnect + failure |
 | 2026-10-16 | Bipin A + Claude | E2/E5: TF-IDF word+char -> LogisticRegression, holdout accuracy 0.75 (rules alone 0.36); threshold swept to 0.15; artifact hash-checked before load; docs/ml-report.md generated |

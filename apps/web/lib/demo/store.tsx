@@ -27,6 +27,8 @@ type Api = {
   deleteSession: (sessionId: string) => void;
   updateProfile: (patch: Partial<Demo["profile"]>) => void;
   reset: () => void;
+  /** Adds a thread the server rendered (signed in) unless the store already has it. */
+  hydrateThread: (sessionId: string, messages: Message[]) => void;
 };
 
 const KEY = "vl-demo-v1";
@@ -383,10 +385,13 @@ export function DemoProvider({ seed, children, account }: { seed: Demo; children
   }, [seed, mode]);
 
   const clearSyncError = useCallback(() => setSyncError(null), []);
+  const hydrateThread = useCallback((sessionId: string, messages: Message[]) => {
+    setState((s) => (s.messages[sessionId] ? s : { ...s, messages: { ...s.messages, [sessionId]: messages } }));
+  }, []);
 
   const api = useMemo<Api>(
-    () => ({ mode, state, now, thinking, fresh, syncError, clearSyncError, send, startSession, toggleStep, replan, addFiles, deleteSession, updateProfile, reset }),
-    [mode, state, now, thinking, fresh, syncError, clearSyncError, send, startSession, toggleStep, replan, addFiles, deleteSession, updateProfile, reset],
+    () => ({ mode, state, now, thinking, fresh, syncError, clearSyncError, send, startSession, toggleStep, replan, addFiles, deleteSession, updateProfile, reset, hydrateThread }),
+    [mode, state, now, thinking, fresh, syncError, clearSyncError, send, startSession, toggleStep, replan, addFiles, deleteSession, updateProfile, reset, hydrateThread],
   );
   return <Ctx value={api}>{children}</Ctx>;
 }

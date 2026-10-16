@@ -78,7 +78,7 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
 
 ### Phase B — the real account path (PRD M3)
 
-- [ ] **B1. Render account data on the server**
+- [x] **B1. Render account data on the server**
   - `app/app/**` currently hydrates from the demo store. For a signed-in student, load with `lib/account/load.ts` in the Server Component and pass it down; keep the demo store only for demo mode.
   - **Verify:** sign in, hard-refresh `/app/s/<id>` — the thread renders in the HTML with JS disabled. No flash of empty state.
 
