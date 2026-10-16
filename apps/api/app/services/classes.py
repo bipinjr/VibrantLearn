@@ -21,6 +21,7 @@ from typing import Any, Literal
 
 import psycopg
 
+from app.core.config import get_settings
 from app.core.errors import ApiError
 
 Conn = psycopg.Connection[dict[str, Any]]
@@ -229,21 +230,35 @@ def display_name(conn: Conn, user_id: str) -> str:
 
 def teacher(conn: Conn, user_id: str) -> dict[str, Any] | None:
     r = conn.execute(
-        "select user_id, display_name, bio, subjects, status from public.teachers where user_id = %s",
+        "select user_id, display_name, bio, subjects, status, qualification, experience_years, languages, "
+        "preferred_days, preferred_slots, levels from public.teachers where user_id = %s",
         (user_id,),
     ).fetchone()
     return dict(r) if r else None
 
 
-def apply(
-    conn: Conn, user_id: str, display_name: str, bio: str, subjects: list[str]
-) -> dict[str, Any]:
+PROFILE_FIELDS = (
+    "display_name", "bio", "subjects", "qualification", "experience_years", "languages",
+    "preferred_days", "preferred_slots", "levels",
+)  # fmt: skip
+
+
+def apply(conn: Conn, user_id: str, profile: dict[str, Any]) -> dict[str, Any]:
+    """Create or edit the teacher profile (the sign-up questionnaire). Never touches status."""
+    cols = ", ".join(PROFILE_FIELDS)
+    vals = ", ".join(["%s"] * len(PROFILE_FIELDS))
+    sets = ", ".join(f"{c} = excluded.{c}" for c in PROFILE_FIELDS)
     conn.execute(
-        "insert into public.teachers (user_id, display_name, bio, subjects) values (%s, %s, %s, %s) "
-        "on conflict (user_id) do update set display_name = excluded.display_name, bio = excluded.bio, "
-        "subjects = excluded.subjects",
-        (user_id, display_name, bio, subjects),
+        f"insert into public.teachers (user_id, {cols}) values (%s, {vals}) "  # noqa: S608 - constant columns
+        f"on conflict (user_id) do update set {sets}",
+        (user_id, *(profile[c] for c in PROFILE_FIELDS)),
     )
+    if get_settings().teacher_auto_verify:
+        conn.execute(
+            "update public.teachers set status = 'verified', verified_at = coalesce(verified_at, now()) "
+            "where user_id = %s and status = 'pending'",
+            (user_id,),
+        )
     conn.commit()
     t = teacher(conn, user_id)
     assert t is not None
@@ -386,6 +401,12 @@ def listing(conn: Conn, user_id: str, now: datetime | None = None) -> list[dict[
         "where c.starts_at > %s and c.starts_at < %s order by c.starts_at limit 100",
         (now - timedelta(hours=3), now + timedelta(days=30)),
     ).fetchall()
+    my_ratings = {
+        str(x["class_id"]): int(x["stars"])
+        for x in conn.execute(
+            "select class_id, stars from internal.class_ratings where user_id = %s", (user_id,)
+        ).fetchall()
+    }
     out = []
     for r in rows:
         c = settle(conn, _klass(r), now)
@@ -415,6 +436,7 @@ def listing(conn: Conn, user_id: str, now: datetime | None = None) -> list[dict[
                 "mine_interested": user_id in queue,
                 "position": queue.index(user_id) + 1 if user_id in queue else None,
                 "seated": user_id in seated,
+                "my_rating": my_ratings.get(c.id),
             }
         )
     return out
@@ -427,13 +449,99 @@ def earnings(conn: Conn, user_id: str) -> dict[str, Any]:
         "where p.teacher_id = %s order by c.starts_at desc",
         (user_id,),
     ).fetchall()
-    pending = sum(int(r["net_paise"]) for r in rows if r["status"] == "to_be_paid")
+
+    def total(status: str) -> int:
+        return sum(int(r["net_paise"]) for r in rows if r["status"] == status)
+
     return {
         "classes": [
             dict(r, starts_at=r["starts_at"].isoformat(), class_id=str(r["class_id"])) for r in rows
         ],
-        "to_be_paid_paise": pending,
-        "paid_paise": sum(int(r["net_paise"]) for r in rows if r["status"] == "paid"),
+        "to_be_paid_paise": total("to_be_paid"),
+        "requested_paise": total("requested"),
+        "paid_paise": total("paid"),
         "warnings": warnings(conn, user_id),
         "warnings_to_suspend": WARNINGS_TO_SUSPEND,
     }
+
+
+def stats(conn: Conn, user_id: str, now: datetime | None = None) -> dict[str, Any]:
+    """The teacher dashboard numbers, all from Supabase."""
+    now = now or datetime.now(UTC)
+    r = conn.execute(
+        "select "
+        " count(*) filter (where c.status = 'done') as done,"
+        " count(*) filter (where c.status = 'scheduled' and c.starts_at > %s) as upcoming,"
+        " count(*) filter (where c.status = 'cancelled') as cancelled,"
+        " (select count(*) from public.class_attendance a join public.classes x on x.id = a.class_id"
+        "   where x.teacher_id = %s and a.role = 'student') as students,"
+        " (select count(*) from public.class_signups s join public.classes x on x.id = s.class_id"
+        "   where x.teacher_id = %s) as interested,"
+        " (select round(avg(g.stars)::numeric, 1) from internal.class_ratings g join public.classes x on x.id = g.class_id"
+        "   where x.teacher_id = %s) as rating,"
+        " (select count(*) from internal.class_ratings g join public.classes x on x.id = g.class_id"
+        "   where x.teacher_id = %s) as ratings"
+        " from public.classes c where c.teacher_id = %s",
+        (now, user_id, user_id, user_id, user_id, user_id),
+    ).fetchone()
+    top = conn.execute(
+        "select subject, count(*) as n from public.classes where teacher_id = %s and status <> 'cancelled' "
+        "group by subject order by n desc, subject limit 1",
+        (user_id,),
+    ).fetchone()
+    r = r or {}
+    done = int(r.get("done") or 0)
+    return {
+        "classes_done": done,
+        "upcoming": int(r.get("upcoming") or 0),
+        "cancelled": int(r.get("cancelled") or 0),
+        "students_taught": int(r.get("students") or 0),
+        "avg_students": round(int(r.get("students") or 0) / done, 1) if done else 0,
+        "interested_total": int(r.get("interested") or 0),
+        "rating": float(r["rating"]) if r.get("rating") is not None else None,
+        "ratings": int(r.get("ratings") or 0),
+        "focused_subject": top["subject"] if top else None,
+    }
+
+
+def withdraw(conn: Conn, user_id: str) -> dict[str, Any]:
+    """No payments in the prototype: a withdrawal is a request the team pays out by hand."""
+    t = teacher(conn, user_id)
+    if not t:
+        raise ApiError(404, "not_found", "Set up your teacher profile first.")
+    n = conn.execute(
+        "update internal.teacher_payouts set status = 'requested', requested_at = now() "
+        "where teacher_id = %s and status = 'to_be_paid'",
+        (user_id,),
+    ).rowcount
+    if not n:
+        raise ApiError(
+            409,
+            "nothing_to_withdraw",
+            "There's nothing to withdraw yet. Earnings appear after each class you teach.",
+        )
+    conn.commit()
+    return earnings(conn, user_id)
+
+
+def rate(
+    conn: Conn, user_id: str, class_id: str, stars: int, now: datetime | None = None
+) -> dict[str, Any]:
+    """Students who sat in a class rate it once it has ended (changing it later is fine)."""
+    now = now or datetime.now(UTC)
+    c = settle(conn, _get(conn, class_id), now)
+    seated = conn.execute(
+        "select 1 from public.class_attendance where class_id = %s and user_id = %s and role = 'student'",
+        (class_id, user_id),
+    ).fetchone()
+    if not seated:
+        raise ApiError(403, "forbidden", "Only students who joined this class can rate it.")
+    if phase(c, now) not in ("ended", "done"):
+        raise ApiError(409, "too_early", "You can rate the class once it has ended.")
+    conn.execute(
+        "insert into internal.class_ratings (class_id, user_id, stars) values (%s, %s, %s) "
+        "on conflict (class_id, user_id) do update set stars = excluded.stars",
+        (class_id, user_id, stars),
+    )
+    conn.commit()
+    return {"stars": stars}

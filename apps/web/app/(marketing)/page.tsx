@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 import { PlanPath } from "@/components/learn/PlanPath";
 import { HeroDemo } from "@/components/marketing/HeroDemo";
 import { LanguageNote } from "@/components/marketing/LanguageNote";
-import { WaitlistForm } from "@/components/marketing/WaitlistForm";
+import { LiveTonight } from "@/components/marketing/LiveTonight";
 import { demoEnabled } from "@/lib/demo/mode";
 import { enterDemo } from "../(auth)/demo-actions";
 
@@ -222,6 +222,8 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <LiveTonight />
+
       {/* ---- Privacy ---- */}
       <section id="privacy" aria-labelledby="privacy-h" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6">
         <h2 id="privacy-h" className="scroll-in text-4xl font-bold sm:text-5xl">
@@ -256,9 +258,11 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="grid gap-3 border-t border-line pt-8 md:border-t-0 md:border-l md:pt-0 md:pl-10">
-            <h3 className="text-xl font-bold">Teaching on VibrantLearn is coming soon</h3>
-            <p className="text-sm text-muted">Small live classes for students who need you. We&rsquo;ll write once, when it opens.</p>
-            <WaitlistForm demo={demo} />
+            <h3 className="text-xl font-bold">Teaching tonight?</h3>
+            <p className="text-sm text-muted">Create a room and pick a time. Students join from VibrantLearn.</p>
+            <Link href="/teacher-signup" className="btn btn-secondary w-fit">
+              Create a teacher account
+            </Link>
           </div>
         </div>
       </section>

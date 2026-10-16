@@ -203,13 +203,15 @@ All rules are decided here; clients only read the public class tables under RLS.
 
 | Endpoint | Does | Limit |
 |---|---|---|
-| `GET /teachers/me` | `{ teacher, earnings }` (both null if never applied) | |
-| `POST /teachers/apply` | `{ display_name, bio?, subjects[≤8] }` → `{ teacher }`, status `pending` | 5/day |
+| `GET /teachers/me` | `{ teacher, earnings, stats }` (all null if never set up). `stats`: rating, ratings, classes_done, students_taught, avg_students, upcoming, interested_total, focused_subject | |
+| `POST /teachers/apply` | the teacher questionnaire: `{ display_name, bio?, subjects[1-8], qualification?, experience_years?, languages[], preferred_days[], preferred_slots[], levels[] }` → `{ teacher }`, status `pending` (`verified` at once when `TEACHER_AUTO_VERIFY=true`, local demos only) | 5/day |
 | `GET /classes` | upcoming + recent classes with `phase`, interested count, my queue `position` | |
 | `POST /classes` | verified teachers only. `{ subject, topic, level, starts_at (tz-aware), duration_min 30–120 }` → `201 { id }` | 10/day |
 | `POST /classes/{id}/cancel` | teacher, before start → `204` | |
 | `PUT` / `DELETE /classes/{id}/interest` | mark / unmark interested → `{ interested, mine, position }` | 60/hour |
 | `POST /classes/{id}/join` | seat decision, then `{ room_url, role, display_name, ends_at }`. Refused if the bot removed you, or a student has 3 account warnings | 30/hour |
+| `POST /teachers/withdraw` | moves all `to_be_paid` earnings to `requested` (paid by hand; no online payouts yet) → `{ earnings }`; 409 if nothing to withdraw | 5/day |
+| `PUT /classes/{id}/rating` | `{ stars 1-5 }`, seated students only, after the class ends; change allowed | 30/hour |
 | `GET /classes/{id}/chat?after=<id>` | class chat since a message id (people who joined only): visible messages + my hidden ones, `{ strikes, removed }` | |
 | `POST /classes/{id}/chat` | `{ body ≤500 }`. The moderation bot checks it first (local filter, LLM only for "maybe rude", fail open). Hidden → author sees why, bot posts a public notice; 3 hidden = removed from the class + 1 account warning | 20/min |
 

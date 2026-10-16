@@ -1,15 +1,45 @@
 "use client";
 
+import { Star } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Main, PageHeader, PageTransition } from "@/components/app/Page";
 import { ApiError } from "@/lib/api/client";
-import { listClasses, setInterest, type LiveClass } from "@/lib/api/classes";
+import { listClasses, rateClass, setInterest, type LiveClass } from "@/lib/api/classes";
 import { useDemo } from "@/lib/demo/store";
 import { clock, dayLabel } from "@/lib/format";
 import { useUi } from "@/lib/i18n/context";
 
 const LEVEL = { beginner: "Beginner friendly", exam_prep: "Exam prep", all: "All levels" } as const;
+
+/** Students who sat in a class rate it afterwards; the teacher's dashboard shows the average. */
+function Rate({ classId, initial }: { classId: string; initial: number | null }) {
+  const { t } = useUi();
+  const [stars, setStars] = useState(initial);
+  const [problem, setProblem] = useState<string | null>(null);
+  async function pick(n: number) {
+    setProblem(null);
+    try {
+      await rateClass(classId, n);
+      setStars(n);
+    } catch (e) {
+      setProblem(e instanceof ApiError ? e.message : t("Couldn't save your rating. Try again."));
+    }
+  }
+  return (
+    <fieldset className="mt-2">
+      <legend className="mb-1">{stars ? t("Your rating") : t("How was this class?")}</legend>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} type="button" onClick={() => pick(n)} aria-pressed={stars === n} aria-label={t("{n} of 5 stars", { n })} className="rounded p-1 hover:bg-text/5">
+            <Star size={20} strokeWidth={1.75} aria-hidden="true" className={stars && n <= stars ? "fill-ember text-ember" : "text-muted"} />
+          </button>
+        ))}
+      </div>
+      {problem ? <p role="alert" className="text-danger">{problem}</p> : null}
+    </fieldset>
+  );
+}
 
 function Row({ c, nowIso, onChange }: { c: LiveClass; nowIso: string; onChange: () => void }) {
   const { t, lang } = useUi();
@@ -45,7 +75,10 @@ function Row({ c, nowIso, onChange }: { c: LiveClass; nowIso: string; onChange: 
         {c.phase === "cancelled" ? (
           <p className="mt-1 text-sm text-danger">{c.cancel_reason ?? t("Cancelled.")}</p>
         ) : c.phase === "done" || c.phase === "ended" ? (
-          <p className="mt-1 text-sm text-muted">{t("Finished.")}</p>
+          <div className="mt-1 text-sm">
+            <p className="text-muted">{t("Finished.")}</p>
+            {c.seated ? <Rate classId={c.id} initial={c.my_rating} /> : null}
+          </div>
         ) : (
           <p className="mt-1 text-sm">
             {t("{n} interested", { n: c.interested })}
@@ -105,13 +138,12 @@ export default function ClassesPage() {
         <PageHeader
           title={t("Live classes")}
           sub={t("Small live classes, 10 to 40 students, taught by college teachers in the evening. Mark the ones you want; interested students get the first seats.")}
-          actions={mode === "account" ? <Link href="/app/teach" className="btn btn-secondary">{t("Teach a class")}</Link> : null}
         />
         {mode !== "account" ? (
           <div className="mt-10 rounded-[var(--radius-sheet)] border border-dashed border-line p-8">
             <p className="font-display text-2xl font-bold">{t("Live classes need a real account")}</p>
             <p className="mt-2 max-w-[60ch] text-muted">
-              {t("The demo can't seat you in a real class with real people. Create a free account to join one, or to teach.")}
+              {t("The demo can't seat you in a real class with real people. Create a free account to join one.")}
             </p>
             <Link href="/signup" className="btn btn-primary mt-5">{t("Create a free account")}</Link>
           </div>
@@ -126,7 +158,7 @@ export default function ClassesPage() {
         ) : classes.length === 0 ? (
           <div className="mt-10 rounded-[var(--radius-sheet)] border border-dashed border-line p-8">
             <p className="font-display text-2xl font-bold">{t("No classes scheduled yet")}</p>
-            <p className="mt-2 text-muted">{t("Teachers post evening classes here. Check back tonight, or teach one yourself.")}</p>
+            <p className="mt-2 text-muted">{t("Teachers create evening rooms here. Check back tonight.")}</p>
           </div>
         ) : (
           <ul className="mt-6 divide-y divide-line">

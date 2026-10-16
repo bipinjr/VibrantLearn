@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app/AppShell";
 import { loadAccount } from "@/lib/account/load";
+import { teacherStatus } from "@/lib/account/role";
 import { getDemo } from "@/lib/demo/data";
 import { DEMO_COOKIE, demoEnabled } from "@/lib/demo/mode";
 import { DemoProvider } from "@/lib/demo/store";
@@ -20,6 +21,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
   // A real signed-in account always wins over the demo cookie.
   const userId = await getUserId();
   if (userId) {
+    if (await teacherStatus(userId)) redirect("/teacher"); // teachers use the teacher portal
     const data = await loadAccount(userId);
     if (!data) redirect("/onboarding");
     return (

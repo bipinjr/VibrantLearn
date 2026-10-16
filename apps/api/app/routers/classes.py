@@ -20,7 +20,21 @@ class ApplyIn(BaseModel):
 
     display_name: str = Field(min_length=2, max_length=60)
     bio: str = Field(default="", max_length=600)
-    subjects: list[Annotated[str, Field(min_length=2, max_length=120)]] = Field(max_length=8)
+    subjects: list[Annotated[str, Field(min_length=2, max_length=120)]] = Field(
+        min_length=1, max_length=8
+    )
+    qualification: str = Field(default="", max_length=120)
+    experience_years: int = Field(default=0, ge=0, le=60)
+    languages: list[Literal["en", "kn", "hi"]] = Field(default=["en"], min_length=1, max_length=3)
+    preferred_days: list[Literal["mon", "tue", "wed", "thu", "fri", "sat", "sun"]] = Field(
+        default=[], max_length=7
+    )
+    preferred_slots: list[Literal["5-6pm", "6-7pm", "7-8pm", "8-9pm", "9-10pm"]] = Field(
+        default=[], max_length=5
+    )
+    levels: list[Literal["beginner", "exam_prep", "all"]] = Field(
+        default=["all"], min_length=1, max_length=3
+    )
 
 
 class ClassIn(BaseModel):
@@ -36,13 +50,39 @@ class ClassIn(BaseModel):
 @router.get("/teachers/me")
 def my_teacher_profile(user: CurrentUser, conn: Conn) -> dict[str, Any]:
     t = classes.teacher(conn, user.id)
-    return {"teacher": t, "earnings": classes.earnings(conn, user.id) if t else None}
+    if not t:
+        return {"teacher": None, "earnings": None, "stats": None}
+    return {
+        "teacher": t,
+        "earnings": classes.earnings(conn, user.id),
+        "stats": classes.stats(conn, user.id),
+    }
 
 
 @router.post("/teachers/apply")
 def apply(body: ApplyIn, user: CurrentUser, conn: Conn) -> dict[str, Any]:
     ratelimit.hit(conn, user.id, "teacher_apply", 5, 86400, "Too many applications today.")
-    return {"teacher": classes.apply(conn, user.id, body.display_name, body.bio, body.subjects)}
+    return {"teacher": classes.apply(conn, user.id, body.model_dump())}
+
+
+@router.post("/teachers/withdraw")
+def withdraw(user: CurrentUser, conn: Conn) -> dict[str, Any]:
+    ratelimit.hit(
+        conn, user.id, "teacher_withdraw", 5, 86400, "Too many withdrawal requests today."
+    )
+    return {"earnings": classes.withdraw(conn, user.id)}
+
+
+class RatingIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    stars: int = Field(ge=1, le=5)
+
+
+@router.put("/classes/{class_id}/rating")
+def rate_class(class_id: UUID, body: RatingIn, user: CurrentUser, conn: Conn) -> dict[str, Any]:
+    ratelimit.hit(conn, user.id, "class_rating", 30, 3600, "Too many changes. Wait a bit.")
+    return classes.rate(conn, user.id, str(class_id), body.stars)
 
 
 @router.get("/classes")

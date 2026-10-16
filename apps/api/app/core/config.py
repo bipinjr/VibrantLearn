@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     # Trust x-forwarded-for only behind a proxy we control (Vercel). Off by default: a client can
     # send any x-forwarded-for, so trusting it would let them pick a fresh rate-limit bucket.
     trusted_proxy: bool = False
+    # Local demos only: new teachers are verified at once instead of waiting for manual review.
+    # Never true in production (SECURITY.md: teachers are checked before they reach students).
+    teacher_auto_verify: bool = False
     groq_api_key: SecretStr = SecretStr("")
     max_upload_mb: int = 50
 

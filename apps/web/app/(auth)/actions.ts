@@ -50,7 +50,7 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     ...parsed.data,
-    options: { emailRedirectTo: `${SITE}/auth/callback?next=/onboarding` },
+    options: { emailRedirectTo: `${SITE}/auth/callback?next=${encodeURIComponent(safeNext(form.get("next"), "/onboarding"))}` },
   });
   if (error) {
     if (error.code === "weak_password") {

@@ -28,14 +28,37 @@ export type LiveClass = {
   mine_interested: boolean;
   position: number | null;
   seated: boolean;
+  my_rating: number | null;
 };
 
-export type Teacher = {
-  user_id: string;
+export type Day = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export type Slot = "5-6pm" | "6-7pm" | "7-8pm" | "8-9pm" | "9-10pm";
+export type Level = "beginner" | "exam_prep" | "all";
+export type TeacherProfile = {
   display_name: string;
   bio: string;
   subjects: string[];
+  qualification: string;
+  experience_years: number;
+  languages: ("en" | "kn" | "hi")[];
+  preferred_days: Day[];
+  preferred_slots: Slot[];
+  levels: Level[];
+};
+export type Teacher = TeacherProfile & {
+  user_id: string;
   status: "pending" | "verified" | "suspended";
+};
+export type TeacherStats = {
+  classes_done: number;
+  upcoming: number;
+  cancelled: number;
+  students_taught: number;
+  avg_students: number;
+  interested_total: number;
+  rating: number | null;
+  ratings: number;
+  focused_subject: string | null;
 };
 export type Earnings = {
   classes: {
@@ -44,9 +67,10 @@ export type Earnings = {
     starts_at: string;
     students: number;
     net_paise: number;
-    status: "to_be_paid" | "paid";
+    status: "to_be_paid" | "requested" | "paid";
   }[];
   to_be_paid_paise: number;
+  requested_paise: number;
   paid_paise: number;
   warnings: number;
   warnings_to_suspend: number;
@@ -70,15 +94,17 @@ export const joinClass = (id: string) =>
 export const cancelClass = (id: string) =>
   api(`/classes/${encodeURIComponent(id)}/cancel`, { method: "POST" });
 export const myTeaching = () =>
-  api<{ teacher: Teacher | null; earnings: Earnings | null }>("/teachers/me");
-export const applyToTeach = (b: {
-  display_name: string;
-  bio: string;
-  subjects: string[];
-}) =>
+  api<{ teacher: Teacher | null; earnings: Earnings | null; stats: TeacherStats | null }>("/teachers/me");
+export const applyToTeach = (b: TeacherProfile) =>
   api<{ teacher: Teacher }>("/teachers/apply", {
     method: "POST",
     body: JSON.stringify(b),
+  });
+export const withdraw = () => api<{ earnings: Earnings }>("/teachers/withdraw", { method: "POST" });
+export const rateClass = (id: string, stars: number) =>
+  api<{ stars: number }>(`/classes/${encodeURIComponent(id)}/rating`, {
+    method: "PUT",
+    body: JSON.stringify({ stars }),
   });
 export const postClass = (b: {
   subject: string;

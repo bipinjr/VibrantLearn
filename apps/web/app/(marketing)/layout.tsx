@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { enterDemo } from "../(auth)/demo-actions";
 import { demoEnabled } from "@/lib/demo/mode";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function MarketingLayout({ children }: LayoutProps<"/">) {
   const demo = demoEnabled();
@@ -21,9 +22,13 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
             <a href="#notes" className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted no-underline hover:text-text md:inline">
               Your notes
             </a>
-            <a href="#privacy" className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted no-underline hover:text-text md:inline">
-              Privacy
+            <a href="#live" className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted no-underline hover:text-text md:inline">
+              Live classes
             </a>
+            <Link href="/teacher-signup" className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted no-underline hover:text-text lg:inline">
+              For teachers
+            </Link>
+            <ThemeToggle />
             <Link href="/login" className="whitespace-nowrap rounded-md px-2 py-2 text-sm font-medium text-text no-underline hover:underline sm:px-3">
               Sign in
             </Link>
@@ -55,12 +60,15 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
             <p className="font-semibold">Product</p>
             <a href="#how" className="text-muted no-underline hover:text-text">How it works</a>
             <a href="#notes" className="text-muted no-underline hover:text-text">Ask your notes</a>
+            <a href="#live" className="text-muted no-underline hover:text-text">Live classes</a>
             <Link href="/signup" className="text-muted no-underline hover:text-text">Create an account</Link>
           </nav>
           <nav aria-label="Company" className="grid content-start gap-2 text-sm">
             <p className="font-semibold">VibrantLearn</p>
             <Link href="/privacy" className="text-muted no-underline hover:text-text">Privacy notice</Link>
-            <Link href="/login" className="text-muted no-underline hover:text-text">Sign in</Link>
+            <Link href="/login" className="text-muted no-underline hover:text-text">Student sign in</Link>
+            <Link href="/teacher-login" className="text-muted no-underline hover:text-text">Teacher sign in</Link>
+            <Link href="/teacher-signup" className="text-muted no-underline hover:text-text">Teach on VibrantLearn</Link>
           </nav>
         </div>
         <div className="border-t border-line">

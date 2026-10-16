@@ -38,6 +38,7 @@ ignore = ["S101"]  # asserts are fine in tests
 "data/build_intents.py" = ["S311", "E501"]
 # Column-aligned fake table rows (formatter is told to skip them).
 "tests/fake_db.py" = ["E501"]
+"tests/test_classes_e2e.py" = ["E501"]
 # Student-facing sentences and SQL kept on one line each, so they read like the rules they encode.
 "app/services/classes.py" = ["E501"]
 "app/services/class_chat.py" = ["E501"]

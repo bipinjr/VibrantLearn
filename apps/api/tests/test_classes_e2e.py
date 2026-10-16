@@ -47,7 +47,10 @@ class Judge:
 
 
 @pytest.fixture
-def env() -> Iterator[tuple[TestClient, Judge]]:
+def env(monkeypatch: pytest.MonkeyPatch) -> Iterator[tuple[TestClient, Judge]]:
+    monkeypatch.setattr(
+        get_settings(), "teacher_auto_verify", False
+    )  # a local demo .env may turn it on
     try:
         sql("select 1 from internal.class_messages limit 1")
     except psycopg.Error:
@@ -84,8 +87,15 @@ def test_live_class_and_moderation_bot(env: tuple[TestClient, Judge]) -> None:
 
     # apply -> pending -> can't post; verified -> can post
     r = api.post("/api/v1/teachers/apply", headers=teacher,
-                 json={"display_name": "Ravi Sir", "subjects": ["Java Programming"]})  # fmt: skip
-    assert r.json()["teacher"]["status"] == "pending"
+                 json={"display_name": "Ravi Sir", "subjects": ["Java Programming"], "qualification": "MCA",
+                       "experience_years": 6, "languages": ["en", "kn"], "preferred_days": ["mon", "wed"],
+                       "preferred_slots": ["7-8pm"], "levels": ["exam_prep"]})  # fmt: skip
+    prof = r.json()["teacher"]
+    assert (
+        prof["status"] == "pending"
+        and prof["languages"] == ["en", "kn"]
+        and prof["preferred_slots"] == ["7-8pm"]
+    )
     start = (datetime.now(UTC) + timedelta(hours=2)).isoformat()
     body = {
         "subject": "Java Programming",
@@ -110,7 +120,7 @@ def test_live_class_and_moderation_bot(env: tuple[TestClient, Judge]) -> None:
         if c["id"] == cid
     )
     assert (row["interested"], row["position"], row["phase"]) == (12, 3, "upcoming")
-    late_id, late = person("late")
+    _, late = person("late")
 
     # doors: teacher 5 min early yes, student no
     move(cid, 5)
@@ -122,13 +132,21 @@ def test_live_class_and_moderation_bot(env: tuple[TestClient, Judge]) -> None:
     # grace: interested first, the latecomer waits
     move(cid, -0.5)
     s0_id, s0 = students[0]
-    s1_id, s1 = students[1]
+    _, s1 = students[1]
     assert api.post(f"/api/v1/classes/{cid}/join", headers=s0).status_code == 200
     assert api.post(f"/api/v1/classes/{cid}/join", headers=s1).status_code == 200
     r = api.post(f"/api/v1/classes/{cid}/join", headers=late)
     assert r.status_code == 409 and "first 2 minutes" in r.json()["error"]["message"]
     move(cid, -3)
     assert api.post(f"/api/v1/classes/{cid}/join", headers=late).status_code == 200
+
+    # no rating while the class is running
+    assert (
+        api.put(
+            f"/api/v1/classes/{cid}/rating", headers=students[1][1], json={"stars": 5}
+        ).status_code
+        == 409
+    )
 
     # chat: only people in the room
     outsider = person("out")[1]
@@ -204,6 +222,41 @@ def test_live_class_and_moderation_bot(env: tuple[TestClient, Judge]) -> None:
     assert (
         api.post(f"/api/v1/classes/{cid}/chat", headers=s1, json={"body": "bye"}).status_code == 409
     )
+
+    # ratings: only seated students, after the end
+    assert (
+        api.put(f"/api/v1/classes/{cid}/rating", headers=s1, json={"stars": 5}).status_code == 200
+    )
+    assert (
+        api.put(f"/api/v1/classes/{cid}/rating", headers=late, json={"stars": 4}).status_code == 200
+    )
+    assert (
+        api.put(f"/api/v1/classes/{cid}/rating", headers=outsider, json={"stars": 1}).status_code
+        == 403
+    )
+    assert (
+        api.put(f"/api/v1/classes/{cid}/rating", headers=s1, json={"stars": 9}).status_code == 422
+    )
+    row = next(
+        c for c in api.get("/api/v1/classes", headers=s1).json()["classes"] if c["id"] == cid
+    )
+    assert row["my_rating"] == 5
+
+    # dashboard numbers come from the database
+    st = api.get("/api/v1/teachers/me", headers=teacher).json()["stats"]
+    assert (st["rating"], st["ratings"], st["classes_done"], st["students_taught"]) == (
+        4.5,
+        2,
+        1,
+        3,
+    )
+    assert st["focused_subject"] == "Java Programming" and st["interested_total"] == 12
+
+    # withdrawal: to_be_paid -> requested, once
+    w = api.post("/api/v1/teachers/withdraw", headers=teacher)
+    assert w.status_code == 200 and w.json()["earnings"]["requested_paise"] == 160_000
+    assert w.json()["earnings"]["to_be_paid_paise"] == 0
+    assert api.post("/api/v1/teachers/withdraw", headers=teacher).status_code == 409
 
 
 def test_auto_cancel_and_teacher_no_show(env: tuple[TestClient, Judge]) -> None:

@@ -2,8 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { DEMO_COOKIE, demoEnabled } from "@/lib/demo/mode";
 
-const PROTECTED = ["/app", "/onboarding"];
+const PROTECTED = ["/app", "/onboarding", "/teacher"];
 const AUTH_ONLY_FOR_GUESTS = ["/login", "/signup"];
+const TEACHER_GUEST_PAGES = ["/teacher-login", "/teacher-signup"];
 
 function csp(nonce: string): string {
   const dev = process.env.NODE_ENV === "development";
@@ -78,8 +79,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  const teacherPage = path === "/teacher" || path.startsWith("/teacher/");
+  if (teacherPage && !data?.claims?.sub) return redirect("/teacher-login", path);
   if (!signedIn && PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
     return redirect("/login", path);
+  }
+  // Only a real account skips the teacher sign-in: the demo has no teacher portal.
+  if (data?.claims?.sub && TEACHER_GUEST_PAGES.includes(path)) {
+    return redirect("/teacher");
   }
   if (signedIn && AUTH_ONLY_FOR_GUESTS.includes(path)) {
     return redirect("/app");

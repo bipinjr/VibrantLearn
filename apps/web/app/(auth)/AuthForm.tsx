@@ -5,9 +5,9 @@ import { useActionState } from "react";
 import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 import { enterDemo } from "./demo-actions";
 
-type Props = { mode: "signin" | "signup"; next?: string; googleEnabled: boolean; notice?: string; demo: boolean; emailEnabled: boolean };
+type Props = { mode: "signin" | "signup"; next?: string; googleEnabled: boolean; notice?: string; demo: boolean; emailEnabled: boolean; teacher?: boolean };
 
-export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled }: Props) {
+export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled, teacher = false }: Props) {
   const [state, action, pending] = useActionState<AuthState, FormData>(mode === "signin" ? signIn : signUp, undefined);
   const error = state?.error ?? notice;
 
@@ -25,12 +25,20 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
 
   return (
     <>
-      <h1 className="text-3xl font-bold sm:text-4xl">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+      <h1 className="text-3xl font-bold sm:text-4xl">
+        {teacher ? (mode === "signin" ? "Teacher sign in" : "Create a teacher account") : mode === "signin" ? "Welcome back" : "Create your account"}
+      </h1>
       <p className="mt-2 text-muted">
-        {mode === "signin" ? "Sign in to pick up your plans." : "Free while we're in beta. Takes under a minute."}
+        {teacher
+          ? mode === "signin"
+            ? "Sign in to create rooms and run your live classes."
+            : "Teach small evening classes to BCA students. Takes under a minute."
+          : mode === "signin"
+            ? "Sign in to pick up your plans."
+            : "Free while we're in beta. Takes under a minute."}
       </p>
 
-      {demo ? (
+      {demo && !teacher ? (
         <form action={enterDemo} className="mt-8 grid gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-4">
           <p className="font-semibold">Try it with the demo account</p>
           <p className="text-sm text-muted">Sample plans, notes and quizzes for a 3rd-semester BCA student. Everything works; nothing is saved on our side.</p>
@@ -114,11 +122,22 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
       <p className="mt-8 text-sm">
         {mode === "signin" ? (
           <>
-            New here? <Link href="/signup">Create an account</Link>
+            New here? <Link href={teacher ? "/teacher-signup" : "/signup"}>{teacher ? "Create a teacher account" : "Create an account"}</Link>
           </>
         ) : (
           <>
-            Already have an account? <Link href="/login">Sign in</Link>
+            Already have an account? <Link href={teacher ? "/teacher-login" : "/login"}>Sign in</Link>
+          </>
+        )}
+      </p>
+      <p className="mt-2 text-sm text-muted">
+        {teacher ? (
+          <>
+            Studying? <Link href="/login">Student sign in</Link>
+          </>
+        ) : (
+          <>
+            Teaching? <Link href="/teacher-login">Teacher sign in</Link>
           </>
         )}
       </p>

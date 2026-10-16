@@ -291,8 +291,9 @@
   }
   /* Padding would leak out of a collapsed 0fr row, so drop it while closed. */
   .reveal:not([data-open="true"]) > * {
-    padding-block: 0;
-    border-width: 0;
+    /* !important: utility classes (py-2) live in a later layer and would win otherwise. */
+    padding-block: 0 !important;
+    border-width: 0 !important;
   }
 
   .skeleton {

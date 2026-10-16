@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { THEME_COOKIE } from "@/lib/theme";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Figtree, Noto_Sans_Devanagari, Noto_Sans_Kannada } from "next/font/google";
 import { connection } from "next/server";
@@ -48,9 +50,12 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Every page renders per request so proxy.ts can stamp a CSP nonce on Next's scripts.
   await connection();
+  const saved = (await cookies()).get(THEME_COOKIE)?.value;
+  const theme = saved === "dark" || saved === "light" ? saved : undefined; // unset: follow the OS
   return (
     <html
       lang="en"
+      data-theme={theme}
       className={`${bricolage.variable} ${figtree.variable} ${notoKn.variable} ${notoHi.variable} antialiased`}
     >
       <body className="min-h-dvh">{children}</body>
