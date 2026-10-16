@@ -2,7 +2,9 @@
 
 v0.4 is the student side: a plan, notes, questions, quizzes and flashcards in three languages. This page holds everything we have agreed comes after it, so today's schema and architecture leave room for it.
 
-Nothing here is in scope for the college submission. Anything marked **Later** has no date.
+> **16 Oct 2026, owner decision:** every version below is now being built, in order, after v0.4 is finished. Choices made for the open questions: Jitsi for video, **no payments in the prototype** (earnings tracked as "to be paid"), 20% platform fee, auto-cancel under 10 students, refund + warning on teacher no-show, and the mobile app as an installable web app (PWA). See MEMORY.md → Decisions.
+
+The college submission is still v0.4. Anything marked **Later** has no date.
 
 ---
 

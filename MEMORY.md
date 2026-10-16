@@ -42,6 +42,10 @@ Living record for humans and AI agents. Read at the start of every session; upda
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-16 | **Scope change (Bipin):** build every roadmap version (v0.5 teachers + live classes, v0.6, v1.0), in order: finish v0.4 first | Owner wants the full product now; v0.4 first keeps the college submission safe and gives teachers students to teach |
+| 2026-10-16 | Live video: Jitsi embed (meet.jit.si for the prototype; self-host or 8x8 JaaS later) | Free, open source, no account needed to start |
+| 2026-10-16 | Payments: none in the prototype. Classes are free; teacher earnings tracked as "to be paid" | Owner's call; avoids a payment provider and KYC for now. Add Razorpay later |
+| 2026-10-16 | Class rules: platform fee 20% shown before posting; under 10 students at start -> auto-cancel; teacher no-show -> refund + warning; mobile = installable PWA with offline plans | Owner accepted the proposed defaults for the roadmap's open questions |
 | 2026-10-16 | DOCX/PPTX read with zipfile + defusedxml, not python-docx/python-pptx (removed) | Those parse with lxml, which defusedxml does not protect from XXE; also dropped Pillow/XlsxWriter |
 | 2026-10-16 | Text/code uploads stored as `text/plain`, chosen by the server from the extension | Browsers report unreliable types (.ts as video/mp2t); files are always downloaded, never rendered |
 | 2026-10-16 | **Server owns messages and plans.** Signed-in chat goes through `POST /api/v1/sessions/{id}/messages` (SSE); clients lost INSERT on `messages` and INSERT/DELETE on `study_plans`. Supersedes the 2026-10-08 interim client-writes decision for those two tables | BUILD_PLAN B3: a tampered client must not invent replies, `served_from` numbers or plans |
