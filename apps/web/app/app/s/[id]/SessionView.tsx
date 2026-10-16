@@ -40,6 +40,17 @@ export function SessionView({ id, initial }: { id: string; initial?: Message[] }
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [confirming, setConfirming] = useState(false);
   const end = useRef<HTMLDivElement>(null);
+  // The thread is padded by the composer's real height (it grows with long messages and upload
+  // errors), so the last reply's buttons, such as "Next question", are never stuck behind it.
+  const composerRef = useRef<HTMLDivElement>(null);
+  const [composerH, setComposerH] = useState(160);
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(([e]) => setComposerH(Math.ceil(e.contentRect.height)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const session = state.sessions.find((s) => s.id === id);
   // The server's copy paints first; the store takes it over before the student can type.
   const messages = state.messages[id] ?? initial ?? [];
@@ -126,7 +137,7 @@ export function SessionView({ id, initial }: { id: string; initial?: Message[] }
             </div>
           </header>
 
-          <div className="mx-auto w-full max-w-3xl flex-1 px-4 pt-6 pb-40 sm:px-8" aria-live="polite" aria-busy={busy}>
+          <div className="mx-auto w-full max-w-3xl flex-1 px-4 pt-6 sm:px-8" style={{ paddingBottom: composerH + 32 }} aria-live="polite" aria-busy={busy}>
             {messages.length === 0 && !busy ? (
               <div className="grid place-items-center py-24 text-center">
                 <p className="font-display text-3xl font-bold">{t("What’s your next test?")}</p>
@@ -173,7 +184,7 @@ export function SessionView({ id, initial }: { id: string; initial?: Message[] }
             <div ref={end} />
           </div>
 
-          <div className="sticky bottom-20 z-10 mx-auto w-full max-w-3xl px-4 pb-4 sm:px-8 lg:bottom-0 lg:pb-6">
+          <div ref={composerRef} className="sticky bottom-0 z-10 mx-auto w-full max-w-3xl px-4 pb-4 sm:px-8 lg:pb-6">
             {uploadErrors.length ? (
               <ul role="alert" className="pop-in mb-2 grid gap-1 rounded-[var(--radius-input)] bg-rose/10 px-3 py-2 text-sm">
                 {uploadErrors.map((e) => (

@@ -1,4 +1,4 @@
-import { ArrowUpRight, BookOpenText, Check, Copy, Cpu, Database, FileText, Layers, ListChecks, Route, Sparkles } from "lucide-react";
+import { ArrowUpRight, BookOpenText, Check, CircleHelp, Copy, Cpu, Database, FileText, Layers, ListChecks, PenLine, Route } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Block, Lang, Message } from "@/lib/demo/data";
@@ -221,7 +221,7 @@ export function BlockView({ block, animate, onSend }: { block: Block; animate: b
       );
     case "quiz":
       return (
-        <Card icon={<Sparkles size={16} strokeWidth={1.75} />} title={t("Quiz: {topic}", { topic: block.topic })}>
+        <Card icon={<CircleHelp size={16} strokeWidth={1.75} />} title={t("Quiz: {topic}", { topic: block.topic })}>
           <Quiz questions={block.questions} contentId={block.contentId} onRevise={(topics) => onSend(`explain ${topics[0]}`)} />
         </Card>
       );
@@ -237,12 +237,18 @@ export function BlockView({ block, animate, onSend }: { block: Block; animate: b
 const SERVED: Record<NonNullable<Message["servedFrom"]>, { label: string; icon: ReactNode }> = {
   ml: { label: "Answered on our side, no AI call", icon: <Cpu size={12} strokeWidth={2} /> },
   cache: { label: "From saved answers", icon: <Database size={12} strokeWidth={2} /> },
-  llm: { label: "Written by AI, checked against your syllabus", icon: <Sparkles size={12} strokeWidth={2} /> },
+  llm: { label: "Written by AI, checked against your syllabus", icon: <PenLine size={12} strokeWidth={2} /> },
 };
 
+/**
+ * "Written by AI" is always shown: students should know. The token-saving labels ("answered on
+ * our side", "from saved answers") are for demos and development, not for students (G2).
+ */
 export function ServedBadge({ from }: { from?: Message["servedFrom"] }) {
   const { t } = useUi();
+  const { mode } = useDemo();
   if (!from) return null;
+  if (from !== "llm" && mode !== "demo" && process.env.NODE_ENV !== "development") return null;
   const s = SERVED[from];
   return (
     <span className="inline-flex items-center gap-1 text-[0.7rem] text-muted">

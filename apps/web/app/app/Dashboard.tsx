@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Check, Clock3, Play, Sparkles } from "lucide-react";
+import { ArrowUpRight, Check, Clock3, Play } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type CSSProperties } from "react";
@@ -32,23 +32,20 @@ function Countdown({ to }: { to: string }) {
   const [left, setLeft] = useState<number | null>(null);
   useEffect(() => {
     const tick = () => setLeft(Math.max(0, new Date(to).getTime() - Date.now()));
-    const id = window.setInterval(tick, 1000);
+    const id = window.setInterval(tick, 30_000); // minutes are enough; ticking seconds add stress
     const first = window.setTimeout(tick, 0);
     return () => {
       window.clearInterval(id);
       window.clearTimeout(first);
     };
   }, [to]);
-  if (left === null) return <span className="tabular-nums">--:--:--</span>;
-  const s = Math.floor(left / 1000);
-  const d = Math.floor(s / 86400);
-  const hh = String(Math.floor((s % 86400) / 3600)).padStart(2, "0");
-  const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
-  const ss = String(s % 60).padStart(2, "0");
+  if (left === null) return <span className="tabular-nums">…</span>;
+  const m = Math.floor(left / 60_000);
+  const d = Math.floor(m / 1440);
+  const h = Math.floor((m % 1440) / 60);
   return (
-    <span className="tabular-nums" aria-label={t("{d} days {h} hours {m} minutes left", { d, h: hh, m: mm })}>
-      {d > 0 ? `${d}d ` : ""}
-      {hh}:{mm}:{ss}
+    <span className="tabular-nums" aria-label={t("{d} days {h} hours {m} minutes left", { d, h, m: m % 60 })}>
+      {d > 0 ? t("{d} d {h} h", { d, h }) : t("{h} h {m} min", { h, m: m % 60 })}
     </span>
   );
 }
@@ -145,18 +142,19 @@ export function Dashboard() {
           </section>
         ) : null}
 
-        {/* ---- Real progress, computed from the plans ---- */}
-        <section aria-label={t("Your progress")} className="mt-6 grid gap-3 sm:grid-cols-3">
-          {[
-            { label: t("Steps done"), value: t("{a} of {b}", { a: doneCount, b: allSteps.length }) },
-            { label: t("Planned for the next 7 days"), value: t("{h} h {m} min", { h: Math.floor(plannedWeekMin / 60), m: plannedWeekMin % 60 }) },
-            { label: t("Answered without an AI call"), value: `${localPct}%` },
-          ].map((s, i) => (
-            <div key={s.label} className="rise rounded-[var(--radius-card)] border border-line bg-surface px-5 py-4" style={{ "--i": i + 2 } as CSSProperties}>
-              <p className="text-sm text-muted">{s.label}</p>
-              <p className="mt-1 font-display text-2xl font-bold tabular-nums">{s.value}</p>
-            </div>
-          ))}
+        {/* ---- Progress: one honest line, not a row of stat cards (FRONTEND.md §1) ---- */}
+        <section aria-label={t("Your progress")} className="rise mt-6 flex items-center gap-4 border-y border-line py-4" style={{ "--i": 2 } as CSSProperties}>
+          <ProgressRing value={allSteps.length ? doneCount / allSteps.length : 0} size={44} stroke={5} />
+          <p className="text-[0.98rem]">
+            {t("{done} of {total} steps done. {time} planned for the next 7 days.", {
+              done: doneCount,
+              total: allSteps.length,
+              time: t("{h} h {m} min", { h: Math.floor(plannedWeekMin / 60), m: plannedWeekMin % 60 }),
+            })}
+            {mode === "demo" ? (
+              <span className="mt-0.5 block text-sm text-muted">{t("In this demo, {pct}% of replies needed no AI call.", { pct: localPct })}</span>
+            ) : null}
+          </p>
         </section>
 
         {/* ---- Active plans ---- */}
@@ -211,7 +209,6 @@ export function Dashboard() {
             <div className="mt-4 flex flex-wrap gap-2">
               {quick.map((q) => (
                 <button key={q} type="button" onClick={() => quickStart(q)} className="chip text-sm">
-                  <Sparkles size={14} strokeWidth={1.75} className="text-ember" aria-hidden="true" />
                   {q}
                 </button>
               ))}

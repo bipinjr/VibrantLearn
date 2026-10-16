@@ -151,12 +151,12 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
 
 ### Phase G — polish, performance, deploy (M9, M0)
 
-- [ ] **G1. Fix the overlapping composer**
+- [x] **G1. Fix the overlapping composer**
   - Desktop: the sticky composer covers the quiz's "Next question" button. Mobile: composer + bottom nav + sticky header eat about a third of the screen.
   - Hide the bottom nav inside a session, and pad the scroll container by the composer's measured height.
   - **Verify:** at 360 px and 1280 px, no control is unreachable; Playwright screenshots in `docs/features-guide/screenshots/` regenerated.
 
-- [ ] **G2. Copy and chrome fixes**
+- [x] **G2. Copy and chrome fixes**
   - "1 blocks" → correct singular/plural everywhere.
   - A replanned plan showing "About 0 h 0 min left" while steps remain — count checkpoints in the remaining time.
   - Exam countdown: hours and minutes, not ticking seconds (it adds stress the night before).

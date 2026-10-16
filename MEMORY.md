@@ -42,6 +42,7 @@ Living record for humans and AI agents. Read at the start of every session; upda
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-16 | Live classes (v0.5) built next, before G3-G7 (Lighthouse, load test, deploy, security review, final docs) | Owner asked for live classes urgently; G3-G7 resume right after |
 | 2026-10-16 | **Scope change (Bipin):** build every roadmap version (v0.5 teachers + live classes, v0.6, v1.0), in order: finish v0.4 first | Owner wants the full product now; v0.4 first keeps the college submission safe and gives teachers students to teach |
 | 2026-10-16 | Live video: Jitsi embed (meet.jit.si for the prototype; self-host or 8x8 JaaS later) | Free, open source, no account needed to start |
 | 2026-10-16 | Payments: none in the prototype. Classes are free; teacher earnings tracked as "to be paid" | Owner's call; avoids a payment provider and KYC for now. Add Razorpay later |
@@ -154,6 +155,8 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | G2: plural blocks; plan time counts checkpoints; countdown h/min every 30 s; Sparkles removed; dev metrics demo/dev only ('Written by AI' always shown); stat cards -> one progress line; E2E 17/17 |
+| 2026-10-16 | Bipin A + Claude | G1: tab bar hidden inside a session; thread padded by the composer's measured height; last control clears the composer at 360 px (510 < 642) and 1280 px (495 < 714) |
 | 2026-10-16 | Bipin A + Claude | F5: forgot password: /forgot-password (same answer for any email, Supabase rate limits, 429 message) -> email link -> /auth/callback -> /reset-password (sign-up password rules, needs the link's session); 3 tests |
 | 2026-10-16 | Bipin A + Claude | F4: audit_log: upload rejected, rate limit hit, session deleted, export, account deleted; sign-in/failed auth via Supabase auth.audit_log_entries (documented) |
 | 2026-10-16 | Bipin A + Claude | F3: DELETE /api/v1/me: typed username, files deleted + verified, auth user deleted (cascade = 0 rows in 11 tables, SQL test on live DB), audited; GET /me/export; Settings wired; 5 tests |

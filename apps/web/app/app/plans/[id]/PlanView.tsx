@@ -32,7 +32,7 @@ export function PlanView({ id }: { id: string }) {
   const steps = plan.steps.filter((s) => s.kind !== "exam");
   const done = steps.filter((s) => s.done).length;
   const behind = plan.steps.filter((s) => !s.done && s.kind !== "exam" && new Date(s.end ?? s.start) < now).length;
-  const minutesLeft = plan.steps.filter((s) => !s.done && s.kind === "block").reduce((a, s) => a + (s.minutes ?? 0), 0);
+  const minutesLeft = plan.steps.filter((s) => !s.done && s.kind !== "exam").reduce((a, s) => a + (s.minutes ?? 0), 0);
 
   return (
     <PageTransition>

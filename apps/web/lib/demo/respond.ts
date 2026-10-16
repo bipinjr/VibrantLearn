@@ -99,7 +99,7 @@ function planReply(p: { subject: string; deadline: Date; hours?: number; weak?: 
   const total = blocks.reduce((a, s) => a + (s.minutes ?? 0), 0);
   const lead: Record<Mode, string> = {
     sprint: `Short on time, so this covers only the topics that carry the most marks, in 25-minute focus blocks, and ends with a quick mock quiz.`,
-    crash: `${blocks.length} blocks, ${total >= 90 ? `about ${Math.round(total / 60)} hours` : `${total} minutes`} in total, highest-mark topics first. I kept 11 PM to 6 AM free for sleep and added a checkpoint each day.`,
+    crash: `${blocks.length} ${blocks.length === 1 ? "block" : "blocks"}, ${total >= 90 ? `about ${Math.round(total / 60)} hours` : `${total} minutes`} in total, highest-mark topics first. I kept 11 PM to 6 AM free for sleep and added a checkpoint each day.`,
     steady: `A week-by-week path with a checkpoint every weekend and the last stretch kept for revision.`,
     deep: `Plenty of time: one unit at a time, weekend checkpoints, and three spaced revision loops before the exam.`,
   };

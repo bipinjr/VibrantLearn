@@ -95,7 +95,8 @@ def run() -> None:
         step("Kanglish request -> hours follow-up -> timed DBMS plan; chips lock after use")
 
         send(page, "explain normalization in kannada")
-        expect(page.get_by_text("Notes: Normal forms 1NF to BCNF")).to_be_visible(timeout=8000)
+        # First-time AI notes run three model calls (write, examiner check, translate): ~10-15 s.
+        expect(page.get_by_text("Notes: Normal forms 1NF to BCNF")).to_be_visible(timeout=45000 if os.environ.get("EXPECT_AI") == "1" else 8000)
         assert re.search(r"[ಀ-೿]", page.locator("p[lang=kn]").last.inner_text())
         step("notes for the right topic, in Kannada script")
 

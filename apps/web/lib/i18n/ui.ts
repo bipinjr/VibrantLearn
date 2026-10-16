@@ -54,9 +54,18 @@ const DICT: Record<string, [string, string]> = {
   "{d} days {h} hours {m} minutes left": ["{d} ದಿನ {h} ಗಂಟೆ {m} ನಿಮಿಷ ಬಾಕಿ", "{d} दिन {h} घंटे {m} मिनट बाकी"],
   "Your progress": ["ನಿಮ್ಮ ಪ್ರಗತಿ", "आपकी प्रगति"],
   "Steps done": ["ಮುಗಿದ ಹಂತಗಳು", "पूरे हुए स्टेप"],
+  "{done} of {total} steps done. {time} planned for the next 7 days.": [
+    "{total} ರಲ್ಲಿ {done} ಹಂತಗಳು ಮುಗಿದಿವೆ. ಮುಂದಿನ 7 ದಿನಗಳಿಗೆ {time} ಯೋಜಿಸಲಾಗಿದೆ.",
+    "{total} में से {done} स्टेप पूरे। अगले 7 दिनों के लिए {time} की योजना।",
+  ],
+  "In this demo, {pct}% of replies needed no AI call.": [
+    "ಈ ಡೆಮೊದಲ್ಲಿ {pct}% ಉತ್ತರಗಳಿಗೆ AI ಕರೆ ಬೇಕಾಗಲಿಲ್ಲ.",
+    "इस डेमो में {pct}% जवाबों के लिए AI कॉल की ज़रूरत नहीं पड़ी।",
+  ],
   "{a} of {b}": ["{b} ರಲ್ಲಿ {a}", "{b} में से {a}"],
   "Planned for the next 7 days": ["ಮುಂದಿನ 7 ದಿನಗಳ ಯೋಜನೆ", "अगले 7 दिनों की योजना"],
   "{h} h {m} min": ["{h} ಗಂ {m} ನಿ", "{h} घं {m} मि"],
+  "{d} d {h} h": ["{d} ದಿ {h} ಗಂ", "{d} दि {h} घं"],
   "{h} h": ["{h} ಗಂ", "{h} घं"],
   "{m} min": ["{m} ನಿ", "{m} मि"],
   "Answered without an AI call": ["AI ಇಲ್ಲದೆ ಉತ್ತರಿಸಿದ್ದು", "बिना AI कॉल के जवाब"],

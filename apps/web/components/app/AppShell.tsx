@@ -155,6 +155,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
   const sheet = useRef<HTMLDialogElement>(null);
   const { t, lang } = useUi();
+  // Inside a study session the composer is the main control; the tab bar would stack on top of it
+  // and eat a third of a phone screen (G1). The menu button in the top bar still reaches everything.
+  const inSession = path.startsWith("/app/s/");
 
   // Theme chosen in Settings (per-browser). System theme is the default.
   useEffect(() => {
@@ -196,7 +199,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
           </header>
 
-          <div className="min-w-0 pb-24 lg:pb-0">
+          <div className={`min-w-0 lg:pb-0 ${inSession ? "" : "pb-24"}`}>
             <SyncBanner />
             {children}
           </div>
@@ -211,7 +214,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </dialog>
 
-        <nav aria-label={t("Quick")} lang={lang} className="fixed inset-x-3 bottom-3 z-30 rounded-[18px] border border-line bg-surface/90 shadow-[var(--shadow-float)] backdrop-blur-md lg:hidden">
+        <nav aria-label={t("Quick")} lang={lang} hidden={inSession} className="fixed inset-x-3 bottom-3 z-30 rounded-[18px] border border-line bg-surface/90 shadow-[var(--shadow-float)] backdrop-blur-md lg:hidden">
           <ul className="grid grid-cols-5">
             {TABS.map(({ href, label, icon: Icon }) => {
               const active = isActive(path, href);
