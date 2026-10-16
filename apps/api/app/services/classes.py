@@ -389,6 +389,12 @@ def listing(conn: Conn, user_id: str, now: datetime | None = None) -> list[dict[
     out = []
     for r in rows:
         c = settle(conn, _klass(r), now)
+        reason = r["cancel_reason"]
+        if c.status == "cancelled" and r["status"] != "cancelled":  # cancelled just now by settle
+            got = conn.execute(
+                "select cancel_reason from public.classes where id = %s", (c.id,)
+            ).fetchone()
+            reason = got["cancel_reason"] if got else None
         queue, seated = _counts(conn, c.id)
         out.append(
             {
@@ -402,7 +408,7 @@ def listing(conn: Conn, user_id: str, now: datetime | None = None) -> list[dict[
                 "ends_at": c.ends_at.isoformat(),
                 "duration_min": c.duration_min,
                 "phase": phase(c, now),
-                "cancel_reason": r["cancel_reason"] if c.status == "cancelled" else None,
+                "cancel_reason": reason if c.status == "cancelled" else None,
                 "interested": len(queue),
                 "min_students": MIN_STUDENTS,
                 "max_students": MAX_STUDENTS,
