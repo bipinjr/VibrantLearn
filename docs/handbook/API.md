@@ -137,15 +137,15 @@ Validates extension allowlist, mime, `size_bytes ≤ MAX_UPLOAD_MB`, daily count
 
 Over the size cap → `413` with the split-the-file message. Unsupported extension → `415 unsupported_type`. Name over 120 characters, with `/`, `\` or control characters → `422`. Daily quota (20 files / 300 MB, resetting at midnight IST) → `429` with `Retry-After`. The response also carries `content_type`: the server picks it from the extension (text and code are stored as `text/plain`) and the browser must PUT with it. Signed upload URLs from Supabase last two hours (`expires_in: 7200`). The browser PUTs the bytes directly to Storage; they never pass through a function (Vercel caps a request body at 4.5 MB).
 
-**`POST /files/{id}/process`** ⬜
+**`POST /files/{id}/process`** ✅
 Downloads the object and verifies it before trusting anything: real size, **magic bytes** against the declared type, SHA-256, dedupe on `(session_id, sha256)`. Then extracts text with hardened parsers (`defusedxml`; zip-bomb and page caps), chunks it, and writes `file_chunks`.
 
 Returns `{ "status": "ready", "pages": 18, "chunks": 42 }` or `{ "status": "failed", "error": "…" }`. A mismatch deletes the object, marks the row `failed` and writes an audit entry.
 
-**`GET /files/{id}/download-url`** ⬜
+**`GET /files/{id}/download-url`** ✅
 Short-lived signed URL (≤ 5 min), `Content-Disposition: attachment`. Uploaded HTML and SVG are never rendered inline.
 
-**`DELETE /files/{id}`** ⬜ — removes the object, the row and its chunks.
+**`DELETE /files/{id}`** ✅ — removes the object, the row and its chunks.
 
 ---
 

@@ -41,6 +41,7 @@ class FakeDb:
             "llm_cache": {},
             "rate": {},
             "audit": [],
+            "chunks": [],
         }
         self.syllabus = syllabus
         self.now = datetime.now(UTC)
@@ -64,6 +65,28 @@ class FakeDb:
             raise
         else:
             self.commit()
+
+    def cursor(self) -> "FakeDb":
+        return self
+
+    def __enter__(self) -> "FakeDb":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        pass
+
+    def executemany(self, sql: str, rows: list[Any]) -> None:
+        assert sql.lower().startswith("insert into public.file_chunks"), sql
+        for r in rows:
+            self.state["chunks"].append(
+                dict(
+                    zip(
+                        ("file_id", "session_id", "user_id", "idx", "content", "page"),
+                        r,
+                        strict=True,
+                    )
+                )
+            )
 
     # ---- statements --------------------------------------------------------------------------
     def execute(self, sql: str, p: Any = None) -> _Result:
@@ -178,5 +201,53 @@ class FakeDb:
             return _Result([])
         if q.startswith("insert into internal.audit_log"):
             st["audit"].append({"action": p[1], "user_id": p[0], "meta": _v(p[3])})
+            return _Result([])
+        if q.startswith(
+            "select id, session_id, storage_path, display_name, size_bytes, status, pages, error from public.files"
+        ):
+            f = next((f for f in st["files"] if f["id"] == p[0] and f["user_id"] == p[1]), None)
+            if not f:
+                return _Result([])
+            return _Result(
+                [
+                    {
+                        "display_name": f["name"],
+                        **{
+                            k: f.get(k)
+                            for k in (
+                                "id",
+                                "session_id",
+                                "storage_path",
+                                "size_bytes",
+                                "status",
+                                "pages",
+                                "error",
+                            )
+                        },
+                    }
+                ]
+            )
+        if q.startswith("update public.files set status = %s, updated_at = now()"):
+            cols = re.findall(r", (\w+) = %s", q)
+            f = next(f for f in st["files"] if f["id"] == p[-1])
+            f["status"] = p[0]
+            f.update(dict(zip(cols, p[1:-1], strict=True)))
+            return _Result([])
+        if q.startswith(
+            "select id from public.files where session_id = %s and user_id = %s and sha256 = %s"
+        ):
+            hit = [
+                f
+                for f in st["files"]
+                if f["session_id"] == p[0]
+                and f["user_id"] == p[1]
+                and f.get("sha256") == p[2]
+                and f["status"] == "ready"
+                and f["id"] != p[3]
+            ]
+            return _Result([{"id": hit[0]["id"]}] if hit else [])
+        if q.startswith("delete from public.files where id = %s and user_id = %s"):
+            st["files"] = [f for f in st["files"] if not (f["id"] == p[0] and f["user_id"] == p[1])]
+            st["chunks"] = [c for c in st["chunks"] if c["file_id"] != p[0]]
             return _Result([])
         raise AssertionError(f"FakeDb: unexpected SQL: {q[:90]}")

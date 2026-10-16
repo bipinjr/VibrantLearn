@@ -42,6 +42,8 @@ Living record for humans and AI agents. Read at the start of every session; upda
 
 | Date | Decision | Why |
 |---|---|---|
+| 2026-10-16 | DOCX/PPTX read with zipfile + defusedxml, not python-docx/python-pptx (removed) | Those parse with lxml, which defusedxml does not protect from XXE; also dropped Pillow/XlsxWriter |
+| 2026-10-16 | Text/code uploads stored as `text/plain`, chosen by the server from the extension | Browsers report unreliable types (.ts as video/mp2t); files are always downloaded, never rendered |
 | 2026-10-16 | **Server owns messages and plans.** Signed-in chat goes through `POST /api/v1/sessions/{id}/messages` (SSE); clients lost INSERT on `messages` and INSERT/DELETE on `study_plans`. Supersedes the 2026-10-08 interim client-writes decision for those two tables | BUILD_PLAN B3: a tampered client must not invent replies, `served_from` numbers or plans |
 | 2026-10-16 | Phase E (Python intake) done before B2/B3 | The streaming endpoint needs the Python parser/scheduler; building it in TS first would be throwaway |
 | 2026-10-16 | Intent: classifier first, rules only below confidence 0.15 | Holdout: classifier 0.75, rules 0.36; higher thresholds let the weaker rules override |
@@ -148,6 +150,7 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | C2: POST /api/v1/files/{id}/process: real size, magic bytes, SHA-256, dedupe, zip-bomb guard, defusedxml, PDF caps; rejects delete object + audit; extraction + chunking (C3 server half) done; 15 hostile-fixture tests |
 | 2026-10-16 | Bipin A + Claude | C1: POST /api/v1/sessions/{id}/files/upload-url: allowlist, 120-char/no-path names, safe slug, 50 MB cap (413), 20 files/300 MB per IST day (429), server-chosen content type, audit on rejection; 14 tests |
 | 2026-10-16 | Bipin A + Claude | B1: session page loads its thread on the server (newest 500, in order) so a refresh paints it at once; layout no longer loads every message (old oldest-first limit(2000) silently dropped a heavy user's newest messages); files loaded; SSR test; E2E 17/17 |
 | 2026-10-16 | Bipin A + Claude | B3: signed-in intake server-side (Python parser + intent model + scheduler); client INSERT on messages/study_plans revoked, RLS 37/37; demo keeps TS engine |

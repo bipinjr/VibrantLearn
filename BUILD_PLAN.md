@@ -99,7 +99,7 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
   - Storage path: `{user_id}/{session_id}/{file_id}/{safe_name}` where `safe_name` is a slug plus the extension. Reject path separators, control characters, names over 120 chars.
   - **Verify:** 49 MB PDF succeeds; 51 MB is refused with the split message; a second session cannot write into the first session's folder.
 
-- [ ] **C2. Verify bytes before trusting anything**
+- [x] **C2. Verify bytes before trusting anything**
   - `POST /api/v1/files/{id}/process`: download the object, check real size, **magic bytes** against the declared type, compute SHA-256, dedupe on `(session_id, sha256)`. On mismatch: delete the object, mark `failed`, write `internal.audit_log`.
   - Parse with `defusedxml`-backed readers. Zip-based formats: reject if uncompressed total > 10× the file or > 200 MB, or entries > 2000. PDFs: cap 500 pages / 2M characters. Never execute or import an uploaded file.
   - **Verify:** `apps/web/e2e/` fixtures — a renamed `.exe`, a zip bomb, an XXE sample and a 49 MB PDF. First three rejected with a clear reason, fourth processes.
