@@ -1,0 +1,76 @@
+text,intent
+my java exam is on monday morning and i am scared,make_plan
+help i have a dbms test at 2pm today,make_plan
+python practicals next week how do i prepare,make_plan
+nale beligge CN internal ide en madli,make_plan
+parso OS ka paper hai kuch nahi padha,make_plan
+semester exams start in a month for data structures,make_plan
+ಮುಂದಿನ ವಾರ ಜಾವಾ ಪರೀಕ್ಷೆ ಇದೆ,make_plan
+अगले हफ्ते डीबीएमएस का टेस्ट है,make_plan
+can you schedule my revision for networks before thursday,make_plan
+only 3 hours left before my os internal,make_plan
+what does chapter 2 of my uploaded pdf say about paging,ask_about_file
+in the slides i shared where is polymorphism explained,ask_about_file
+@java_unit4.pdf what are checked exceptions,ask_about_file
+nan upload madida notes alli joins enu antha ide,ask_about_file
+mere notes me tcp ke baare me kya likha hai,ask_about_file
+look in my lab record for the stack program,ask_about_file
+using my notes tell me about bcnf,ask_about_file
+can you give me the gist of the document i uploaded,summarize_file
+shorten @os_unit1.pdf into a page,summarize_file
+main points of my networking slides please,summarize_file
+upload madida pdf na chikkadagi heli,summarize_file
+mere pdf ka chhota summary bana do,summarize_file
+condense my dbms notes into bullet points,summarize_file
+quick recap of the file i just added,summarize_file
+which topics are asked most in java exams,important_questions
+list the probable 5 markers for operating systems,important_questions
+give me sure shot questions for dbms,important_questions
+CN exam ge yava questions barbahudu,important_questions
+data structures me kaunse questions zaroor aayenge,important_questions
+long answer questions likely in python,important_questions
+expected questions for unit 2 networks,important_questions
+ask me 10 multiple choice questions on joins,make_quiz
+lets do a practice test on inheritance,make_quiz
+can you check my understanding of paging with some mcqs,make_quiz
+deadlock bagge ondu chikka test kodi,make_quiz
+semaphores pe 5 sawal pucho,make_quiz
+mcq practice python tuples,make_quiz
+i want to memorise sql commands with cards,make_flashcards
+create a deck for osi layers,make_flashcards
+term and definition cards for java keywords,make_flashcards
+networking protocols flash cards maadi,make_flashcards
+data structures ke liye yaad karne wale cards,make_flashcards
+spaced repetition cards for dbms,make_flashcards
+questions in the pattern of last year's BCU paper for java,pyq_style
+what did they ask in 2025 for operating systems,pyq_style
+make a mock paper like the university one for dbms,pyq_style
+kaLeda varshada paper thara prashne kodi python,pyq_style
+purane papers jaise sawal banao networks ke liye,pyq_style
+university pattern question paper data structures,pyq_style
+how is a process different from a thread,explain_topic
+why do we need normalization,explain_topic
+tell me about virtual memory simply,explain_topic
+interface mattu abstract class vyatyasa enu,explain_topic
+linked list kaise kaam karta hai,explain_topic
+ಟಿಸಿಪಿ ಮತ್ತು ಯುಡಿಪಿ ವ್ಯತ್ಯಾಸ ವಿವರಿಸಿ,explain_topic
+पॉलीमॉर्फिज्म क्या होता है उदाहरण के साथ,explain_topic
+can you push everything by one day,edit_plan
+i slept through yesterday's blocks please rearrange,edit_plan
+reduce today's study time to one hour,edit_plan
+put normalization first in my schedule,edit_plan
+ivattina blocks naale ge haaki,edit_plan
+aaj ka plan kal pe shift karo,edit_plan
+exam date changed to the 20th please adjust,edit_plan
+good evening,smalltalk
+you're helpful thanks a lot,smalltalk
+hello who made this,smalltalk
+hegiddiya,smalltalk
+theek hai shukriya,smalltalk
+see you later,smalltalk
+what is the score of india vs australia,out_of_scope
+order pizza for me,out_of_scope
+suggest a good movie tonight,out_of_scope
+what is the capital of france,out_of_scope
+how to earn money online fast,out_of_scope
+send a message to my friend,out_of_scope

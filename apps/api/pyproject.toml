@@ -33,9 +33,20 @@ target-version = "py312"
 select = ["E", "F", "I", "B", "UP", "S", "N", "SIM", "RUF"]
 ignore = ["S101"]  # asserts are fine in tests
 
+[tool.ruff.lint.per-file-ignores]
+# train.py writes docs/ml-report.md from a Markdown template (long prose lines, a literal ×).
+"app/ml/train.py" = ["E501", "RUF001"]
+# Seeded generator for synthetic training data; randomness here is not security.
+"data/build_intents.py" = ["S311", "E501"]
+
 [tool.mypy]
 strict = true
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+# No type stubs published for these.
+module = ["sklearn.*", "joblib.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

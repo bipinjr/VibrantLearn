@@ -1,0 +1,766 @@
+text,intent
+10 mark questions on OSI model,important_questions
+10 mark questions on TCP handshake,important_questions
+10 mark questions on interfaces,important_questions
+10 mark questions on subnetting,important_questions
+10 mark questions on subnetting pls,important_questions
+2 GHANTE MEIN CN KA EXAM HAI,make_plan
+2 ghante mein CN ka exam hai,make_plan
+2 ghante mein python test ide,make_plan
+2 ghante mein पायथन ka exam hai,make_plan
+2 ghante mein पायथन ka exam hai pls,make_plan
+2 mark and 5 mark questions DBMS,important_questions
+2 mark and 5 mark questions computer networks,important_questions
+2 mark and 5 mark questions data structures,important_questions
+2 mark and 5 mark questions dbms,important_questions
+2 mark and 5 mark questions operating systems,important_questions
+2 mark and 5 mark questions पायथन,important_questions
+3 dinadalli operating systems ka exam hai,make_plan
+5 question quiz on DBMS,make_quiz
+5 question quiz on Java,make_quiz
+5 question quiz on OS,make_quiz
+5 question quiz on data structures,make_quiz
+5 question quiz on जावा,make_quiz
+5 question quiz on पायथन,make_quiz
+@Unit3_Inheritance.pdf alli deadlock bagge heli,ask_about_file
+@Unit3_Inheritance.pdf alli deadlock bagge heli pls,ask_about_file
+@Unit3_Inheritance.pdf explain ಡೆಡ್‌ಲಾಕ್,ask_about_file
+@Unit3_Inheritance.pdf ka saar batao,summarize_file
+@Unit3_Inheritance.pdf ka saar batao pls,summarize_file
+@Unit3_Inheritance.pdf ka summary do,summarize_file
+@Unit3_Inheritance.pdf nalli TCP handshake enu,ask_about_file
+@Unit3_Inheritance.pdf nalli tuples enu,ask_about_file
+@Unit3_Inheritance.pdf saaramsha,summarize_file
+@Unit3_Inheritance.pdf summary kodi,summarize_file
+@dbms_unit2.pptx alli OSI model bagge heli,ask_about_file
+@dbms_unit2.pptx ka saar batao,summarize_file
+@dbms_unit2.pptx ka summary do,summarize_file
+@dbms_unit2.pptx mein डेडलॉक kya hai,ask_about_file
+@dbms_unit2.pptx nalli interfaces enu,ask_about_file
+@dbms_unit2.pptx saaramsha,summarize_file
+@dbms_unit2.pptx summary kodi,summarize_file
+@lab_programs.txt alli inheritance bagge heli,ask_about_file
+@lab_programs.txt explain linked list,ask_about_file
+@lab_programs.txt explain linked list pls,ask_about_file
+@lab_programs.txt mein paging kya hai,ask_about_file
+@lab_programs.txt mein tuples kya hai,ask_about_file
+@lab_programs.txt summary kodi,summarize_file
+@os-notes.docx alli semaphores bagge heli,ask_about_file
+@os-notes.docx alli ಡೆಡ್‌ಲಾಕ್ bagge heli,ask_about_file
+@os-notes.docx ka summary do,summarize_file
+@os-notes.docx mein lambda kya hai,ask_about_file
+@os-notes.docx nalli डेडलॉक enu,ask_about_file
+@os-notes.docx padke TCP handshake samjhao,ask_about_file
+@os-notes.docx saaramsha,summarize_file
+@os-notes.docx summary kodi,summarize_file
+ARE YOU A BOT,smalltalk
+BCNF cards,make_flashcards
+BCNF ke flashcards banao,make_flashcards
+BCNF pe important sawal batao,important_questions
+BCNF samjhao,explain_topic
+BCNF samjhao pls,explain_topic
+BCU STYLE QUESTION PAPER DS,pyq_style
+BCU style question paper DBMS,pyq_style
+BCU style question paper DS,pyq_style
+BCU style question paper computer networks,pyq_style
+BCU style question paper जावा,pyq_style
+CHAPTER 4 NOTES KA SAAR BATAO,summarize_file
+CHECK IF I KNOW INTERFACES,make_quiz
+CHECK IF I KNOW डेडलॉक,make_quiz
+CN internals kal subah 10 baje and I haven't started,make_plan
+CN quiz,make_quiz
+COMPUTER NETWORKS IMP QUESTIONS,important_questions
+DBMS FLASHCARDS KODI,make_flashcards
+"DBMS exam in 2 months ide, plan maadi",make_plan
+DBMS flashcards kodi,make_flashcards
+DBMS imp questions,important_questions
+"DBMS internal tomorrow, help me",make_plan
+DBMS ke important sawal,important_questions
+DBMS pichle saal ke questions,pyq_style
+DBMS क्विज़,make_quiz
+DBMS क्विज़ pls,make_quiz
+DS QUIZ,make_quiz
+DS exam questions please,important_questions
+DS flashcards kodi,make_flashcards
+DS hindina varshada prashne,pyq_style
+DS ke important sawal,important_questions
+DS ke important sawal pls,important_questions
+DS mukhya prashnegalu,important_questions
+DS quiz,make_quiz
+"DS sem exam on friday, plan please",make_plan
+DS क्विज़,make_quiz
+DS क्विज़ pls,make_quiz
+DS ರಸಪ್ರಶ್ನೆ,make_quiz
+FIND NORMALIZATION IN @OS-NOTES.DOCX,ask_about_file
+FLASHCARDS FOR DEADLOCK,make_flashcards
+GOOD NIGHT,smalltalk
+"I FINISHED DEADLOCK, WHAT NEXT IN MY PLAN",edit_plan
+"I MISSED TODAY'S PLAN, REPLAN",edit_plan
+"I am behind schedule, fix my plan",edit_plan
+"I finished BCNF, what next in my plan",edit_plan
+"I finished OSI model, what next in my plan",edit_plan
+"I finished TCP handshake, what next in my plan",edit_plan
+"I finished deadlock, what next in my plan",edit_plan
+"I finished inheritance, what next in my plan",edit_plan
+"I finished interfaces, what next in my plan",edit_plan
+"I finished linked list, what next in my plan",edit_plan
+"I finished linked list, what next in my plan pls",edit_plan
+"I finished method overriding, what next in my plan",edit_plan
+"I finished paging, what next in my plan",edit_plan
+"I finished semaphores, what next in my plan",edit_plan
+"I finished stacks, what next in my plan",edit_plan
+"I finished subnetting, what next in my plan",edit_plan
+"I finished ಓವರ್‌ರೈಡಿಂಗ್, what next in my plan",edit_plan
+"I have 2 hours, पायथन test tomorrow",make_plan
+"I have 3 hours, OS test parso",make_plan
+"I have 4 hours, DS test 2 ghante mein",make_plan
+"I have 5 hours, computer networks test naale belige 9 gantege",make_plan
+"I missed today's plan, replan",edit_plan
+IS PAGING COVERED IN @DBMS_UNIT2.PPTX,ask_about_file
+Java exam kal,make_plan
+Java exam कल,make_plan
+Java mukhya prashnegalu,important_questions
+Java pichle saal ke questions,pyq_style
+Java quiz,make_quiz
+"Java sem exam on friday, plan please",make_plan
+Java ರಸಪ್ರಶ್ನೆ,make_quiz
+KAISE HO,smalltalk
+"MAKE A STUDY PLAN FOR OPERATING SYSTEMS, EXAM KAL SUBAH 10 BAJE",make_plan
+MEANING OF STACKS,explain_topic
+MODEL PAPER FOR PYTHON,pyq_style
+"MY EXAM GOT POSTPONED TO कल, UPDATE THE PLAN",edit_plan
+NETFLIX RECOMMENDATIONS,out_of_scope
+OLD QUESTION PAPER PATTERN OS,pyq_style
+OS exam questions please,important_questions
+OS hindina varshada prashne,pyq_style
+"OS internal in 2 hours, help me",make_plan
+OS internals in 2 weeks and I haven't started,make_plan
+OS internals कल and I haven't started,make_plan
+"OS ki padhai ka plan chahiye, exam in 2 weeks",make_plan
+"OS ki padhai ka plan chahiye, exam next monday",make_plan
+"OS ki padhai ka plan chahiye, exam ನಾಳೆ",make_plan
+OS pichle saal ke questions,pyq_style
+OS previous papers jaisa questions,pyq_style
+"OS unit test in 5 weeks, exception handling is weak",make_plan
+OS क्विज़,make_quiz
+OSI MODEL PE IMPORTANT SAWAL BATAO,important_questions
+OSI model bagge heli,explain_topic
+OSI model cards,make_flashcards
+OSI model mele quiz kodi,make_quiz
+OSI model pe important sawal batao,important_questions
+OSI model pyq,pyq_style
+OSI model quiz please,make_quiz
+OSI model ವಿವರಿಸಿ,explain_topic
+PAGING KE FLASHCARDS BANAO,make_flashcards
+SUMMARIZE @LAB_PROGRAMS.TXT IN KANNADA,summarize_file
+TCP HANDSHAKE IMPORTANT QUESTIONS KODI,important_questions
+TCP handshake cards,make_flashcards
+TCP handshake important questions kodi,important_questions
+TCP handshake quiz please,make_quiz
+TCP handshake ವಿವರಿಸಿ,explain_topic
+TL;DR @UNIT3_INHERITANCE.PDF,summarize_file
+"according to @dbms_unit2.pptx, define tuples",ask_about_file
+"according to @dbms_unit2.pptx, define tuples pls",ask_about_file
+"according to my notes, define tuples",ask_about_file
+"according to the pdf I uploaded, define ಡೆಡ್‌ಲಾಕ್",ask_about_file
+add BCNF to my plan,edit_plan
+add TCP handshake to my plan,edit_plan
+add TCP handshake to my plan pls,edit_plan
+add deadlock to my plan,edit_plan
+add interfaces to my plan,edit_plan
+add method overriding to my plan,edit_plan
+add paging to my plan,edit_plan
+add queues to my plan,edit_plan
+add stacks to my plan,edit_plan
+add tuples to my plan,edit_plan
+add ಡೆಡ್‌ಲಾಕ್ to my plan,edit_plan
+answer from @Unit3_Inheritance.pdf: what is subnetting,ask_about_file
+answer from @dbms_unit2.pptx: what is tuples,ask_about_file
+answer from @lab_programs.txt: what is stacks,ask_about_file
+answer from @lab_programs.txt: what is stacks pls,ask_about_file
+answer from @os-notes.docx: what is ಓವರ್‌ರೈಡಿಂಗ್,ask_about_file
+answer from my notes: what is exception handling,ask_about_file
+answer from my notes: what is exception handling pls,ask_about_file
+answer from my slides: what is TCP handshake,ask_about_file
+answer from the pdf I uploaded: what is linked list,ask_about_file
+are you a bot,smalltalk
+best place to visit in goa,out_of_scope
+best place to visit in goa pls,out_of_scope
+bitcoin price,out_of_scope
+book a movie ticket,out_of_scope
+book a movie ticket pls,out_of_scope
+bye,smalltalk
+change my plan to 2 hours a day,edit_plan
+change my plan to 3 hours a day,edit_plan
+change my plan to 4 hours a day,edit_plan
+change my plan to 5 hours a day,edit_plan
+chapter 4 notes alli lambda bagge heli,ask_about_file
+chapter 4 notes alli queues bagge heli,ask_about_file
+chapter 4 notes explain interfaces,ask_about_file
+chapter 4 notes explain queues,ask_about_file
+chapter 4 notes explain डेडलॉक,ask_about_file
+chapter 4 notes ka saar batao,summarize_file
+chapter 4 notes ka summary do,summarize_file
+chapter 4 notes ka summary do pls,summarize_file
+chapter 4 notes mein queues kya hai,ask_about_file
+chapter 4 notes nalli OSI model enu,ask_about_file
+chapter 4 notes saaramsha,summarize_file
+check if I know BCNF,make_quiz
+check if I know OSI model,make_quiz
+check if I know deadlock,make_quiz
+check if I know interfaces,make_quiz
+check if I know lambda,make_quiz
+check if I know polymorphism,make_quiz
+check if I know stacks,make_quiz
+check if I know subnetting,make_quiz
+check if I know डेडलॉक,make_quiz
+computer networks exam questions please,important_questions
+computer networks flashcards kodi,make_flashcards
+computer networks hindina varshada prashne,pyq_style
+computer networks imp questions,important_questions
+computer networks mukhya prashnegalu,important_questions
+computer networks previous papers jaisa questions,pyq_style
+"computer networks sem exam on 15/11, plan please",make_plan
+computer networks ರಸಪ್ರಶ್ನೆ,make_quiz
+cool thanks,smalltalk
+create cards for DBMS definitions,make_flashcards
+create cards for DBMS definitions pls,make_flashcards
+create cards for DS definitions,make_flashcards
+create cards for Java definitions,make_flashcards
+create cards for OS definitions,make_flashcards
+create cards for computer networks definitions,make_flashcards
+create cards for data structures definitions,make_flashcards
+create cards for data structures definitions pls,make_flashcards
+create cards for operating systems definitions,make_flashcards
+create cards for operating systems definitions pls,make_flashcards
+create cards for python definitions,make_flashcards
+create cards for जावा definitions,make_flashcards
+create cards for ಜಾವಾ definitions,make_flashcards
+data structures hindina varshada prashne,pyq_style
+data structures internals in 2 months and I haven't started,make_plan
+data structures ke important sawal,important_questions
+data structures pichle saal ke questions,pyq_style
+data structures pichle saal ke questions pls,pyq_style
+data structures quiz,make_quiz
+"dbms exam on 15/11 ide, plan maadi",make_plan
+"dbms exam on 15/11 ide, plan maadi pls",make_plan
+dbms flashcards kodi,make_flashcards
+dbms hindina varshada prashne,pyq_style
+dbms imp questions,important_questions
+"dbms in 2 months exam, how should I study",make_plan
+dbms pichle saal ke questions,pyq_style
+dbms pichle saal ke questions pls,pyq_style
+dbms previous papers jaisa questions,pyq_style
+deadlock artha agilla,explain_topic
+deadlock ke flashcards banao,make_flashcards
+deadlock par quiz lo,make_quiz
+deadlock samjhao,explain_topic
+define joins,explain_topic
+define paging,explain_topic
+define tuples,explain_topic
+define डेडलॉक,explain_topic
+dhanyavaada,smalltalk
+dhanyavaada pls,smalltalk
+difference between inheritance and method overriding,explain_topic
+difference between inheritance and method overriding pls,explain_topic
+difference between interfaces and OSI model,explain_topic
+difference between paging and exception handling,explain_topic
+"exam 2 ghante mein for CN, I can study 1.5 hours a day",make_plan
+"exam in 2 months for operating systems, I can study 5 hours a day",make_plan
+"exam kal for python, I can study 1.5 hours a day",make_plan
+"exam ನಾಳೆ for DS, I can study 3 hours a day",make_plan
+exception handling flash cards please,make_flashcards
+exception handling important questions kodi,important_questions
+exception handling ke flashcards banao,make_flashcards
+exception handling par quiz lo,make_quiz
+exception handling par quiz lo pls,make_quiz
+explain OSI model with an example,explain_topic
+explain exception handling,explain_topic
+explain paging,explain_topic
+explain polymorphism with an example,explain_topic
+explain queues with an example,explain_topic
+explain semaphores with an example,explain_topic
+explain subnetting,explain_topic
+explain tuples,explain_topic
+explain ಡೆಡ್‌ಲಾಕ್,explain_topic
+find normalization in @os-notes.docx,ask_about_file
+find queues in my slides,ask_about_file
+flashcards for deadlock,make_flashcards
+flashcards for exception handling,make_flashcards
+flashcards for paging,make_flashcards
+flashcards for polymorphism,make_flashcards
+flashcards to memorise exception handling,make_flashcards
+flashcards to memorise queues,make_flashcards
+flashcards to memorise subnetting,make_flashcards
+flashcards to memorise ಓವರ್‌ರೈಡಿಂಗ್,make_flashcards
+flashcards to memorise ಡೆಡ್‌ಲಾಕ್,make_flashcards
+"from @dbms_unit2.pptx, how does polymorphism work",ask_about_file
+"from @dbms_unit2.pptx, how does डेडलॉक work",ask_about_file
+"from @lab_programs.txt, how does OSI model work",ask_about_file
+"from @os-notes.docx, how does interfaces work",ask_about_file
+"from my slides, how does stacks work",ask_about_file
+"from the pdf I uploaded, how does semaphores work",ask_about_file
+"from unit3 notes, how does tuples work",ask_about_file
+give me a short summary of @Unit3_Inheritance.pdf,summarize_file
+give me a short summary of @lab_programs.txt,summarize_file
+give me a short summary of @os-notes.docx,summarize_file
+give me a short summary of @os-notes.docx pls,summarize_file
+give me a short summary of the pdf I uploaded,summarize_file
+give me mcqs for CN,make_quiz
+give me mcqs for dbms,make_quiz
+give me mcqs for operating systems,make_quiz
+give me mcqs for operating systems pls,make_quiz
+give me mcqs for python,make_quiz
+give me mcqs for ಜಾವಾ,make_quiz
+good morning,smalltalk
+good night,smalltalk
+hegiddira,smalltalk
+hello,smalltalk
+help me prepare for OS naale belige 9 gantege,make_plan
+help me prepare for java on friday,make_plan
+hey there,smalltalk
+hi,smalltalk
+how does OSI model work,explain_topic
+how does linked list work,explain_topic
+how does paging work,explain_topic
+how does subnetting work,explain_topic
+how does subnetting work pls,explain_topic
+how does this app work,smalltalk
+how does this app work pls,smalltalk
+how to cook biryani,out_of_scope
+how to hack wifi password,out_of_scope
+how to lose weight,out_of_scope
+how to lose weight pls,out_of_scope
+important questions for DBMS,important_questions
+important questions for OS,important_questions
+important questions for java,important_questions
+important questions for operating systems,important_questions
+important questions for ಜಾವಾ,important_questions
+in 2 months data structures ka exam hai,make_plan
+in 2 weeks DBMS test ide,make_plan
+in 3 days DS ka exam hai,make_plan
+in 5 weeks CN ka exam hai,make_plan
+"in @Unit3_Inheritance.pdf, what is subnetting",ask_about_file
+"in @os-notes.docx, what is joins",ask_about_file
+"in chapter 4 notes, what is OSI model",ask_about_file
+"in my notes, what is OSI model",ask_about_file
+"in my notes, what is lambda",ask_about_file
+"in my slides, what is normalization",ask_about_file
+"in unit3 notes, what is ಓವರ್‌ರೈಡಿಂಗ್",ask_about_file
+inheritance artha agilla,explain_topic
+inheritance cards,make_flashcards
+inheritance flash cards please,make_flashcards
+inheritance quiz please,make_quiz
+interfaces bagge heli,explain_topic
+interfaces flash cards please,make_flashcards
+interfaces kya hota hai,explain_topic
+interfaces pe important sawal batao,important_questions
+interfaces pe important sawal batao pls,important_questions
+interfaces quiz please,make_quiz
+ipl score today,out_of_scope
+ipl score today pls,out_of_scope
+is lambda covered in chapter 4 notes,ask_about_file
+is paging covered in @dbms_unit2.pptx,ask_about_file
+is semaphores covered in @Unit3_Inheritance.pdf,ask_about_file
+is semaphores covered in the pdf I uploaded,ask_about_file
+is semaphores covered in unit3 notes,ask_about_file
+"ivattu odakke aagilla, plan change maadi",edit_plan
+java imp questions,important_questions
+java imp questions pls,important_questions
+java ke important sawal,important_questions
+java previous papers jaisa questions,pyq_style
+kaise ho,smalltalk
+kal subah 10 baje DS ka exam hai,make_plan
+kal subah 10 baje DS ka exam hai pls,make_plan
+key points from @dbms_unit2.pptx,summarize_file
+key points from @lab_programs.txt,summarize_file
+key points from @os-notes.docx,summarize_file
+key points from my notes,summarize_file
+key points from my slides,summarize_file
+lambda cards,make_flashcards
+lambda flash cards please,make_flashcards
+lambda kya hota hai,explain_topic
+lambda mele quiz kodi,make_quiz
+lambda pyq,pyq_style
+likely questions on OSI model,important_questions
+likely questions on TCP handshake,important_questions
+likely questions on inheritance,important_questions
+likely questions on lambda,important_questions
+likely questions on stacks,important_questions
+likely questions on ಡೆಡ್‌ಲಾಕ್,important_questions
+linked list kya hota hai,explain_topic
+linked list ವಿವರಿಸಿ,explain_topic
+linked list ವಿವರಿಸಿ pls,explain_topic
+"make a study plan for DBMS, exam in 5 weeks",make_plan
+"make a study plan for operating systems, exam kal subah 10 baje",make_plan
+"make a study plan for पायथन, exam ನಾಳೆ",make_plan
+make flash cards DS,make_flashcards
+make flash cards Java,make_flashcards
+make flash cards OS,make_flashcards
+make flash cards data structures,make_flashcards
+make flash cards dbms,make_flashcards
+make flash cards operating systems,make_flashcards
+make flash cards पायथन,make_flashcards
+make flash cards ಡಿಬಿಎಂಎಸ್,make_flashcards
+make flash cards ಡಿಬಿಎಂಎಸ್ pls,make_flashcards
+make my plan lighter,edit_plan
+make short notes from @Unit3_Inheritance.pdf,summarize_file
+make short notes from @os-notes.docx,summarize_file
+make short notes from chapter 4 notes,summarize_file
+make short notes from my notes,summarize_file
+make short notes from my slides,summarize_file
+mcq on deadlock,make_quiz
+mcq on exception handling,make_quiz
+mcq on interfaces,make_quiz
+mcq on ಓವರ್‌ರೈಡಿಂಗ್,make_quiz
+meaning of OSI model,explain_topic
+meaning of stacks,explain_topic
+meaning of डेडलॉक,explain_topic
+method overriding kya hota hai,explain_topic
+method overriding pe important sawal batao,important_questions
+method overriding pyq,pyq_style
+model paper for DS,pyq_style
+model paper for computer networks,pyq_style
+model paper for computer networks pls,pyq_style
+model paper for data structures,pyq_style
+model paper for operating systems,pyq_style
+model paper for python,pyq_style
+model paper for पायथन,pyq_style
+model paper for ಜಾವಾ,pyq_style
+model paper for ಡಿಬಿಎಂಎಸ್,pyq_style
+move tomorrow's blocks to the evening,edit_plan
+"my exam got postponed to in 2 hours, update the plan",edit_plan
+"my exam got postponed to kal subah 10 baje, update the plan",edit_plan
+"my exam got postponed to kal, update the plan",edit_plan
+"my exam got postponed to nale, update the plan",edit_plan
+"my exam got postponed to next monday, update the plan",edit_plan
+"my exam got postponed to on 15/11, update the plan",edit_plan
+"my exam got postponed to on 15/11, update the plan pls",edit_plan
+"my exam got postponed to on friday, update the plan",edit_plan
+"my exam got postponed to parso, update the plan",edit_plan
+"my exam got postponed to parso, update the plan pls",edit_plan
+"my exam got postponed to tomorrow, update the plan",edit_plan
+"my exam got postponed to tonight, update the plan",edit_plan
+"my exam got postponed to कल, update the plan",edit_plan
+"my exam got postponed to ನಾಳೆ, update the plan",edit_plan
+my notes alli method overriding bagge heli,ask_about_file
+my notes ka saar batao,summarize_file
+my notes ka summary do,summarize_file
+my notes saaramsha,summarize_file
+my slides alli queues bagge heli,ask_about_file
+my slides ka saar batao,summarize_file
+my slides ka saar batao pls,summarize_file
+my slides ka summary do,summarize_file
+my slides mein exception handling kya hai,ask_about_file
+my slides mein ಓವರ್‌ರೈಡಿಂಗ್ kya hai,ask_about_file
+my slides mein ಓವರ್‌ರೈಡಿಂಗ್ kya hai pls,ask_about_file
+my slides nalli exception handling enu,ask_about_file
+my slides padke polymorphism samjhao,ask_about_file
+my slides padke डेडलॉक samjhao,ask_about_file
+my slides saaramsha,summarize_file
+my slides summary kodi,summarize_file
+nale जावा ka exam hai,make_plan
+namaskara,smalltalk
+namaste,smalltalk
+namaste pls,smalltalk
+nearest petrol bunk,out_of_scope
+netflix recommendations,out_of_scope
+nice,smalltalk
+normalization bagge heli,explain_topic
+normalization pe important sawal batao,important_questions
+normalization ವಿವರಿಸಿ,explain_topic
+notes on linked list in kannada,explain_topic
+notes on normalization in kannada,explain_topic
+notes on डेडलॉक in kannada,explain_topic
+notes on ಓವರ್‌ರೈಡಿಂಗ್ in kannada,explain_topic
+ok,smalltalk
+ok pls,smalltalk
+okay cool,smalltalk
+ola cab booking,out_of_scope
+old question paper pattern DS,pyq_style
+old question paper pattern OS,pyq_style
+on friday computer networks ka exam hai,make_plan
+"operating systems exam on 15/11 ide, plan maadi",make_plan
+operating systems flashcards kodi,make_flashcards
+operating systems internals kal subah 10 baje and I haven't started,make_plan
+operating systems ke important sawal,important_questions
+"operating systems ki padhai ka plan chahiye, exam 2 ghante mein",make_plan
+operating systems pichle saal ke questions,pyq_style
+operating systems quiz,make_quiz
+operating systems क्विज़,make_quiz
+operating systems ರಸಪ್ರಶ್ನೆ,make_quiz
+paging cards,make_flashcards
+paging ke flashcards banao,make_flashcards
+paging mele quiz kodi,make_quiz
+paging pyq,pyq_style
+paging quiz please,make_quiz
+past paper style questions on joins,pyq_style
+past paper style questions on linked list,pyq_style
+past paper style questions on ಡೆಡ್‌ಲಾಕ್,pyq_style
+"plan badlo, sirf 1.5 ghante hai",edit_plan
+"plan badlo, sirf 2 ghante hai",edit_plan
+"plan badlo, sirf 3 ghante hai",edit_plan
+"plan badlo, sirf 4 ghante hai",edit_plan
+"plan badlo, sirf 5 ghante hai",edit_plan
+plan swalpa change maadi,edit_plan
+play some music,out_of_scope
+polymorphism artha agilla,explain_topic
+polymorphism cards,make_flashcards
+polymorphism important questions kodi,important_questions
+polymorphism par quiz lo,make_quiz
+polymorphism pe important sawal batao,important_questions
+polymorphism quiz please,make_quiz
+previous year questions CN,pyq_style
+previous year questions computer networks,pyq_style
+previous year questions data structures,pyq_style
+pyq for DS,pyq_style
+pyq for OS,pyq_style
+pyq for data structures,pyq_style
+pyq for dbms,pyq_style
+pyq for operating systems,pyq_style
+pyq for python,pyq_style
+pyq for python pls,pyq_style
+pyq for ಜಾವಾ,pyq_style
+python exam कल,make_plan
+python flashcards kodi,make_flashcards
+python hindina varshada prashne,pyq_style
+python ke important sawal,important_questions
+python quiz,make_quiz
+python क्विज़,make_quiz
+questions like last year paper CN,pyq_style
+questions like last year paper DBMS,pyq_style
+questions like last year paper Java,pyq_style
+questions like last year paper computer networks,pyq_style
+questions like last year paper dbms,pyq_style
+questions like last year paper java,pyq_style
+questions like last year paper python,pyq_style
+questions like last year paper जावा,pyq_style
+questions like last year paper पायथन,pyq_style
+questions like last year paper ಜಾವಾ,pyq_style
+questions like last year paper ಡಿಬಿಎಂಎಸ್,pyq_style
+queues flash cards please,make_flashcards
+queues ke flashcards banao,make_flashcards
+queues mele quiz kodi,make_quiz
+quick recall cards on BCNF,make_flashcards
+quick recall cards on OSI model,make_flashcards
+quick recall cards on exception handling,make_flashcards
+quick recall cards on inheritance,make_flashcards
+quick recall cards on inheritance pls,make_flashcards
+quick recall cards on joins,make_flashcards
+quick recall cards on linked list,make_flashcards
+quick recall cards on method overriding,make_flashcards
+quick recall cards on normalization,make_flashcards
+quick recall cards on डेडलॉक,make_flashcards
+quiz me on TCP handshake,make_quiz
+quiz me on deadlock,make_quiz
+quiz me on exception handling,make_quiz
+quiz me on paging,make_quiz
+quiz me on queues,make_quiz
+quiz me on semaphores,make_quiz
+quiz me on tuples,make_quiz
+quiz me on ಡೆಡ್‌ಲಾಕ್,make_quiz
+recommend a phone under 15000,out_of_scope
+remove OSI model from the plan,edit_plan
+remove OSI model from the plan pls,edit_plan
+remove deadlock from the plan,edit_plan
+remove joins from the plan,edit_plan
+remove lambda from the plan,edit_plan
+remove method overriding from the plan,edit_plan
+remove paging from the plan,edit_plan
+remove queues from the plan,edit_plan
+remove stacks from the plan,edit_plan
+remove subnetting from the plan,edit_plan
+remove tuples from the plan,edit_plan
+remove ಡೆಡ್‌ಲಾಕ್ from the plan,edit_plan
+replan from now,edit_plan
+revision cards for DBMS,make_flashcards
+revision cards for DS,make_flashcards
+revision cards for Java,make_flashcards
+revision cards for OS,make_flashcards
+sample paper dbms like university exam,pyq_style
+sample paper operating systems like university exam,pyq_style
+sample paper जावा like university exam,pyq_style
+sample paper पायथन like university exam,pyq_style
+semaphores cards,make_flashcards
+semaphores kya hota hai,explain_topic
+semaphores samjhao,explain_topic
+semaphores समझाओ,explain_topic
+shift the quiz to sunday,edit_plan
+shukriya,smalltalk
+skip TCP handshake in my timetable,edit_plan
+skip deadlock in my timetable,edit_plan
+skip interfaces in my timetable,edit_plan
+skip linked list in my timetable,edit_plan
+skip queues in my timetable,edit_plan
+skip semaphores in my timetable,edit_plan
+skip ಓವರ್‌ರೈಡಿಂಗ್ in my timetable,edit_plan
+song lyrics of kesariya,out_of_scope
+song lyrics of kesariya pls,out_of_scope
+stacks ke flashcards banao,make_flashcards
+stacks kya hota hai,explain_topic
+stock tips for tomorrow,out_of_scope
+stock tips for tomorrow pls,out_of_scope
+subnetting artha agilla,explain_topic
+subnetting bagge heli,explain_topic
+subnetting flash cards please,make_flashcards
+subnetting ke flashcards banao,make_flashcards
+subnetting samjhao,explain_topic
+summarise @Unit3_Inheritance.pdf,summarize_file
+summarise @dbms_unit2.pptx,summarize_file
+summarise @lab_programs.txt,summarize_file
+summarise @os-notes.docx,summarize_file
+summarise chapter 4 notes,summarize_file
+summarise my slides,summarize_file
+summarize @dbms_unit2.pptx in kannada,summarize_file
+summarize @lab_programs.txt in kannada,summarize_file
+summarize @os-notes.docx in kannada,summarize_file
+summarize @os-notes.docx in kannada pls,summarize_file
+summarize chapter 4 notes in kannada,summarize_file
+summarize my slides in kannada,summarize_file
+summarize the pdf I uploaded in kannada,summarize_file
+summarize unit3 notes in kannada,summarize_file
+summary of @dbms_unit2.pptx,summarize_file
+summary of @lab_programs.txt,summarize_file
+summary of @os-notes.docx,summarize_file
+summary of my slides,summarize_file
+"super, thanks",smalltalk
+teach me BCNF,explain_topic
+teach me deadlock,explain_topic
+teach me deadlock pls,explain_topic
+teach me exception handling,explain_topic
+teach me lambda,explain_topic
+teach me linked list,explain_topic
+teach me method overriding,explain_topic
+teach me polymorphism,explain_topic
+teach me polymorphism pls,explain_topic
+tell me a joke,out_of_scope
+test me on semaphores,make_quiz
+test me on stacks,make_quiz
+test me on subnetting,make_quiz
+test me on ಓವರ್‌ರೈಡಿಂಗ್,make_quiz
+thank you so much,smalltalk
+thanks,smalltalk
+the pdf I uploaded ka saar batao,summarize_file
+the pdf I uploaded ka summary do,summarize_file
+the pdf I uploaded saaramsha,summarize_file
+timetable for Java exam कल,make_plan
+timetable for computer networks exam in 3 days,make_plan
+tl;dr @Unit3_Inheritance.pdf,summarize_file
+tl;dr @dbms_unit2.pptx,summarize_file
+tl;dr @os-notes.docx,summarize_file
+tl;dr chapter 4 notes,summarize_file
+tl;dr my notes,summarize_file
+tl;dr the pdf I uploaded,summarize_file
+tl;dr unit3 notes,summarize_file
+train ticket to mysore,out_of_scope
+translate this whatsapp message,out_of_scope
+tuples enu,explain_topic
+tuples par quiz lo,make_quiz
+tuples par quiz lo pls,make_quiz
+tuples pyq,pyq_style
+tuples समझाओ,explain_topic
+tuples समझाओ pls,explain_topic
+tuples ವಿವರಿಸಿ,explain_topic
+unit3 notes explain method overriding,ask_about_file
+unit3 notes explain subnetting,ask_about_file
+unit3 notes ka summary do,summarize_file
+unit3 notes padke polymorphism samjhao,ask_about_file
+unit3 notes padke tuples samjhao,ask_about_file
+unit3 notes padke डेडलॉक samjhao,ask_about_file
+unit3 notes saaramsha,summarize_file
+unit3 notes summary kodi,summarize_file
+what can you do,smalltalk
+what can you do pls,smalltalk
+what does chapter 4 notes say about subnetting,ask_about_file
+what does my notes say about queues,ask_about_file
+what does my slides say about lambda,ask_about_file
+what does unit3 notes say about exception handling,ask_about_file
+what is @dbms_unit2.pptx about,summarize_file
+what is @os-notes.docx about,summarize_file
+what is BCNF,explain_topic
+what is deadlock,explain_topic
+what is interfaces,explain_topic
+what is linked list,explain_topic
+what is my notes about,summarize_file
+what is my slides about,summarize_file
+what is queues,explain_topic
+what is semaphores,explain_topic
+what is ಓವರ್‌ರೈಡಿಂಗ್,explain_topic
+what questions will come in data structures exam,important_questions
+what questions will come in operating systems exam,important_questions
+what questions will come in ಜಾವಾ exam,important_questions
+what questions will come in ಡಿಬಿಎಂಎಸ್ exam,important_questions
+what's the weather in bangalore,out_of_scope
+what's the weather in bangalore pls,out_of_scope
+when is the next holiday,out_of_scope
+which questions are important in CN unit 3,important_questions
+which questions are important in DBMS unit 3,important_questions
+which questions are important in DS unit 3,important_questions
+which questions are important in Java unit 3,important_questions
+which questions are important in OS unit 3,important_questions
+which questions are important in computer networks unit 3,important_questions
+which questions are important in data structures unit 3,important_questions
+which questions are important in dbms unit 3,important_questions
+which questions are important in operating systems unit 3,important_questions
+which questions are important in python unit 3,important_questions
+which questions are important in जावा unit 3,important_questions
+which questions are important in ಡಿಬಿಎಂಎಸ್ unit 3,important_questions
+which questions are important in ಡಿಬಿಎಂಎಸ್ unit 3 pls,important_questions
+who are you,smalltalk
+who is the prime minister,out_of_scope
+who won the cricket match,out_of_scope
+write a love letter,out_of_scope
+कल java की परीक्षा है,make_plan
+कल operating systems ka exam hai,make_plan
+कल जावा की परीक्षा है,make_plan
+कल पायथन की परीक्षा है,make_plan
+कल ಜಾವಾ ka exam hai,make_plan
+कल ಜಾವಾ ka exam hai pls,make_plan
+जावा EXAM NALE,make_plan
+जावा exam nale,make_plan
+जावा exam questions please,important_questions
+"जावा in 5 weeks exam, how should I study",make_plan
+जावा internals in 3 days and I haven't started,make_plan
+"जावा ki padhai ka plan chahiye, exam nale",make_plan
+जावा mukhya prashnegalu,important_questions
+"जावा next monday exam, how should I study",make_plan
+जावा pichle saal ke questions,pyq_style
+जावा quiz,make_quiz
+"जावा sem exam tomorrow 10am, plan please",make_plan
+डेडलॉक flash cards please,make_flashcards
+डेडलॉक important questions kodi,important_questions
+डेडलॉक pe important sawal batao,important_questions
+डेडलॉक pyq,pyq_style
+धन्यवाद,smalltalk
+पायथन flashcards kodi,make_flashcards
+पायथन hindina varshada prashne,pyq_style
+"पायथन in 3 days exam, how should I study",make_plan
+पायथन quiz,make_quiz
+पायथन क्विज़,make_quiz
+ಓವರ್‌ರೈಡಿಂಗ್ important questions kodi,important_questions
+ಓವರ್‌ರೈಡಿಂಗ್ ke flashcards banao,make_flashcards
+ಓವರ್‌ರೈಡಿಂಗ್ pyq,pyq_style
+ಓವರ್‌ರೈಡಿಂಗ್ quiz please,make_quiz
+ಓವರ್‌ರೈಡಿಂಗ್ समझाओ,explain_topic
+ಜಾವಾ exam kal,make_plan
+"ಜಾವಾ internal in 2 weeks, help me",make_plan
+"ಜಾವಾ internal in 2 weeks, help me pls",make_plan
+ಜಾವಾ internals on 15/11 and I haven't started,make_plan
+ಜಾವಾ ke important sawal,important_questions
+ಜಾವಾ mukhya prashnegalu,important_questions
+"ಜಾವಾ sem exam 3 dinadalli, plan please",make_plan
+"ಜಾವಾ sem exam day after tomorrow, plan please",make_plan
+"ಡಿಬಿಎಂಎಸ್ 2 ghante mein exam, how should I study",make_plan
+ಡಿಬಿಎಂಎಸ್ exam 3 dinadalli,make_plan
+ಡಿಬಿಎಂಎಸ್ exam tonight,make_plan
+ಡಿಬಿಎಂಎಸ್ pichle saal ke questions,pyq_style
+ಡಿಬಿಎಂಎಸ್ previous papers jaisa questions,pyq_style
+ಡಿಬಿಎಂಎಸ್ previous papers jaisa questions pls,pyq_style
+ಡಿಬಿಎಂಎಸ್ ರಸಪ್ರಶ್ನೆ,make_quiz
+ಡೆಡ್‌ಲಾಕ್ enu,explain_topic
+ಡೆಡ್‌ಲಾಕ್ important questions kodi,important_questions
+ಡೆಡ್‌ಲಾಕ್ pyq,pyq_style
+ಡೆಡ್‌ಲಾಕ್ samjhao,explain_topic
+ಧನ್ಯವಾದ,smalltalk
+ನಾಳೆ operating systems ಪರೀಕ್ಷೆ ಇದೆ,make_plan
+ನಾಳೆ जावा ಪರೀಕ್ಷೆ ಇದೆ,make_plan

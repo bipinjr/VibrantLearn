@@ -1,0 +1,14 @@
+{
+ "version": "intent-v1",
+ "sha256": "9119275793f913c8852db8d0dadcb46a9a51bb5101a79002067e3279664cfc96",
+ "sklearn": "1.9.1",
+ "trained_at": "2026-10-16T09:49:58+00:00",
+ "train_rows": 765,
+ "holdout_rows": 75,
+ "threshold": 0.15,
+ "holdout_accuracy": {
+  "classifier": 0.747,
+  "rules": 0.36,
+  "hybrid": 0.747
+ }
+}

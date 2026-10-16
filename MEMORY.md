@@ -144,6 +144,8 @@ _None._
 
 | Date | Who | What changed |
 |---|---|---|
+| 2026-10-16 | Bipin A + Claude | E2/E5: TF-IDF word+char -> LogisticRegression, holdout accuracy 0.75 (rules alone 0.36); threshold swept to 0.15; artifact hash-checked before load; docs/ml-report.md generated |
+| 2026-10-16 | Bipin A + Claude | E1: data/intents.csv: 765 synthetic lines, 11 intents, en/Kanglish/Hinglish/script; + 75-line hand-written holdout |
 | 2026-10-16 | Bipin A + Claude | E4: Python scheduler port (app/ml/scheduler.py): 22 parity cases incl. 10:40 PM regression match TS step-for-step |
 | 2026-10-16 | Bipin A + Claude | E3: Python entities/urgency port (app/ml/parse.py): script + Kanglish/Hinglish, IST deadlines, modes; 40 phrasings match TS exactly |
 | 2026-10-16 | Bipin A + Claude | A3: DELETE /api/v1/sessions/{id}: ownership 404, storage objects removed + verified, then row, audit; client DELETE revoked (migration applied, RLS 37/37); 4 API tests with in-memory fakes |

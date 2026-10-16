@@ -133,11 +133,11 @@ Not real yet: uploads (simulated), file search, AI-written questions and quizzes
 
 ### Phase E — Python ML intake (PRD F5, M4, M5)
 
-- [ ] **E1. `data/intents.csv`** — at least 600 labelled lines across the 11 intents, mixing English, Kanglish, Hinglish and native script. No student data.
-- [ ] **E2. Intent model** — TF-IDF (word + char n-grams) → LogisticRegression in `apps/api/app/ml/`, saved as a versioned joblib artifact, loaded once per warm instance.
+- [x] **E1. `data/intents.csv`** — at least 600 labelled lines across the 11 intents, mixing English, Kanglish, Hinglish and native script. No student data.
+- [x] **E2. Intent model** — TF-IDF (word + char n-grams) → LogisticRegression in `apps/api/app/ml/`, saved as a versioned joblib artifact, loaded once per warm instance.
 - [x] **E3. Entities and urgency in Python** — subject, deadline (Asia/Kolkata), hours, language, weak topics, file mentions; modes `sprint` ≤ 6 h, `crash` ≤ 3 days, `steady` ≤ 4 weeks, `deep` beyond.
 - [x] **E4. Port the scheduler** — `apps/api/app/ml/scheduler.py`, with parity tests against the TypeScript version on at least 20 shared cases, **including the 10:40 PM case from A0**.
-- [ ] **E5. `docs/ml-report.md`** — per-intent precision and recall, confusion matrix, dataset size, known weaknesses.
+- [x] **E5. `docs/ml-report.md`** — per-intent precision and recall, confusion matrix, dataset size, known weaknesses.
   - **Verify (E1–E5):** `cd apps/api && uv run pytest -q` with ≥ 40 parser phrasings; report committed.
 
 ### Phase F — limits, privacy, account (PRD F10, F11, M8)
