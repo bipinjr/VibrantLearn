@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Response
 
 from app.core import errors
 from app.core.config import get_settings
-from app.routers import files, health, me, messages, quiz, sessions, waitlist
+from app.routers import classes, files, health, me, messages, quiz, sessions, waitlist
 
 
 class _JsonFormatter(logging.Formatter):
@@ -60,6 +60,7 @@ async def request_id(
 
 
 for r in (
+    classes.router,
     files.router,
     health.router,
     me.router,

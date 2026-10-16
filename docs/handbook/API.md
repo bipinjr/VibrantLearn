@@ -197,6 +197,24 @@ Same answer whether or not the address was already there — safe on double subm
 
 ---
 
+### Live classes (v0.5) ✅
+
+All rules are decided here; clients only read the public class tables under RLS.
+
+| Endpoint | Does | Limit |
+|---|---|---|
+| `GET /teachers/me` | `{ teacher, earnings }` (both null if never applied) | |
+| `POST /teachers/apply` | `{ display_name, bio?, subjects[≤8] }` → `{ teacher }`, status `pending` | 5/day |
+| `GET /classes` | upcoming + recent classes with `phase`, interested count, my queue `position` | |
+| `POST /classes` | verified teachers only. `{ subject, topic, level, starts_at (tz-aware), duration_min 30–120 }` → `201 { id }` | 10/day |
+| `POST /classes/{id}/cancel` | teacher, before start → `204` | |
+| `PUT` / `DELETE /classes/{id}/interest` | mark / unmark interested → `{ interested, mine, position }` | 60/hour |
+| `POST /classes/{id}/join` | seat decision, then `{ room_url, role, display_name, ends_at }` | 30/hour |
+
+Join rules: teacher from 10 min before; interested students first; others after a 2-minute grace; 40 seats. Under 10 interested at start → class auto-cancels. Teacher absent 10 min after start → cancelled + warning (3 warnings = suspended). The Jitsi room name lives in `internal.class_rooms` and is only returned by `/join`.
+
+---
+
 ## 4. Next.js route handlers (interim)
 
 These live in `apps/web/app/api/` only while the FastAPI service is unhosted. They move to `/api/v1` in [BUILD_PLAN.md](../../BUILD_PLAN.md) D1.

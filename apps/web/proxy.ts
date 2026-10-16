@@ -19,6 +19,8 @@ function csp(nonce: string): string {
     `img-src 'self' data: blob: ${supabase} https://lh3.googleusercontent.com`,
     "font-src 'self'",
     "worker-src 'self' blob:",
+    // Live classes (v0.5): the Jitsi room is the only thing allowed in a frame.
+    "frame-src https://meet.jit.si",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

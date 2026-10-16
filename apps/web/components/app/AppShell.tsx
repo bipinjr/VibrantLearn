@@ -14,6 +14,7 @@ const NAV = [
   { href: "/app", label: "Home", icon: Home },
   { href: "/app/plans", label: "Plans", icon: Route },
   { href: "/app/files", label: "Files", icon: FolderOpen },
+  { href: "/app/classes", label: "Live classes", icon: Video },
   { href: "/app/settings", label: "Settings", icon: Settings2 },
 ] as const;
 
@@ -64,13 +65,6 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
               </li>
             );
           })}
-          <li>
-            <span className="flex cursor-default items-center gap-3 rounded-[10px] px-3 py-2 text-[0.95rem] text-muted/70" aria-disabled="true">
-              <Video size={19} strokeWidth={1.75} aria-hidden="true" />
-              {t("Live classes")}
-              <span className="ml-auto rounded-full bg-text/[0.06] px-2 py-0.5 text-[0.7rem] font-medium">{t("Soon")}</span>
-            </span>
-          </li>
         </ul>
       </nav>
 

@@ -16,6 +16,8 @@ Finishing it is [BUILD_PLAN.md](../../BUILD_PLAN.md). Done when: uploads and fil
 
 ## v0.5 — Teachers and live classes
 
+**Status (16 Oct):** MVP built: apply to teach (manual verification), post class, interested queue, Jitsi room, auto-cancel under 10, no-show warnings, earnings tracked "to be paid". Not yet: ratings, reports, moderation bot, certificate upload, payouts.
+
 The second half of the original idea: college teachers, tutors and professionals who are free after 5 PM and want to teach, and students who currently search YouTube at midnight.
 
 ### How it works

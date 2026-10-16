@@ -173,6 +173,21 @@ Path: `{user_id}/{session_id}/{file_id}/{safe_name}`.
 | UPDATE | nobody — a changed file is a new upload |
 | DELETE | owner |
 
+### Live classes (v0.5, migration `20261016170000_live_classes`)
+
+| Table | Client access | Notes |
+|---|---|---|
+| `public.teachers` | SELECT verified teachers + own row | `status` pending/verified/suspended, set by service role only |
+| `public.classes` | SELECT (signed in) | min 10, max 40, status scheduled/cancelled/done |
+| `public.class_signups` | SELECT own | interest queue, `seated_at` |
+| `public.class_attendance` | SELECT own | join times |
+| `internal.class_rooms` | none | Jitsi room `vl-<32 hex>` |
+| `internal.moderation_warnings` | none | no-show warnings |
+| `internal.teacher_payouts` | none | 80% of ₹2,000, status `to_be_paid`/`paid` |
+
+All writes go through the API. Verify a teacher by hand (service role):
+`update public.teachers set status = 'verified', verified_at = now() where user_id = '<uuid>';`
+
 ---
 
 ## 4. Conventions

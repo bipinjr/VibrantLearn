@@ -1,7 +1,7 @@
 -- RLS + grants: user A must never see or change user B's data; anon sees nothing private.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(38);
+select plan(42);
 
 -- ---- fixtures (as postgres) -----------------------------------------------------------------
 insert into auth.users (id, email) values
@@ -118,6 +118,16 @@ select throws_ok($$insert into storage.objects (bucket_id, name, owner_id)
   values ('user-files', '00000000-0000-0000-0000-00000000000a/s/f/sneaky.exe',
           '00000000-0000-0000-0000-00000000000a')$$,
   '42501', null, 'clients cannot upload straight to storage, even into their own folder');
+
+-- live classes (v0.5): rooms are server-only, every class write goes through the API
+select throws_ok($$select * from internal.class_rooms$$, '42501', null, 'class room names are never client-readable');
+select throws_ok($$insert into public.teachers (user_id, display_name, status)
+  values ('00000000-0000-0000-0000-00000000000a', 'Self', 'verified')$$,
+  '42501', null, 'a client cannot make itself a verified teacher');
+select throws_ok($$insert into public.class_signups (class_id, user_id)
+  values (gen_random_uuid(), '00000000-0000-0000-0000-00000000000a')$$,
+  '42501', null, 'seats are only taken through the API');
+select throws_ok($$update public.classes set status = 'done'$$, '42501', null, 'clients cannot change a class');
 
 -- writes A is allowed to do
 select lives_ok($$update public.profiles set language = 'kn', formats = array['quiz']$$,
