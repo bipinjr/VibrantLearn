@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTeach } from "@/components/teach/data";
 import { Application, ProfileCard, Questionnaire } from "@/components/teach/parts";
+import { PublicCard } from "@/components/teach/PublicCard";
 
 export default function TeachProfile() {
   const { teacher, stats, payout, reload } = useTeach();
@@ -20,6 +21,11 @@ export default function TeachProfile() {
         ) : null}
       </div>
       <ProfileCard teacher={teacher} stats={stats} />
+      <section aria-labelledby="public-h" className="grid gap-3">
+        <h2 id="public-h" className="text-xl font-bold">What students see</h2>
+        <p className="-mt-2 text-sm text-muted">This is your public profile, exactly as students see it from a class.</p>
+        <PublicCard teacherId={teacher.user_id} />
+      </section>
       {editing ? (
         <Questionnaire
           teacher={teacher}

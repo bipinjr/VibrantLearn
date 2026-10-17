@@ -265,7 +265,7 @@ def teacher(conn: Conn, user_id: str) -> dict[str, Any] | None:
     r = conn.execute(
         "select user_id, display_name, bio, subjects, status, qualification, experience_years, languages, "
         "preferred_days, preferred_slots, levels, organisation, institution_code, review_note, "
-        "document_path is not null as has_document from public.teachers where user_id = %s",
+        "document_path is not null as has_document, notify from public.teachers where user_id = %s",
         (user_id,),
     ).fetchone()
     return dict(r) if r else None

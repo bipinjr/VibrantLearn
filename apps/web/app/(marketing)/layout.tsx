@@ -3,12 +3,14 @@ import { Wordmark } from "@/components/brand/Wordmark";
 import { enterDemo } from "../(auth)/demo-actions";
 import { demoEnabled } from "@/lib/demo/mode";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { ScrollReveal } from "@/components/marketing/ScrollReveal";
 
 export default function MarketingLayout({ children }: LayoutProps<"/">) {
   const demo = demoEnabled();
   return (
     <>
       <span className="scroll-progress" aria-hidden="true" />
+      <ScrollReveal />
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-md focus:bg-surface focus:px-3 focus:py-2">
         Skip to content
       </a>

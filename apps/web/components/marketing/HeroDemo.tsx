@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { PlanPath, type PathStep } from "@/components/learn/PlanPath";
-import { ReplayButton } from "./ReplayButton";
+import { AutoReplay } from "./AutoReplay";
 import styles from "./hero.module.css";
 
 const REQUEST = "Java internal tomorrow 10am, BCA SEP";
@@ -18,7 +18,7 @@ const STEPS: PathStep[] = [
 
 /**
  * The landing page's one orchestrated moment (FRONTEND.md §4.4). Pure CSS: renders finished on the
- * server, plays once on load, and reduced-motion users just see the finished plan.
+ * server, plays on load, holds 2 s, plays again while on screen; reduced-motion users see the finished plan.
  */
 export function HeroDemo() {
   const typeMs = REQUEST.length * 35;
@@ -28,7 +28,7 @@ export function HeroDemo() {
       aria-label="Example: a study plan built from one sentence"
       style={{ "--chars": REQUEST.length, "--type-ms": `${typeMs}ms` } as CSSProperties}
     >
-      <ReplayButton className={styles.replay}>
+      <AutoReplay cycleMs={typeMs + 700 + 1600 + STEPS.length * 190 + 2000}>
         <div className={styles.request}>
           <span className={styles.prompt}>What&rsquo;s your next test?</span>
           <p className={styles.input}>
@@ -46,7 +46,7 @@ export function HeroDemo() {
         >
           <PlanPath steps={STEPS} label="Study plan for a Java internal at 10 AM tomorrow" />
         </div>
-      </ReplayButton>
+      </AutoReplay>
     </figure>
   );
 }

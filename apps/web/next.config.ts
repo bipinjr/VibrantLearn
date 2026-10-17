@@ -19,7 +19,13 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    // Teachers run a camera and mic check before class (TEACHER.md T4); nowhere else gets them.
+    const teachDevices = [{ key: "Permissions-Policy", value: "camera=(self), microphone=(self), geolocation=()" }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/teach", headers: teachDevices },
+      { source: "/teach/:path*", headers: teachDevices },
+    ];
   },
   async rewrites() {
     const api = process.env.API_ORIGIN ?? "http://127.0.0.1:8000";

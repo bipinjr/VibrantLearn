@@ -25,6 +25,25 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
 
   return (
     <>
+      <nav aria-label="Account type" className="mb-8 grid grid-cols-2 rounded-full border border-line bg-surface p-1 text-sm font-medium">
+        {(
+          [
+            [false, "I'm a student", mode === "signin" ? "/login" : "/signup"],
+            [true, "I'm a teacher", mode === "signin" ? "/teach/login" : "/teach/signup"],
+          ] as const
+        ).map(([isTeacher, label, href]) => (
+          <Link
+            key={href}
+            href={href}
+            aria-current={teacher === isTeacher ? "page" : undefined}
+            className={`rounded-full px-4 py-2.5 text-center no-underline transition-colors duration-200 ${
+              teacher === isTeacher ? "bg-text text-bg shadow-sm" : "text-muted hover:text-text"
+            }`}
+          >
+            {label}
+          </Link>
+        ))}
+      </nav>
       <h1 className="text-3xl font-bold sm:text-4xl">
         {teacher ? (mode === "signin" ? "Teacher sign in" : "Create a teacher account") : mode === "signin" ? "Welcome back" : "Create your account"}
       </h1>
@@ -130,17 +149,7 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
           </>
         )}
       </p>
-      <p className="mt-2 text-sm text-muted">
-        {teacher ? (
-          <>
-            Studying? <Link href="/login">Student sign in</Link>
-          </>
-        ) : (
-          <>
-            Teaching? <Link href="/teach/login">Teacher sign in</Link>
-          </>
-        )}
-      </p>
+
     </>
   );
 }

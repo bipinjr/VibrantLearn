@@ -36,11 +36,11 @@ export function LiveTonight() {
         </div>
 
         {/* The evening route: same path motif as a study plan, now across the night. */}
-        <ol className="relative mt-16 grid gap-10 md:grid-cols-3 md:gap-6">
-          <span aria-hidden="true" className="absolute top-[7px] right-0 left-0 hidden h-[3px] rounded-full bg-[linear-gradient(90deg,var(--color-ember),var(--color-orchid),var(--color-violet))] md:block" />
+        <ol className="stagger relative mt-16 grid gap-10 md:grid-cols-3 md:gap-6">
+          <span aria-hidden="true" className="route-draw absolute top-[7px] right-0 left-0 hidden h-[3px] rounded-full bg-[linear-gradient(90deg,var(--color-ember),var(--color-orchid),var(--color-violet))] md:block" />
           <span aria-hidden="true" className="absolute top-0 bottom-0 left-[7px] w-[3px] rounded-full bg-[linear-gradient(180deg,var(--color-ember),var(--color-orchid),var(--color-violet))] md:hidden" />
           {ROOMS.map((r, i) => (
-            <li key={r.topic} className="scroll-in relative pl-9 md:pt-10 md:pl-0">
+            <li key={r.topic} className="relative pl-9 md:pt-10 md:pl-0">
               <span aria-hidden="true" className={`absolute top-0 left-0 size-[17px] rounded-full border-[3px] border-ink ${i === 0 ? "bg-ember" : "bg-mist"}`} />
               <p className="font-display text-2xl font-bold tabular-nums">{r.time}</p>
               <p className={`mt-1 text-sm font-semibold ${i === 0 ? "text-ember" : "text-mist/75"}`}>{r.state}</p>

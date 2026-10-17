@@ -70,7 +70,8 @@ function Row({ c, nowIso, onChange }: { c: LiveClass; nowIso: string; onChange: 
       <div className="min-w-0">
         <p className="font-semibold">{c.topic}</p>
         <p className="text-sm text-muted">
-          {c.subject}, {t("with {name}", { name: c.teacher })}. {t(LEVEL[c.level])}.
+          {c.subject}, {t("with")} <Link href={`/app/teachers/${c.teacher_id}`}>{c.teacher}</Link>. {t(LEVEL[c.level])}.
+          {c.for_you ? <span className="ml-2 rounded-full bg-violet/10 px-2 py-0.5 text-xs font-medium text-link">{t("For your exam")}</span> : null}
         </p>
         {c.phase === "cancelled" ? (
           <p className="mt-1 text-sm text-danger">{c.cancel_reason ?? t("Cancelled.")}</p>

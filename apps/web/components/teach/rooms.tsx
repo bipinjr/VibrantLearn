@@ -5,10 +5,13 @@ import Link from "next/link";
 import { useEffect, useState, type SubmitEvent } from "react";
 import { ApiError } from "@/lib/api/client";
 import { cancelClass, postClass, rupees, type LiveClass } from "@/lib/api/classes";
+import { getTopics, type SyllabusTopic } from "@/lib/api/live";
 import { clock, dayLabel } from "@/lib/format";
 import { useUi } from "@/lib/i18n/context";
 import { LEVELS } from "./parts";
+import { AfterClass } from "./after";
 import { useTeach, type Rules } from "./data";
+import { PreflightCheck, ShortPrompt } from "./runway";
 
 const LIVE: LiveClass["phase"][] = ["teacher_early", "grace", "open"];
 
@@ -109,9 +112,11 @@ export function NextRoom({ room }: { room: LiveClass }) {
         ) : null}
         <CopyLink id={room.id} onDark />
       </div>
+      {live || new Date(room.starts_at).getTime() - now < 15 * 60_000 ? <PreflightCheck onDark /> : null}
       {!live && room.phase === "upcoming" ? (
         <p className="text-sm text-muted">You can open the room 10 minutes before it starts. Share the link with your own students to fill seats.</p>
       ) : null}
+      <ShortPrompt c={room} now={now} />
     </section>
   );
 }
@@ -142,7 +147,51 @@ function localInput(d: Date): string {
 }
 
 /** New room in a few taps, like starting a meeting. Shows the money and the run rule before posting. */
-export function NewRoom({ subjects, onCreated }: { subjects: string[]; onCreated: (topic: string) => void }) {
+export type Prefill = { subject: string; topic: string; weak?: string } | null;
+
+/** Topics from the syllabus for the chosen subject; 1-4 attach the room to real topics (T3). */
+function TopicPicker({ subject, value, onChange, weak }: { subject: string; value: string[]; onChange: (v: string[]) => void; weak?: string }) {
+  const [topics, setTopics] = useState<SyllabusTopic[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    getTopics(subject)
+      .then((t) => {
+        if (!live) return;
+        setTopics(t);
+        if (weak) {
+          const hit = t.find((x) => x.topic.toLowerCase().includes(weak.toLowerCase().slice(0, 6)));
+          if (hit) onChange([hit.id]);
+        }
+      })
+      .catch(() => live && setTopics([]));
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload only when the subject changes
+  }, [subject, weak]);
+  if (topics === null) return <p className="text-sm text-muted" role="status">Loading topics…</p>;
+  if (!topics.length) return null;
+  return (
+    <fieldset className="grid gap-2">
+      <legend className="mb-1 text-sm font-medium">Syllabus topics <span className="font-normal text-muted">(pick 1 to 4)</span></legend>
+      <div className="flex max-h-44 flex-wrap gap-2 overflow-y-auto pr-1">
+        {topics.map((t) => (
+          <label key={t.id} className="chip text-sm">
+            <input
+              type="checkbox"
+              checked={value.includes(t.id)}
+              disabled={!value.includes(t.id) && value.length >= 4}
+              onChange={(e) => onChange(e.target.checked ? [...value, t.id] : value.filter((x) => x !== t.id))}
+            />
+            {t.topic}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+export function NewRoom({ subjects, onCreated, prefill = null }: { subjects: string[]; onCreated: (topic: string) => void; prefill?: Prefill }) {
   const { rules } = useTeach();
   const tonightOk = new Date().getHours() * 60 + new Date().getMinutes() + rules.min_lead_min < 19 * 60;
   const options: [When, string][] = [
@@ -155,6 +204,9 @@ export function NewRoom({ subjects, onCreated }: { subjects: string[]; onCreated
   const [when, setWhen] = useState<When>(options[0][0]);
   const [picked, setPicked] = useState(() => localInput(new Date(Date.now() + 2 * 60 * 60_000)));
   const [length, setLength] = useState(60);
+  const [subject, setSubject] = useState(prefill?.subject ?? subjects[0] ?? "");
+  const [topicIds, setTopicIds] = useState<string[]>([]);
+  const [seats, setSeats] = useState(rules.max_students);
   const [problem, setProblem] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -167,7 +219,7 @@ export function NewRoom({ subjects, onCreated }: { subjects: string[]; onCreated
     setProblem(null);
     const topic = String(f.get("topic")).trim();
     try {
-      await postClass({ subject: String(f.get("subject")), topic, level: String(f.get("level")), starts_at: start.toISOString(), duration_min: length });
+      await postClass({ subject, topic, level: String(f.get("level")), starts_at: start.toISOString(), duration_min: length, topic_ids: topicIds, seat_cap: seats });
       onCreated(topic);
     } catch (err) {
       setProblem(err instanceof ApiError ? err.message : "Couldn't create the room. Check your connection and try again.");
@@ -182,8 +234,8 @@ export function NewRoom({ subjects, onCreated }: { subjects: string[]; onCreated
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-1.5">
           <label htmlFor="subject" className="text-sm font-medium">Subject</label>
-          <select id="subject" name="subject" required className="field">
-            {subjects.map((s) => <option key={s}>{s}</option>)}
+          <select id="subject" name="subject" required className="field" value={subject} onChange={(e) => { setSubject(e.target.value); setTopicIds([]); }}>
+            {(subjects.includes(subject) ? subjects : [subject, ...subjects]).map((s) => <option key={s}>{s}</option>)}
           </select>
         </div>
         <div className="grid gap-1.5">
@@ -195,8 +247,9 @@ export function NewRoom({ subjects, onCreated }: { subjects: string[]; onCreated
       </div>
       <div className="grid gap-1.5">
         <label htmlFor="topic" className="text-sm font-medium">What you&rsquo;ll teach</label>
-        <input id="topic" name="topic" required minLength={2} maxLength={160} className="field" placeholder="Normal forms, 1NF to BCNF" />
+        <input id="topic" name="topic" required minLength={2} maxLength={160} className="field" placeholder="Normal forms, 1NF to BCNF" defaultValue={prefill?.topic} key={prefill?.topic ?? "blank"} />
       </div>
+      {subject ? <TopicPicker key={subject} subject={subject} value={topicIds} onChange={setTopicIds} weak={prefill?.weak} /> : null}
       <fieldset className="grid gap-2">
         <legend className="mb-1 text-sm font-medium">When</legend>
         <div className="flex flex-wrap gap-2">
@@ -222,10 +275,20 @@ export function NewRoom({ subjects, onCreated }: { subjects: string[]; onCreated
           ))}
         </div>
       </fieldset>
-      <p className="text-sm text-muted">
-        You earn {rupees(rules.net_paise)} ({rupees(rules.gross_paise)} minus the {rules.fee_percent}% fee). It runs if {rules.min_students}{" "}
-        {rules.min_students === 1 ? "student marks" : "students mark"} Interested by the start, up to {rules.max_students}. Otherwise it cancels itself, at no cost to you.
-      </p>
+      <div className="grid gap-1.5">
+        <label htmlFor="seats" className="text-sm font-medium">
+          Seats <span className="font-normal text-muted">({rules.min_students} needed to run, up to {seats})</span>
+        </label>
+        <input id="seats" type="range" min={10} max={rules.max_students} step={5} value={seats} onChange={(e) => setSeats(Number(e.target.value))} className="w-full max-w-xs accent-[var(--color-violet)]" />
+      </div>
+      <div className="rounded-[var(--radius-input)] bg-text/[0.04] px-4 py-3 text-sm">
+        <p>
+          <strong>If 10 join you earn {rupees(rules.net_paise)}. If {seats} join you earn {rupees(rules.net_paise)}.</strong> That&rsquo;s {rupees(rules.gross_paise)} per class minus the {rules.fee_percent}% platform fee, paid on the 1st of the month after you withdraw.
+        </p>
+        <p className="mt-1 text-muted">
+          If fewer than {rules.min_students} {rules.min_students === 1 ? "student marks" : "students mark"} Interested by the start, the room cancels itself at no cost to you.
+        </p>
+      </div>
       {problem ? <p role="alert" className="text-sm text-danger">{problem}</p> : null}
       <button type="submit" className="btn btn-primary min-h-12 w-fit px-6" disabled={busy}>
         {busy ? "Creating…" : "Create room"}
@@ -295,6 +358,8 @@ export function RoomRow({ c }: { c: LiveClass }) {
         </p>
         {c.phase === "upcoming" || live ? <div className="mt-2"><Seats n={c.interested} need={rules.min_students} /></div> : null}
         {problem ? <p role="alert" className="mt-1 text-sm text-danger">{problem}</p> : null}
+        <ShortPrompt c={c} now={now} />
+        {c.phase === "done" || c.phase === "ended" || c.phase === "cancelled" ? <AfterClass c={c} /> : null}
       </div>
       <div className="flex flex-wrap gap-2 sm:justify-end">
         {live ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderOpen, Home, LogOut, Menu, Plus, Route, Settings2, Video, X } from "lucide-react";
+import { FolderOpen, Home, LogOut, Menu, Plus, Route, Settings2, Trophy, Video, X } from "lucide-react";
 import { LayoutGroup, motion, MotionConfig } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,6 +15,7 @@ const NAV = [
   { href: "/app/plans", label: "Plans", icon: Route },
   { href: "/app/files", label: "Files", icon: FolderOpen },
   { href: "/app/classes", label: "Live classes", icon: Video },
+  { href: "/app/rewards", label: "Rewards", icon: Trophy },
   { href: "/app/settings", label: "Settings", icon: Settings2 },
 ] as const;
 

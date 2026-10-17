@@ -257,3 +257,22 @@ When it must be schema:
 ### The teacher side (v0.5)
 
 Planned tables, for reference while designing today's: `classes`, `class_signups`, `class_attendance`, `teacher_payouts`, `ratings`, `moderation_flags`, `warnings`. Roles go in `app_metadata` or a service-role-owned `user_roles` table — **never** `user_metadata`, which the user can edit, and never a boolean on `profiles` the client can update. Payouts and moderation flags belong in `internal`. None of this requires a change to the student schema; see [ROADMAP.md](ROADMAP.md).
+
+### Teacher dashboard and rewards (migrations teacher_onboarding .. teacher_t2_t10_rewards)
+
+| Table / column | Client access | Notes |
+|---|---|---|
+| `public.teachers` + organisation, institution_code, consent_at, document_path, submitted_at, reviewed_at, review_note, notify; status adds `rejected` | SELECT verified + own | written only by the API |
+| `public.classes` + topic_ids (≤4), max_students 10-40, repeat_of | SELECT | |
+| `internal.teacher_documents` | none | degree / staff_id / net_set / bed / tet / other, one per kind |
+| `internal.teacher_payout_details` | none | UPI or bank, returned masked |
+| `internal.reviewers` | none | added by SQL |
+| `internal.class_ratings` | none | 1-5, seated students only |
+| `internal.class_messages` + is_question, answered_at | none | |
+| `internal.moderation_flags` | none | reports with status and outcome |
+| `internal.appeals` | none | one per warning; a removed warning stops counting |
+| `internal.reward_optin` | none | weekly leaderboard opt-in |
+| `internal.teacher_payouts` status adds `requested` | none | |
+| `study_plans.plan.weak` | owner only | flagged weak topics; read by the API only as 5+ student aggregates |
+
+pgTAP: `supabase/tests/rls.test.sql` (64 checks) proves a teacher reads no student table and no client reads payouts or moderation tables.

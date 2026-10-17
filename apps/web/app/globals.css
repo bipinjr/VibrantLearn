@@ -200,7 +200,30 @@
       transform var(--dur-instant) var(--ease-out);
   }
   .btn:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
+  }
+  .btn-primary {
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.25) inset, 0 6px 18px -8px rgb(255 106 61 / 0.6);
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+    .btn:active:not(:disabled) {
+      transform: translateY(0) scale(0.97);
+    }
+    /* Cards that answer the pointer: a small lift and a softer, deeper shadow. */
+    .lift {
+      transition:
+        transform var(--dur-base) var(--ease-out),
+        box-shadow var(--dur-base) var(--ease-out),
+        border-color var(--dur-base) var(--ease-out);
+    }
+    .lift:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-float);
+      border-color: color-mix(in oklab, var(--link) 35%, var(--line));
+    }
   }
   .btn:disabled {
     cursor: not-allowed;
@@ -701,6 +724,30 @@ dialog.sheet::backdrop {
     animation-range: entry 0% cover 28%;
     --animation-reduced: none;
   }
+  /* Children arrive one after another as the list scrolls in. */
+  .stagger > * {
+    animation: scroll-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+    --animation-reduced: none;
+  }
+  .stagger > *:nth-child(2) {
+    animation-range: entry 8% cover 34%;
+  }
+  .stagger > *:nth-child(3) {
+    animation-range: entry 16% cover 38%;
+  }
+  .stagger > *:nth-child(n + 4) {
+    animation-range: entry 24% cover 42%;
+  }
+  /* A route line that draws itself across the evening. */
+  .route-draw {
+    transform-origin: left center;
+    animation: draw-x linear both;
+    animation-timeline: view();
+    animation-range: entry 20% cover 50%;
+    --animation-reduced: none;
+  }
   .scroll-recede {
     animation: recede linear both;
     animation-timeline: view();
@@ -726,11 +773,66 @@ dialog.sheet::backdrop {
 @keyframes scroll-in {
   from {
     opacity: 0;
-    transform: translateY(48px);
+    transform: translateY(40px) scale(0.985);
+    filter: blur(6px);
   }
   to {
     opacity: 1;
     transform: none;
+    filter: none;
+  }
+}
+@keyframes draw-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Browsers without scroll-driven animations (Firefox, Safari): the same reveal, triggered by
+   components/marketing/ScrollReveal.tsx. Hidden only once that script has run (.js-reveal). */
+@supports not (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .js-reveal .scroll-in,
+    .js-reveal .stagger > * {
+      opacity: 0;
+      transform: translateY(32px) scale(0.985);
+      filter: blur(6px);
+      transition:
+        opacity 700ms var(--ease-out),
+        transform 900ms var(--ease-out),
+        filter 700ms var(--ease-out);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+    .js-reveal .scroll-in.is-in,
+    .js-reveal .stagger > .is-in {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+    .js-reveal .route-draw {
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 1200ms var(--ease-out);
+    }
+    .js-reveal .route-draw.is-in {
+      transform: scaleX(1);
+    }
+  }
+}
+
+/* Chat lines and new cards settle in when they appear (motion answers a change). */
+@media (prefers-reduced-motion: no-preference) {
+  .msg-in {
+    animation: msg-in 260ms var(--ease-out) both;
+  }
+}
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
 }
 @keyframes recede {
@@ -744,4 +846,17 @@ dialog.sheet::backdrop {
 .composer:focus-within {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+
+/* Teacher pages ease in on navigation. */
+@media (prefers-reduced-motion: no-preference) {
+  .page-in {
+    animation: page-in 380ms var(--ease-out) both;
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }

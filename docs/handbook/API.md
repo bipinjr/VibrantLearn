@@ -241,3 +241,22 @@ Both use `lib/server/groq.ts`: the key is server-only, errors are logged as stat
 - [ ] No secret, no other user's data, no internal detail in the response
 - [ ] Tests: happy path, unauthenticated, **cross-user**, over-limit, malformed body
 - [ ] Listed in this file with its status marker
+
+### Teacher dashboard (TEACHER.md T1-T10) and rewards
+
+| Endpoint | Does |
+|---|---|
+| `GET /teachers/subjects`, `GET /teachers/topics?subject=` | syllabus subjects; topics of a subject |
+| `POST /teachers/document/upload-url` `{ext}`, `POST /teachers/document` `{path, kind}` | certificate upload (bytes checked, 5 MB) |
+| `PUT /teachers/payout` | UPI or bank details; returned masked |
+| `GET /teachers/demand` | aggregated demand; buckets under 5 suppressed |
+| `POST /classes` + `topic_ids[≤4]`, `seat_cap 10-40` | |
+| `POST /classes/{id}/reschedule` `{starts_at}`, `POST /classes/{id}/repeat` `{days}` | T4, T6 |
+| `GET /classes/{id}/people` | usernames, teacher only, after the start |
+| `GET /classes/{id}/summary` | T6 aggregates |
+| `POST /classes/{id}/chat` + `is_question`; `POST /classes/{id}/chat/{mid}/answered` | question queue |
+| `POST /classes/{id}/report` | report someone in the class |
+| `GET /teachers/{id}/public` | public profile (verified only) |
+| `GET /teachers/health`, `POST /teachers/appeals`, `PUT /teachers/notify` | T9, T10 |
+| `GET /review/teachers`, `POST /review/teachers/{id}`, `GET /review/cases`, `POST /review/appeals/{id}`, `POST /review/reports/{id}` | reviewers only (404 otherwise) |
+| `GET /me/rewards`, `GET /me/rewards/leaderboard`, `PUT /me/rewards/optin` | effort points, streaks, badges, opt-in board |

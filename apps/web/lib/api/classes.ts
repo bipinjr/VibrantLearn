@@ -29,6 +29,8 @@ export type LiveClass = {
   position: number | null;
   seated: boolean;
   my_rating: number | null;
+  teacher_id: string;
+  for_you: boolean;
 };
 
 export type Day = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
@@ -52,6 +54,7 @@ export type Teacher = TeacherProfile & {
   status: "pending" | "verified" | "rejected" | "suspended";
   review_note: string | null;
   has_document: boolean;
+  notify?: { class_reminders: boolean; demand_alerts: boolean };
 };
 export type TeacherStats = {
   classes_done: number;
@@ -71,6 +74,8 @@ export type Earnings = {
     starts_at: string;
     students: number;
     net_paise: number;
+    gross_paise: number;
+    fee_paise: number;
     status: "to_be_paid" | "requested" | "paid";
   }[];
   to_be_paid_paise: number;
@@ -123,6 +128,8 @@ export const postClass = (b: {
   level: string;
   starts_at: string;
   duration_min: number;
+  topic_ids?: string[];
+  seat_cap?: number;
 }) =>
   api<{ id: string }>("/classes", { method: "POST", body: JSON.stringify(b) });
 
@@ -163,6 +170,8 @@ export type ChatMessage = {
   bot: boolean;
   mine: boolean;
   hidden: string | null;
+  question?: boolean;
+  answered?: boolean;
 };
 export type ChatState = {
   strikes: number;
@@ -174,8 +183,8 @@ export const readChat = (id: string, after: number) =>
   api<ChatState & { messages: ChatMessage[] }>(
     `/classes/${encodeURIComponent(id)}/chat?after=${after}`,
   );
-export const sendChat = (id: string, body: string) =>
+export const sendChat = (id: string, body: string, isQuestion = false) =>
   api<ChatState & { message: ChatMessage }>(
     `/classes/${encodeURIComponent(id)}/chat`,
-    { method: "POST", body: JSON.stringify({ body }) },
+    { method: "POST", body: JSON.stringify({ body, is_question: isQuestion }) },
   );

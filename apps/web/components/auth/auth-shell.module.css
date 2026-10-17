@@ -1,0 +1,81 @@
+/* Slow ambient light behind the dial, and the form settling in on load. */
+.glow {
+  position: absolute;
+  width: 34rem;
+  height: 34rem;
+  border-radius: 9999px;
+  pointer-events: none;
+  filter: blur(10px);
+}
+.glowA {
+  top: -12rem;
+  right: -12rem;
+  background: radial-gradient(circle, rgb(106 59 228 / 0.38), transparent 65%);
+}
+.glowB {
+  bottom: -16rem;
+  left: -14rem;
+  background: radial-gradient(circle, rgb(255 106 61 / 0.16), transparent 65%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glowA {
+    animation: driftA 18s ease-in-out infinite alternate;
+  }
+  .glowB {
+    animation: driftB 22s ease-in-out infinite alternate;
+  }
+  .form {
+    animation: settle 600ms var(--ease-out) both;
+  }
+}
+
+@keyframes driftA {
+  to {
+    transform: translate(-6rem, 5rem) scale(1.15);
+  }
+}
+@keyframes driftB {
+  to {
+    transform: translate(7rem, -4rem) scale(1.1);
+  }
+}
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* A slow, quiet sky: tiny stars that twinkle and drift. */
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.stars span {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgb(245 242 251 / 0.55);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stars {
+    animation: sky 40s linear infinite alternate;
+  }
+  .stars span {
+    animation: twinkle 4s ease-in-out infinite;
+  }
+}
+@keyframes twinkle {
+  50% {
+    opacity: 0.15;
+    transform: scale(0.6);
+  }
+}
+@keyframes sky {
+  to {
+    transform: translate(-2rem, 1.5rem);
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, House, UserRound, Wallet } from "lucide-react";
+import { CalendarDays, House, Settings, UserRound, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -12,6 +12,7 @@ const NAV = [
   { href: "/teach/rooms", label: "Rooms", icon: CalendarDays },
   { href: "/teach/earnings", label: "Earnings", icon: Wallet },
   { href: "/teach/profile", label: "Profile", icon: UserRound },
+  { href: "/teach/settings", label: "Settings", icon: Settings },
 ] as const;
 
 function Nav() {
@@ -93,7 +94,9 @@ export function TeachShell({ children }: { children: ReactNode }) {
         <div className="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)]">
           <Nav />
           <main id="main" className="min-w-0 pb-24 lg:pb-12">
-            <Gate>{children}</Gate>
+            <div key={path} className="page-in">
+              <Gate>{children}</Gate>
+            </div>
           </main>
         </div>
       )}

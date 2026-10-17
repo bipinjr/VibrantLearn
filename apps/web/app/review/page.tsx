@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Main, PageHeader } from "@/components/app/Page";
 import { ApiError } from "@/lib/api/client";
+import { Cases } from "./Cases";
 import { DOC_KINDS, reviewQueue, reviewTeacher, type ReviewItem } from "@/lib/api/teachers";
 
 /** TEACHER.md T1: manual verification. Approve, or reject with a reason the teacher sees. */
@@ -87,6 +88,7 @@ export default function ReviewPage() {
           ))}
         </ul>
       )}
+      {problem ? null : <Cases />}
     </Main>
   );
 }

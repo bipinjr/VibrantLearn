@@ -1,12 +1,13 @@
 -- RLS + grants: user A must never see or change user B's data; anon sees nothing private.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(48);
+select plan(64);
 
 -- ---- fixtures (as postgres) -----------------------------------------------------------------
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'a@test.local'),
-  ('00000000-0000-0000-0000-00000000000b', 'b@test.local');
+  ('00000000-0000-0000-0000-00000000000b', 'b@test.local'),
+  ('00000000-0000-0000-0000-00000000000c', 'c@test.local');
 
 insert into public.profiles (id, username) values
   ('00000000-0000-0000-0000-00000000000a', 'user.a'),
@@ -50,6 +51,9 @@ select user_id, id, 0 from public.generated_content;
 insert into storage.objects (bucket_id, name, owner_id) values
   ('user-files', '00000000-0000-0000-0000-00000000000a/s/f/a.pdf', '00000000-0000-0000-0000-00000000000a'),
   ('user-files', '00000000-0000-0000-0000-00000000000b/s/f/b.pdf', '00000000-0000-0000-0000-00000000000b');
+
+insert into public.teachers (user_id, display_name, subjects, status)
+values ('00000000-0000-0000-0000-00000000000c', 'Teacher C', '{Java Programming}', 'verified');
 
 -- ---- DB-level username rule (third enforcement point) ---------------------------------------
 select throws_ok($$update public.profiles set username = 'ab' where username = 'user.a'$$, '23514',
@@ -144,6 +148,27 @@ select is((select count(*) from public.plan_checkpoints where done_at is not nul
 select lives_ok($$insert into public.study_sessions (title) values ('Python test')$$,
   'A can start a session');
 select is((select count(*) from public.study_sessions)::int, 2, 'new session is owned by A');
+
+-- ---- act as teacher C: a teacher never sees a student's private data (TEACHER.md) ----------
+reset role;
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"00000000-0000-0000-0000-00000000000c","role":"authenticated"}';
+select is((select count(*) from public.study_sessions)::int, 0, 'a teacher cannot read any student session');
+select is((select count(*) from public.messages)::int, 0, 'a teacher cannot read any student chat');
+select is((select count(*) from public.study_plans)::int, 0, 'a teacher cannot read any student plan or weak topics');
+select is((select count(*) from public.plan_checkpoints)::int, 0, 'a teacher cannot read student checkpoints');
+select is((select count(*) from public.generated_content)::int, 0, 'a teacher cannot read student notes or quizzes');
+select is((select count(*) from public.quiz_attempts)::int, 0, 'a teacher cannot read student quiz answers');
+select is((select count(*) from public.flashcard_reviews)::int, 0, 'a teacher cannot read student flashcard reviews');
+select is((select count(*) from public.files)::int, 0, 'a teacher cannot read student files');
+select is((select count(*) from public.file_chunks)::int, 0, 'a teacher cannot read student file text');
+select throws_ok($$select * from internal.teacher_payouts$$, '42501', null, 'payouts are server-only, even for the teacher');
+select throws_ok($$select * from internal.class_messages$$, '42501', null, 'class chat is server-only for teachers too');
+select throws_ok($$select * from internal.moderation_flags$$, '42501', null, 'reports are server-only');
+select throws_ok($$select * from internal.appeals$$, '42501', null, 'appeals are server-only');
+select throws_ok($$select * from internal.reward_optin$$, '42501', null, 'leaderboard opt-ins are server-only');
+select throws_ok($$select * from internal.teacher_documents$$, '42501', null, 'teacher certificates are server-only');
+select throws_ok($$update public.teachers set status = 'suspended'$$, '42501', null, 'a teacher cannot change any teacher status');
 
 -- ---- anon -----------------------------------------------------------------------------------
 reset role;

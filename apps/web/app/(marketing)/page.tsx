@@ -82,8 +82,8 @@ export default function LandingPage() {
           </h2>
           <p className="mt-4 text-lg text-muted">Three steps. The first takes about ten seconds.</p>
         </div>
-        <ol className="mt-14 grid gap-12 md:grid-cols-3 md:gap-8">
-          <li className="scroll-in grid content-start gap-4">
+        <ol className="stagger mt-14 grid gap-12 md:grid-cols-3 md:gap-8">
+          <li className="grid content-start gap-4">
             <p className="font-display text-5xl font-extrabold text-now">1</p>
             <h3 className="text-xl font-bold">Tell us the exam</h3>
             <p className="text-muted">Subject, deadline, how you like to study. Plain words are fine, even Kanglish.</p>
@@ -99,7 +99,7 @@ export default function LandingPage() {
               </div>
             </div>
           </li>
-          <li className="scroll-in grid content-start gap-4">
+          <li className="grid content-start gap-4">
             <p className="font-display text-5xl font-extrabold text-orchid">2</p>
             <h3 className="text-xl font-bold">Get your hours planned</h3>
             <p className="text-muted">Topics that carry the most marks come first, sized to the time you actually have.</p>
@@ -115,7 +115,7 @@ export default function LandingPage() {
               />
             </div>
           </li>
-          <li className="scroll-in grid content-start gap-4">
+          <li className="grid content-start gap-4">
             <p className="font-display text-5xl font-extrabold text-violet">3</p>
             <h3 className="text-xl font-bold">Study, quiz, tick off</h3>
             <p className="text-muted">Each block has notes and a short quiz. Tick it off and the plan moves on.</p>
@@ -229,13 +229,13 @@ export default function LandingPage() {
         <h2 id="privacy-h" className="scroll-in text-4xl font-bold sm:text-5xl">
           Your data, plainly
         </h2>
-        <ul className="mt-10 grid gap-8 md:grid-cols-3">
+        <ul className="stagger mt-10 grid gap-8 md:grid-cols-3">
           {[
             { icon: Lock, t: "We don't sell your data.", d: "Not to colleges, not to advertisers. Your files are private to your account." },
             { icon: Trash2, t: "Delete anything, any time.", d: "Remove a session or your whole account from Settings. Files go with it." },
             { icon: ShieldCheck, t: "Your files never train AI.", d: "Not ours, not our provider's. They're used only to answer you." },
           ].map(({ icon: Icon, t, d }) => (
-            <li key={t} className="scroll-in grid content-start gap-2">
+            <li key={t} className="grid content-start gap-2">
               <Icon size={22} strokeWidth={1.75} className="text-link" aria-hidden="true" />
               <p className="text-lg font-semibold">{t}</p>
               <p className="text-muted">{d}</p>

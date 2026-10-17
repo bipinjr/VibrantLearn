@@ -1,10 +1,15 @@
-/* One orchestrated moment on load: the plan draws itself along the dial, then the hand sweeps to now. */
+/* The dial plays through the evening: arcs draw once, then the hand eases from block to block. */
 .arc {
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
 }
+.fade {
+  transition:
+    opacity 600ms var(--ease-out),
+    stroke-width 600ms var(--ease-out);
+}
 .hand {
-  transform: rotate(var(--sweep));
+  transition: transform 1100ms var(--ease-in-out);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -12,9 +17,29 @@
     stroke-dashoffset: 1;
     animation: draw 900ms var(--ease-out) forwards;
   }
-  .hand {
-    transform: rotate(0deg);
-    animation: sweep 1400ms var(--ease-out) 700ms forwards;
+  .swap {
+    animation: swap 520ms var(--ease-out) both;
+  }
+  .pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  .spin {
+    transform-origin: 200px 200px;
+    animation: spin 60s linear infinite;
+  }
+  .orbit {
+    animation: spin 9s linear infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hand,
+  .fade {
+    transition: none;
+  }
+  .orbit {
+    display: none;
   }
 }
 
@@ -23,8 +48,20 @@
     stroke-dashoffset: 0;
   }
 }
-@keyframes sweep {
+@keyframes swap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes pulse {
+  50% {
+    transform: scale(1.35);
+    opacity: 0.75;
+  }
+}
+@keyframes spin {
   to {
-    transform: rotate(var(--sweep));
+    transform: rotate(360deg);
   }
 }
