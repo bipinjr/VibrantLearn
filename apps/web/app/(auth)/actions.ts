@@ -8,7 +8,7 @@ import { SIGNUP_AS_COOKIE } from "@/lib/theme";
 import { safeNext } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
-export type AuthState = { error?: string; sentTo?: string } | undefined;
+export type AuthState = { error?: string; sentTo?: string; done?: boolean } | undefined;
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -109,5 +109,7 @@ export async function setNewPassword(_: AuthState, form: FormData): Promise<Auth
     if (error.code === "same_password") return { error: "Use a password you haven't used here before." };
     return { error: "Couldn't change the password. Ask for a new reset link and try again." };
   }
+  // From Settings: stay on the page and say so. From the emailed link: into the app.
+  if (form.get("next")) return { done: true };
   redirect("/app");
 }

@@ -5,7 +5,13 @@ import { ForgotForm } from "../ResetForms";
 
 export const metadata: Metadata = { title: "Reset your password" };
 
-export default function ForgotPasswordPage() {
+const NOTICES: Record<string, string> = {
+  expired:
+    "That reset link has expired or was already used. Each new email cancels the earlier ones, so ask for a new link below and open only the newest email, in this browser.",
+};
+
+export default async function ForgotPasswordPage({ searchParams }: PageProps<"/forgot-password">) {
   if (!emailAuthEnabled()) redirect("/login");
-  return <ForgotForm />;
+  const sp = await searchParams;
+  return <ForgotForm notice={typeof sp.error === "string" ? NOTICES[sp.error] : undefined} />;
 }

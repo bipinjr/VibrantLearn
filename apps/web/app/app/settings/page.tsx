@@ -3,6 +3,8 @@
 import { Download, Monitor, Moon, RotateCcw, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { NewPasswordForm } from "@/app/(auth)/ResetForms";
+import { THEME_COOKIE } from "@/lib/theme";
 import { Main, PageHeader, PageTransition } from "@/components/app/Page";
 import type { Lang } from "@/lib/demo/data";
 import { api, ApiError } from "@/lib/api/client";
@@ -13,6 +15,12 @@ import { FORMAT_LABELS, type Format } from "@/app/onboarding/preview-copy";
 type Theme = "system" | "light" | "dark";
 type Bucket = { used: number; limit: number; resets_at: string | null };
 type Limits = { messages: Bucket; plans: Bucket; content: Bucket; uploads: { used: number; limit: number; bytes_used: number; bytes_limit: number } };
+
+/** The same cookie the header toggle uses, so the server renders the chosen theme first. */
+function saveThemeCookie(t: Theme) {
+  document.cookie =
+    t === "system" ? `${THEME_COOKIE}=; path=/; max-age=0` : `${THEME_COOKIE}=${t}; path=/; max-age=31536000; samesite=lax`;
+}
 
 function Section({ title, sub, children, i }: { title: string; sub?: string; children: ReactNode; i: number }) {
   return (
@@ -61,7 +69,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     try {
-      const t = localStorage.getItem("vl-theme");
+      // One source of truth with the header toggle: the server-applied data-theme (cookie).
+      const t = document.documentElement.dataset.theme;
       if (t === "light" || t === "dark") queueMicrotask(() => setTheme(t));
     } catch {
       /* ignore */
@@ -72,9 +81,9 @@ export default function SettingsPage() {
     setTheme(t);
     if (t === "system") document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", t);
+    saveThemeCookie(t);
     try {
-      if (t === "system") localStorage.removeItem("vl-theme");
-      else localStorage.setItem("vl-theme", t);
+      localStorage.removeItem("vl-theme");
     } catch {
       /* ignore */
     }
@@ -272,6 +281,11 @@ export default function SettingsPage() {
             ) : null}
           </Section>
 
+          {mode === "account" ? (
+            <Section i={7} title={t("Password")} sub={t("Change it here while you're signed in. No email needed.")}>
+              <NewPasswordForm embedded next="/app/settings" />
+            </Section>
+          ) : null}
           <Section i={6} title={t("Delete account")} sub={t("Removes your profile, sessions, plans and every uploaded file. This can't be undone.")}>
             <div className="grid max-w-md gap-2 rounded-[var(--radius-card)] border border-rose/40 p-4">
               <label htmlFor="confirm" className="text-sm">

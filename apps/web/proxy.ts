@@ -81,16 +81,19 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Only page loads are redirected. A form submission (server action POST) that gets a redirect
+  // instead of its answer fails with "An unexpected response was received from the server".
+  const isPageLoad = request.method === "GET" || request.method === "HEAD";
   const teacherPage = (path === "/teach" || path.startsWith("/teach/")) && !TEACHER_GUEST_PAGES.includes(path);
-  if (teacherPage && !data?.claims?.sub) return redirect("/teach/login", path);
-  if (!signedIn && PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
+  if (isPageLoad && teacherPage && !data?.claims?.sub) return redirect("/teach/login", path);
+  if (isPageLoad && !signedIn && PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
     return redirect("/login", path);
   }
   // Only a real account skips the teacher sign-in: the demo has no teacher portal.
-  if (data?.claims?.sub && TEACHER_GUEST_PAGES.includes(path)) {
+  if (isPageLoad && data?.claims?.sub && TEACHER_GUEST_PAGES.includes(path)) {
     return redirect("/teach");
   }
-  if (signedIn && AUTH_ONLY_FOR_GUESTS.includes(path)) {
+  if (isPageLoad && signedIn && AUTH_ONLY_FOR_GUESTS.includes(path)) {
     return redirect("/app");
   }
 

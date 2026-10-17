@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { NewPasswordForm } from "@/app/(auth)/ResetForms";
 import { useState } from "react";
 import { saveNotify } from "@/lib/api/live";
 import { useTeach } from "@/components/teach/data";
@@ -83,6 +84,10 @@ export default function TeachSettings() {
         ) : (
           <p className="mt-2 text-muted">{teacher.subjects.join(", ")}.</p>
         )}
+      </section>
+
+      <section aria-label="Password">
+        <NewPasswordForm embedded next="/teach/settings" />
       </section>
 
       <section aria-labelledby="a-h" className="flex flex-wrap items-center justify-between gap-4 border-t border-line pt-8">

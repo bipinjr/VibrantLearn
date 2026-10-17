@@ -4,7 +4,7 @@ import { FolderOpen, Home, LogOut, Menu, Plus, Route, Settings2, Trophy, Video, 
 import { LayoutGroup, motion, MotionConfig } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { timeLeft } from "@/lib/format";
 import { useDemo } from "@/lib/demo/store";
@@ -153,16 +153,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   // Inside a study session the composer is the main control; the tab bar would stack on top of it
   // and eat a third of a phone screen (G1). The menu button in the top bar still reaches everything.
   const inSession = path.startsWith("/app/s/");
-
-  // Theme chosen in Settings (per-browser). System theme is the default.
-  useEffect(() => {
-    try {
-      const t = localStorage.getItem("vl-theme");
-      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
-    } catch {
-      /* storage blocked: follow the system */
-    }
-  }, []);
 
   return (
     <MotionConfig reducedMotion="user">
