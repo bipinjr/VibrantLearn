@@ -56,7 +56,7 @@ if (existsSync(apiEnv) && !/YOUR-PROJECT-REF|YOUR-PASSWORD|\[YOUR/i.test(readFil
     console.log("The API needs uv (https://docs.astral.sh/uv/). Real accounts won't get replies until it runs; the demo account still works.");
   }
 } else {
-  console.log("apps/api/.env isn't filled in yet, so only the demo account works. See NEXT_SESSION.md.");
+  console.log("apps/api/.env isn't filled in yet, so only the demo account works. See docs/setup/MANUAL_STEPS.md.");
 }
 
 console.log(`\nStarting VibrantLearn on ${URL}  (press Ctrl+C to stop)\n`);

@@ -411,7 +411,9 @@
     transform: none;
   }
 }
-.pop-in {
+/* Every error message springs in when it appears, so a failed submit is noticed. */
+.pop-in,
+[role="alert"] {
   animation: pop-in 360ms var(--ease-spring) both;
   --animation-reduced: none;
 }
@@ -531,6 +533,44 @@
 ::view-transition-group(.morph) {
   animation-duration: 380ms;
   animation-timing-function: var(--ease-in-out);
+}
+/* Theme switch: the new theme grows as a circle from the toggle; the old one stays put under it. */
+:root[data-theme-switch]::view-transition-old(root) {
+  animation: none;
+}
+:root[data-theme-switch]::view-transition-new(root) {
+  animation: 520ms var(--ease-in-out) both theme-reveal;
+}
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--theme-x, 50%) var(--theme-y, 0));
+  }
+  to {
+    clip-path: circle(150vmax at var(--theme-x, 50%) var(--theme-y, 0));
+  }
+}
+[data-theme-switch] .theme-icon {
+  animation: theme-icon 320ms var(--ease-spring) both;
+  --animation-reduced: none;
+}
+@keyframes theme-icon {
+  from {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.6);
+  }
+}
+
+/* Student <-> teacher sign-in: the form and the dial panel crossfade with a small lift. */
+::view-transition-old(.auth-swap) {
+  animation: 150ms var(--ease-in) both vt-fade-out;
+}
+::view-transition-new(.auth-swap) {
+  animation:
+    260ms var(--ease-out) 80ms both vt-fade-in,
+    360ms var(--ease-out) both vt-rise;
+}
+::view-transition-group(.auth-swap) {
+  animation-duration: 360ms;
 }
 ::view-transition-group(app-sidebar),
 ::view-transition-group(app-topbar) {

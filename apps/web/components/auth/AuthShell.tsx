@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { ViewTransition, type ReactNode } from "react";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { EveningDial } from "./EveningDial";
@@ -29,9 +29,11 @@ export function AuthShell({ children, variant }: { children: ReactNode; variant:
             <Wordmark height={24} />
             <ThemeToggle />
           </div>
-          <main id="main" className={`${styles.form} mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12`}>
-            {children}
-          </main>
+          <ViewTransition name="auth-form" share="auth-swap" default="none">
+            <main id="main" className={`${styles.form} mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12`}>
+              {children}
+            </main>
+          </ViewTransition>
         </div>
         <aside className="sticky top-0 hidden h-dvh flex-col items-center justify-center overflow-hidden bg-ink px-10 text-mist lg:flex" data-theme="dark">
           <span aria-hidden="true" className={`${styles.glow} ${styles.glowA}`} />
@@ -41,10 +43,12 @@ export function AuthShell({ children, variant }: { children: ReactNode; variant:
               <span key={i} style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${d}s` }} />
             ))}
           </span>
-          <div className="relative w-full max-w-sm">
-            <p className="mb-6 text-center font-display text-[clamp(1.6rem,2.6vw,2.2rem)] leading-[1.1] font-bold">{HEAD[variant]}</p>
-            <EveningDial variant={variant} />
-          </div>
+          <ViewTransition name="auth-dial" share="auth-swap" default="none">
+            <div className="relative w-full max-w-sm">
+              <p className="mb-6 text-center font-display text-[clamp(1.6rem,2.6vw,2.2rem)] leading-[1.1] font-bold">{HEAD[variant]}</p>
+              <EveningDial variant={variant} />
+            </div>
+          </ViewTransition>
         </aside>
       </div>
     </>

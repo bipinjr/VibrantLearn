@@ -140,7 +140,7 @@ Living record for humans and AI agents. Read at the start of every session; upda
 
 ## Handoffs
 
-- **2026-10-16 → next session:** see [NEXT_SESSION.md](NEXT_SESSION.md). E1/E2/E5 on disk, uncommitted (lint + hybrid threshold to tune). Blocked on Bipin: `apps/api/.env` secret key + DB password.
+- **2026-10-16 → next session:** handoff notes were in NEXT_SESSION.md (removed 2026-10-25). E1/E2/E5 on disk, uncommitted (lint + hybrid threshold to tune). Blocked on Bipin: `apps/api/.env` secret key + DB password.
 
 _None yet._
 
@@ -165,6 +165,8 @@ Not re-checked (unchanged since the 8 Oct review): CSP and security headers, JWT
 _None._
 
 ## Session log
+
+- **2026-10-25 (Bipin + Claude):** Deployed. Vercel projects `vibrantlearn` (apps/web) -> https://vibrantlearn.vercel.app and `vibrantlearn-api` (apps/api, framework fastapi) -> https://vibrantlearn-api.vercel.app, both region `hnd1` (next to Supabase Tokyo), git-linked to `main`. Secrets added with the Vercel CLI straight from the `.env` files (never pasted). Vercel Authentication turned off on both so the site and the web->API rewrite are public. `DEMO_MODE=false` on Vercel (demo is also blocked in code when `VERCEL_ENV=production`); demo-friendly class rules kept (`TEACHER_AUTO_VERIFY`, `CLASS_MIN_STUDENTS=1`, `CLASS_MIN_LEAD_MIN=0`). Live-site walkthrough: 26 checks (pages, sign-in guards, headers, API direct + via rewrite, 401s, 360 px). Motion: student/teacher switch is a view transition (pill morphs, form + dial crossfade), theme toggle reveals from the button, every `[role=alert]` pops in. Fixed 20 px overflow of the demo header button at 360 px. Removed NEXT_SESSION.md, NEXT_STEPS.pdf and the unused WaitlistForm; smoke step updated. README rewritten with an animated hero (docs/readme/hero.svg) and fresh screenshots. Open: add https://vibrantlearn.vercel.app to Supabase Auth redirect URLs; signed-in walkthrough on the live site needs a human to sign in; `next build` flagged a Next.js security advisory (upgrade not done yet).
 
 | Date | Who | What changed |
 |---|---|---|

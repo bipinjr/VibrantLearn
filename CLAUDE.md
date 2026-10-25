@@ -4,7 +4,7 @@ Read this file, `docs/handbook/SECURITY.md`, `AGENTS.md`, `MEMORY.md` and `HANDO
 
 ## Project in one paragraph
 
-VibrantLearn (official title: *Web - AI-Powered Personalized Learning Path Generator [Smart EdTech Learning System]*) turns a student's request ("Java internal tomorrow, BCA SEP, Kannada, quizzes") or their uploaded notes into a personal learning path: timetable, checkpoints, notes, important questions, quizzes and flashcards. Current phase: **student side prototype (v0.4)**. Teacher marketplace, live classes, moderation, payments and notifications are out of scope and appear only as "Coming soon". It belongs to Bipin A and Darshan H.S. and will become a startup, so security and code quality are non-negotiable.
+VibrantLearn (official title: *Web - AI-Powered Personalized Learning Path Generator [Smart EdTech Learning System]*) turns a student's request ("Java internal tomorrow, BCA SEP, Kannada, quizzes") or their uploaded notes into a personal learning path: timetable, checkpoints, notes, important questions, quizzes and flashcards. Current phase: **v0.5: student app, live classes with a moderation bot, and the teacher portal (TEACHER.md T1–T10)**, deployed on Vercel. Payments and notifications are still out of scope. It belongs to Bipin A and Darshan H.S. and will become a startup, so security and code quality are non-negotiable.
 
 ## Documentation map
 

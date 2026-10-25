@@ -36,8 +36,10 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
             </Link>
             {demo ? (
               <form action={enterDemo}>
-                <button type="submit" className="btn btn-primary min-h-10 whitespace-nowrap px-4 text-sm">
-                  Try the demo
+                <button type="submit" aria-label="Try the demo" className="btn btn-primary min-h-10 whitespace-nowrap px-3 text-sm sm:px-4">
+                  {/* "Try the demo" is 20 px too wide for a 360 px phone header. */}
+                  <span className="sm:hidden">Demo</span>
+                  <span className="hidden sm:inline">Try the demo</span>
                 </button>
               </form>
             ) : (

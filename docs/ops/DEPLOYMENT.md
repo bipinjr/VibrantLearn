@@ -23,9 +23,11 @@ Preview deployments are public by default. Never point one at the production dat
 
 ## 2. Two projects, one repository
 
+Live since 2026-10-25: web <https://vibrantlearn.vercel.app>, API <https://vibrantlearn-api.vercel.app> (both in `hnd1`, Tokyo, next to the Supabase region). The web app reaches the API through the `/api/v1/*` rewrite (`API_ORIGIN`).
+
 | Vercel project | Root directory | Runtime |
 |---|---|---|
-| `vibrantlearn-web` | `apps/web` | Next.js 16 |
+| `vibrantlearn` | `apps/web` | Next.js 16 |
 | `vibrantlearn-api` | `apps/api` | Python (FastAPI) |
 
 The browser only talks to the web domain. `next.config.ts` rewrites `/api/v1/*` to `API_ORIGIN`, so there is no CORS and cookies stay first-party.

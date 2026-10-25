@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, ViewTransition } from "react";
 import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
 import { enterDemo } from "./demo-actions";
 
@@ -36,11 +36,17 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
             key={href}
             href={href}
             aria-current={teacher === isTeacher ? "page" : undefined}
-            className={`rounded-full px-4 py-2.5 text-center no-underline transition-colors duration-200 ${
-              teacher === isTeacher ? "bg-text text-bg shadow-sm" : "text-muted hover:text-text"
+            className={`relative rounded-full px-4 py-2.5 text-center no-underline transition-colors duration-200 ${
+              teacher === isTeacher ? "text-bg" : "text-muted hover:text-text"
             }`}
           >
-            {label}
+            {teacher === isTeacher ? (
+              // One pill shared by both pages, so switching slides it across instead of blinking.
+              <ViewTransition name="auth-switch-pill" share="morph" default="none">
+                <span aria-hidden="true" className="absolute inset-0 rounded-full bg-text shadow-sm" />
+              </ViewTransition>
+            ) : null}
+            <span className="relative">{label}</span>
           </Link>
         ))}
       </nav>

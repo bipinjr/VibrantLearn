@@ -1,7 +1,7 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, type MouseEvent } from "react";
 import { THEME_COOKIE } from "@/lib/theme";
 
 /** Light/dark switch. The choice lives in a cookie so the server renders the right theme first
@@ -25,10 +25,22 @@ function isDark(): boolean {
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const dark = useSyncExternalStore(subscribe, isDark, () => null);
 
-  function flip() {
+  function flip(e: MouseEvent<HTMLButtonElement>) {
     const theme = isDark() ? "light" : "dark";
-    document.documentElement.dataset.theme = theme;
-    document.cookie = `${THEME_COOKIE}=${theme}; path=/; max-age=31536000; samesite=lax`;
+    const apply = () => {
+      document.documentElement.dataset.theme = theme;
+      document.cookie = `${THEME_COOKIE}=${theme}; path=/; max-age=31536000; samesite=lax`;
+    };
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!document.startViewTransition || still) return apply();
+    // The new theme spreads out from the button (clip-path circle on the new snapshot).
+    const r = e.currentTarget.getBoundingClientRect();
+    const root = document.documentElement.style;
+    root.setProperty("--theme-x", `${r.left + r.width / 2}px`);
+    root.setProperty("--theme-y", `${r.top + r.height / 2}px`);
+    document.documentElement.dataset.themeSwitch = "";
+    const t = document.startViewTransition(apply);
+    t.finished.finally(() => delete document.documentElement.dataset.themeSwitch);
   }
 
   return (
@@ -38,7 +50,13 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
       className={`inline-flex size-10 items-center justify-center rounded-full border border-line text-text transition-colors hover:bg-text/5 ${className}`}
     >
-      {dark === null ? <span className="size-[18px]" /> : dark ? <Sun size={18} strokeWidth={1.75} aria-hidden="true" /> : <Moon size={18} strokeWidth={1.75} aria-hidden="true" />}
+      {dark === null ? (
+        <span className="size-[18px]" />
+      ) : (
+        <span key={dark ? "sun" : "moon"} className="theme-icon inline-flex">
+          {dark ? <Sun size={18} strokeWidth={1.75} aria-hidden="true" /> : <Moon size={18} strokeWidth={1.75} aria-hidden="true" />}
+        </span>
+      )}
     </button>
   );
 }

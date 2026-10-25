@@ -62,13 +62,13 @@ def run() -> None:
         expect(page.locator("p[lang=hi]").first).to_be_visible()
         step("landing renders; language switch shows Hindi notes")
 
-        page.fill("#waitlist-email", "not-an-email")
-        page.press("#waitlist-email", "Enter")
-        expect(page.locator("#waitlist-error")).to_contain_text("Enter an email")
-        page.fill("#waitlist-email", "teacher@college.edu")
-        page.press("#waitlist-email", "Enter")
-        expect(page.get_by_text("You’re on the list")).to_be_visible()
-        step("teacher waitlist validates and confirms")
+        page.get_by_role("link", name="Create a teacher account").first.click()
+        expect(page).to_have_url(f"{BASE}/teach/signup")
+        expect(page.get_by_role("link", name="I'm a teacher")).to_have_attribute("aria-current", "page")
+        page.get_by_role("link", name="I'm a student").click()
+        expect(page).to_have_url(f"{BASE}/signup")
+        page.goto(BASE)
+        step("teacher sign-up link and student/teacher switch")
 
         # --- demo sign-in + dashboard -----------------------------------------------------------
         page.locator("header").get_by_role("button", name="Try the demo").click()
