@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     # (since Aug 2023); a community server like https://meet.ffmuc.net doesn't.
     # Self-host for production.
     video_base_url: str = "https://meet.jit.si"
+    # Shared demo accounts (comma-separated emails): anyone can sign in, so they can't be deleted.
+    demo_emails: str = ""
     groq_api_key: SecretStr = SecretStr("")
     max_upload_mb: int = 50
 

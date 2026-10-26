@@ -11,6 +11,7 @@ from app.core.auth_admin import get_auth_admin
 from app.core.db import get_conn
 from app.core.storage import get_storage
 from app.main import app
+from app.routers import me as me_router
 from tests.conftest import make_token
 from tests.fake_db import FakeDb
 from tests.fakes import FakeStorage
@@ -99,3 +100,15 @@ def test_deletion_stops_if_files_remain(env: Any) -> None:
     assert (
         r.status_code == 502 and admin.deleted == []
     )  # the account is not deleted with files left
+
+
+def test_shared_demo_account_cannot_be_deleted(env: Any, monkeypatch: Any) -> None:
+    client, _, storage, admin = env
+    monkeypatch.setattr(me_router, "is_demo_account", lambda conn, user_id: True)
+    r = client.request("DELETE", "/api/v1/me", json={"confirm": "bipin.jr"}, headers=h())
+    assert r.status_code == 403
+    assert admin.deleted == [] and f"{A}/s1/f1/a.pdf" in storage.objects
+
+
+def test_no_demo_emails_configured_skips_the_lookup() -> None:
+    assert me_router.is_demo_account(None, A) is False  # type: ignore[arg-type]

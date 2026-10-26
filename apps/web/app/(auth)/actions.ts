@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { isDemoEmail } from "@/lib/demo/accounts";
 import { DEMO_COOKIE } from "@/lib/demo/mode";
 import { SIGNUP_AS_COOKIE } from "@/lib/theme";
 import { safeNext } from "@/lib/safe-next";
@@ -103,6 +104,7 @@ export async function setNewPassword(_: AuthState, form: FormData): Promise<Auth
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   if (!data?.claims?.sub) return { error: "This reset link has expired. Ask for a new one." };
+  if (isDemoEmail(data.claims.email)) return { error: "The demo account is shared, so its password can't be changed." };
   const { error } = await supabase.auth.updateUser({ password: parsed.data });
   if (error) {
     if (error.code === "weak_password") return { error: "That password is too common or weak. Try a longer one with letters and numbers." };

@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.core import ratelimit
 from app.core.auth import CurrentUser
 from app.core.auth_admin import AuthAdmin, get_auth_admin
+from app.core.config import get_settings
 from app.core.db import get_conn
 from app.core.errors import ApiError
 from app.core.storage import Storage, get_storage
@@ -139,6 +140,14 @@ class DeleteMe(BaseModel):
     confirm: str = Field(min_length=1, max_length=30)  # the student's username, typed
 
 
+def is_demo_account(conn: psycopg.Connection[dict[str, object]], user_id: str) -> bool:
+    demo = {e.strip().lower() for e in get_settings().demo_emails.split(",") if e.strip()}
+    if not demo:
+        return False
+    row = conn.execute("select email from auth.users where id = %s", (user_id,)).fetchone()
+    return row is not None and str(row["email"]).lower() in demo
+
+
 @router.delete("/me", status_code=204)
 def delete_me(
     body: DeleteMe,
@@ -148,5 +157,7 @@ def delete_me(
     admin: Annotated[AuthAdmin, Depends(get_auth_admin)],
 ) -> Response:
     ratelimit.hit(conn, user.id, "delete_account", 5, 3600, "Too many attempts. Wait a bit.")
+    if is_demo_account(conn, user.id):
+        raise ApiError(403, "forbidden", "The demo account is shared, so it can't be deleted.")
     account.delete_account(conn, storage, admin, user.id, body.confirm)
     return Response(status_code=204)

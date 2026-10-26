@@ -210,7 +210,9 @@ flowchart LR
 
 ## 🚀 Run it locally
 
-**Quick demo (Node.js 20+, no account or database needed):** double-click `START-DEMO.bat` or run `npm run demo`, then press **Try the demo** at http://localhost:3000.
+**On the live site:** press **Sign in as the demo student** on [/login](https://vibrantlearn.vercel.app/login) or **Sign in as the demo teacher** on [/teach/login](https://vibrantlearn.vercel.app/teach/login). No password needed.
+
+**Quick local demo (Node.js 20+, no account or database needed):** double-click `START-DEMO.bat` or run `npm run demo`, then press **Try the demo** at http://localhost:3000.
 
 **Full app:**
 
@@ -234,6 +236,7 @@ cd apps/api && uv sync && uv run uvicorn app.main:app --reload --port 8000
 | `API_ORIGIN` | `GROQ_API_KEY`, `IP_HASH_SALT` |
 | `GROQ_API_KEY` (demo chat) | `VIDEO_BASE_URL`, `MAX_UPLOAD_MB` |
 | `DEMO_MODE` (local only) | `TEACHER_AUTO_VERIFY`, `CLASS_MIN_STUDENTS`, `CLASS_MIN_LEAD_MIN` |
+| `DEMO_STUDENT_EMAIL` / `_PASSWORD`, `DEMO_TEACHER_EMAIL` / `_PASSWORD` (one-click demo sign-in) | `DEMO_EMAILS` (shared demo accounts can't be deleted) |
 
 Step-by-step setup: [docs/setup/SETUP_SUPABASE.md](docs/setup/SETUP_SUPABASE.md) · [docs/setup/MANUAL_STEPS.md](docs/setup/MANUAL_STEPS.md)
 

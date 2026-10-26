@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useActionState, ViewTransition } from "react";
+import { useFormStatus } from "react-dom";
 import { signIn, signInWithGoogle, signUp, type AuthState } from "./actions";
-import { enterDemo } from "./demo-actions";
+import { enterDemo, signInDemoAccount } from "./demo-actions";
 
-type Props = { mode: "signin" | "signup"; next?: string; googleEnabled: boolean; notice?: string; demo: boolean; emailEnabled: boolean; teacher?: boolean };
+type Props = { mode: "signin" | "signup"; next?: string; googleEnabled: boolean; notice?: string; demo: boolean; emailEnabled: boolean; teacher?: boolean; demoAccount?: boolean };
 
-export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled, teacher = false }: Props) {
+export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled, teacher = false, demoAccount = false }: Props) {
   const [state, action, pending] = useActionState<AuthState, FormData>(mode === "signin" ? signIn : signUp, undefined);
   const error = state?.error ?? notice;
 
@@ -63,7 +64,18 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
             : "Free while we're in beta. Takes under a minute."}
       </p>
 
-      {demo && !teacher ? (
+      {demoAccount ? (
+        <form action={signInDemoAccount} className="mt-8 grid gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-4">
+          <input type="hidden" name="role" value={teacher ? "teacher" : "student"} />
+          <p className="font-semibold">{teacher ? "Try it as the demo teacher" : "Try it as the demo student"}</p>
+          <p className="text-sm text-muted">
+            {teacher
+              ? "A shared teacher account with rooms, demand and earnings. Other visitors may use it too."
+              : "A shared student account with plans, notes and live classes. Other visitors may use it too."}
+          </p>
+          <DemoAccountButton label={teacher ? "Sign in as the demo teacher" : "Sign in as the demo student"} />
+        </form>
+      ) : demo && !teacher ? (
         <form action={enterDemo} className="mt-8 grid gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-4">
           <p className="font-semibold">Try it with the demo account</p>
           <p className="text-sm text-muted">Sample plans, notes and quizzes for a 3rd-semester BCA student. Everything works; nothing is saved on our side.</p>
@@ -157,5 +169,14 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
       </p>
 
     </>
+  );
+}
+
+function DemoAccountButton({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" className="btn btn-primary mt-2 w-full" disabled={pending}>
+      {pending ? "Signing in…" : label}
+    </button>
   );
 }
