@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, ViewTransition, type ReactNode } from "react";
 
 /** Page-level route transition: directional for hierarchy, soft rise otherwise. */
@@ -13,6 +14,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
       {children}
     </ViewTransition>
   );
+}
+
+/** For layouts: a new key per URL so every route change runs the page enter/exit animation. */
+export function RouteTransition({ children }: { children: ReactNode }) {
+  return <PageTransition key={usePathname()}>{children}</PageTransition>;
 }
 
 /** Page title that receives focus after navigation so screen readers announce the new page. */

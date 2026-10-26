@@ -50,7 +50,7 @@
 - On the server, authorise with `supabase.auth.getClaims()` (verifies the JWT signature). Never trust `getSession()` data on the server for authorisation.
 - FastAPI verifies the `Authorization: Bearer` token on every request using the project's JWKS (`/auth/v1/.well-known/jwks.json`), checking signature, `exp`, `aud = authenticated`, and `iss`. Cache the JWKS in memory with a short TTL and also allow it via env var for cold starts.
 - Email verification required before AI, upload or plan endpoints work.
-- Password rules: minimum 10 characters, Supabase leaked-password protection on.
+- Password rules: minimum 12 characters with a lowercase letter, a capital letter, a number and a symbol (checked in `app/(auth)/actions.ts` and mirrored in Supabase Auth settings), Supabase leaked-password protection on.
 - OAuth redirect URLs: allowlist only the production domain, the Vercel preview pattern for this project, and `localhost:3000`.
 - Keep the access-token lifetime short (default 1 hour is fine). Account deletion first revokes all sessions.
 - **Never** use `raw_user_meta_data` / `user_metadata` for authorisation (users can edit it). Future roles (`teacher`, `admin`) go in `app_metadata` or a `user_roles` table that only the service role can write.

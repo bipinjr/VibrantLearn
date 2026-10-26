@@ -22,10 +22,12 @@ const newAccount = z.object({
   email: z.email("Enter an email like name@example.com.").max(254),
   password: z
     .string()
-    .min(10, "Use at least 10 characters.")
+    .min(12, "Use at least 12 characters.")
     .max(72, "Use 72 characters or fewer.")
-    .regex(/[A-Za-z]/, "Add at least one letter.")
-    .regex(/\d/, "Add at least one number."),
+    .regex(/[a-z]/, "Add a lowercase letter.")
+    .regex(/[A-Z]/, "Add a capital letter.")
+    .regex(/\d/, "Add a number.")
+    .regex(/[^A-Za-z0-9]/, "Add a symbol, like ! or #."),
 });
 
 export async function signIn(_: AuthState, form: FormData): Promise<AuthState> {
@@ -71,14 +73,15 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
 }
 
 export async function signInWithGoogle(form: FormData): Promise<void> {
-  if (process.env.GOOGLE_AUTH_ENABLED !== "true") redirect("/login");
   const next = safeNext(form.get("next"), "/onboarding");
+  const signInPage = next.startsWith("/teach") ? "/teach/login" : "/login";
+  if (process.env.GOOGLE_AUTH_ENABLED !== "true") redirect(signInPage);
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: `${SITE}/auth/callback?next=${encodeURIComponent(next)}` },
   });
-  if (error || !data.url) redirect("/login?error=google");
+  if (error || !data.url) redirect(`${signInPage}?error=google`);
   redirect(data.url);
 }
 

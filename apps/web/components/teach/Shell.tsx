@@ -4,6 +4,7 @@ import { CalendarDays, House, Settings, UserRound, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { PageTransition } from "@/components/app/Page";
 import { Application, Questionnaire } from "./parts";
 import { TeachProvider, useTeach } from "./data";
 
@@ -94,9 +95,11 @@ export function TeachShell({ children }: { children: ReactNode }) {
         <div className="lg:grid lg:grid-cols-[13rem_minmax(0,1fr)]">
           <Nav />
           <main id="main" className="min-w-0 pb-24 lg:pb-12">
-            <div key={path} className="page-in">
-              <Gate>{children}</Gate>
-            </div>
+            <PageTransition key={path}>
+              <div>
+                <Gate>{children}</Gate>
+              </div>
+            </PageTransition>
           </main>
         </div>
       )}

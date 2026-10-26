@@ -52,13 +52,13 @@ export function NewPasswordForm({ embedded = false, next }: { embedded?: boolean
       ) : (
         <h1 className="text-3xl font-bold sm:text-4xl">Choose a new password</h1>
       )}
-      <p className="mt-2 text-muted">At least 10 characters, with a letter and a number.</p>
+      <p className="mt-2 text-muted">At least 12 characters, with a capital letter, a lowercase letter, a number and a symbol.</p>
       {state?.done ? <p role="status" className="mt-3 text-sm font-medium text-done">Password changed.</p> : null}
       <form action={action} className={`${embedded ? "mt-4 max-w-sm" : "mt-8"} grid gap-4`} noValidate>
         <input type="hidden" name="next" value={next ?? ""} />
         <div className="grid gap-1.5">
           <label htmlFor="password" className="text-sm font-medium">New password</label>
-          <input id="password" name="password" type="password" autoComplete="new-password" required minLength={10} maxLength={72} className="field" />
+          <input id="password" name="password" type="password" autoComplete="new-password" required minLength={12} maxLength={72} className="field" />
         </div>
         {state?.error ? <p role="alert" className="text-sm text-danger">{state.error}</p> : null}
         <button type="submit" className="btn btn-primary w-full" disabled={pending}>

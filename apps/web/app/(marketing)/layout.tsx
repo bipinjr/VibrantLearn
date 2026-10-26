@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RouteTransition } from "@/components/app/Page";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { enterDemo } from "../(auth)/demo-actions";
 import { demoEnabled } from "@/lib/demo/mode";
@@ -50,7 +51,9 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
           </nav>
         </div>
       </header>
-      <main id="main">{children}</main>
+      <main id="main">
+        <RouteTransition>{children}</RouteTransition>
+      </main>
       <footer className="mt-28 border-t border-line">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
           <div className="grid content-start gap-3">

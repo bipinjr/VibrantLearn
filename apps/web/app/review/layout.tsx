@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { RouteTransition } from "@/components/app/Page";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { UiLangProvider } from "@/lib/i18n/context";
@@ -23,7 +24,7 @@ export default async function ReviewLayout({ children }: LayoutProps<"/review">)
         </span>
         <ThemeToggle />
       </header>
-      {children}
+      <RouteTransition>{children}</RouteTransition>
     </UiLangProvider>
   );
 }

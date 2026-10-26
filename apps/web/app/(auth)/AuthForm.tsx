@@ -125,14 +125,14 @@ export function AuthForm({ mode, next, googleEnabled, notice, demo, emailEnabled
             type="password"
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             required
-            minLength={mode === "signup" ? 10 : undefined}
+            minLength={mode === "signup" ? 12 : undefined}
             maxLength={72}
             aria-describedby={mode === "signup" ? "password-hint" : undefined}
             className="field"
           />
           {mode === "signup" ? (
             <p id="password-hint" className="text-sm text-muted">
-              At least 10 characters, with a letter and a number.
+              At least 12 characters, with a capital letter, a lowercase letter, a number and a symbol.
             </p>
           ) : null}
         </div>

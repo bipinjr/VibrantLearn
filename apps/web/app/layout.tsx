@@ -56,6 +56,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       data-theme={theme}
+      data-scroll-behavior="smooth"
       className={`${bricolage.variable} ${figtree.variable} ${notoKn.variable} ${notoHi.variable} antialiased`}
     >
       <body className="min-h-dvh">{children}</body>

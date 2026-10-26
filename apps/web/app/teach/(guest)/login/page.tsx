@@ -11,8 +11,10 @@ export default async function TeacherLoginPage({ searchParams }: PageProps<"/tea
   const notice =
     sp.error === "link"
       ? "That confirmation link has expired or was opened in a different browser. Sign in here, or create the account again for a new link."
-      : sp.error === "demo"
+      : sp.error === "google"
+        ? "Google sign-in didn't finish. Try again, or use your email."
+        : sp.error === "demo"
         ? "The demo teacher account isn't available right now. Try again in a minute, or use your own account."
         : undefined;
-  return <AuthForm mode="signin" teacher next={next} notice={notice} googleEnabled={false} demo={false} demoAccount={demoAccount("teacher") !== null} emailEnabled={emailAuthEnabled()} />;
+  return <AuthForm mode="signin" teacher next={next} notice={notice} googleEnabled={process.env.GOOGLE_AUTH_ENABLED === "true"} demo={false} demoAccount={demoAccount("teacher") !== null} emailEnabled={emailAuthEnabled()} />;
 }

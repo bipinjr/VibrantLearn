@@ -35,11 +35,13 @@ describe("forgot password (F5)", () => {
   });
 
   it("new password follows the sign-up rules and needs the link's session", async () => {
-    expect((await setNewPassword(undefined, form({ password: "short1" })))?.error).toMatch(/10 characters/);
+    expect((await setNewPassword(undefined, form({ password: "short1" })))?.error).toMatch(/12 characters/);
+    expect((await setNewPassword(undefined, form({ password: "alllowercase123!" })))?.error).toMatch(/capital/);
+    expect((await setNewPassword(undefined, form({ password: "NoSymbolHere123" })))?.error).toMatch(/symbol/);
     auth.getClaims.mockResolvedValueOnce({ data: null });
-    expect((await setNewPassword(undefined, form({ password: "longenough123" })))?.error).toMatch(/expired/);
+    expect((await setNewPassword(undefined, form({ password: "Longenough123!" })))?.error).toMatch(/expired/);
     auth.getClaims.mockResolvedValueOnce({ data: { claims: { sub: "u1" } } });
     auth.updateUser.mockResolvedValueOnce({ error: null });
-    await expect(setNewPassword(undefined, form({ password: "longenough123" }))).rejects.toThrow("redirect:/app");
+    await expect(setNewPassword(undefined, form({ password: "Longenough123!" }))).rejects.toThrow("redirect:/app");
   });
 });

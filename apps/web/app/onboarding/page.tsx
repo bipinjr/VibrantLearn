@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { PageTransition } from "@/components/app/Page";
 import { createClient } from "@/lib/supabase/server";
 import { Onboarding, type ProfileDraft } from "./Onboarding";
 
@@ -30,5 +31,9 @@ export default async function OnboardingPage() {
     style: profile?.style ?? "short",
     formats: profile?.formats ?? ["quiz", "notes"],
   };
-  return <Onboarding initial={draft} startAt={profile?.username ? 2 : 1} />;
+  return (
+    <PageTransition>
+      <Onboarding initial={draft} startAt={profile?.username ? 2 : 1} />
+    </PageTransition>
+  );
 }

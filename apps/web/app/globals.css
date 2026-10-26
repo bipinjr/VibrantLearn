@@ -506,6 +506,14 @@
   }
 }
 
+/* In-page links (#how, #live) glide instead of jumping. Next reads data-scroll-behavior on <html>
+   and turns this off during route changes, so new pages still open at the top. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* ---- View transitions (React <ViewTransition>) ---- */
 ::view-transition {
   pointer-events: none;
@@ -888,15 +896,3 @@ dialog.sheet::backdrop {
   outline-offset: 2px;
 }
 
-/* Teacher pages ease in on navigation. */
-@media (prefers-reduced-motion: no-preference) {
-  .page-in {
-    animation: page-in 380ms var(--ease-out) both;
-  }
-}
-@keyframes page-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-}

@@ -73,7 +73,7 @@ def run() -> None:
         # --- demo sign-in + dashboard -----------------------------------------------------------
         page.locator("header").get_by_role("button", name="Try the demo").click()
         expect(page).to_have_url(f"{BASE}/app")
-        expect(page.get_by_text("Next up", exact=False)).to_be_visible()
+        expect(page.get_by_text(re.compile(r"Next up\b"))).to_be_visible()
         assert "vl_demo" not in page.evaluate("document.cookie"), "demo cookie must be httpOnly"
         step("Try the demo opens the dashboard (httpOnly cookie)")
 
